@@ -226,6 +226,24 @@ class ServiceBooking(models.Model):
     def service_provider(self, val):
         self.vendor = val
 
+    @property
+    def booking_number(self):
+        return f"BK-{self.id:04d}"
+
+    @property
+    def service_title(self):
+        if self.quick_service:
+            return self.quick_service.title
+        return self.package_name or "Service Booking"
+
+    @property
+    def booking_date(self):
+        return self.scheduled_date
+
+    @property
+    def booking_time_slot(self):
+        return self.time_slot
+
     def __str__(self):
         return f"Booking #{self.id} - {self.quick_service.title if self.quick_service else 'Service'}"
 

@@ -96,7 +96,7 @@ def super_admin_dashboard(request):
     # Dynamic Recent Users (with profile images), Recent Orders & Recent Service Bookings
     recent_users = CustomUser.objects.select_related('user_profile', 'vendor_profile').order_by('-date_joined')[:5]
     recent_orders = ProductOrder.objects.order_by('-created_at')[:5]
-    recent_bookings = ServiceBooking.objects.select_related('category', 'provider').order_by('-created_at')[:5]
+    recent_bookings = ServiceBooking.objects.select_related('customer', 'vendor', 'quick_service').order_by('-created_at')[:5]
 
     context = {
         'total_customers': total_customers,
