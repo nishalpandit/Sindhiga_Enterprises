@@ -1,0 +1,77 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}4.E Assign Delivery Partners - Sindhiga Admin{% endblock %}
+{% block header_title %}4.E. Delivery Partner Assignment Queue{% endblock %}
+
+{% block content %}
+<div class="card" style="padding: 20px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div>
+      <h3 style="font-size: 16px; font-weight: 800; color: var(--text-main); margin: 0;">Packed Orders Awaiting Rider Dispatch</h3>
+      <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Assign packed merchant orders to verified delivery partners.</p>
+    </div>
+  </div>
+
+  <div style="overflow-x: auto;">
+    <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--border); text-align: left; background: #f8fafc;">
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Order #</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Delivery Address</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Amount &amp; OTP</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Current Rider</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted); text-align: right;">Assign Delivery Partner</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders %}
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 12px 14px;">
+            <a href="{% url 'super_admin_ecom_order_detail' o.id %}" style="font-weight: 800; color: var(--accent); text-decoration: none;">#{{ o.order_number }}</a>
+            <div style="font-size: 11px; color: var(--text-muted);">Packed: {{ o.packed_at|date:"d M, h:i A"|default:"Ready" }}</div>
+          </td>
+          <td style="padding: 12px 14px;">
+            <div style="font-weight: 700; color: var(--text-main);">{{ o.customer_name }}</div>
+            <div style="font-size: 11.5px; color: var(--text-muted);">{{ o.delivery_address|truncatechars:40 }}, {{ o.delivery_city }} ({{ o.delivery_pincode }})</div>
+          </td>
+          <td style="padding: 12px 14px;">
+            <div style="font-weight: 800; color: var(--text-main);">₹{{ o.total_amount }}</div>
+            <span style="font-size: 10.5px; color: var(--text-muted);">OTP: <strong style="color: #059669; letter-spacing: 1px;">{{ o.delivery_otp }}</strong></span>
+          </td>
+          <td style="padding: 12px 14px;">
+            {% if o.delivery_partner %}
+              <strong style="color: #0284c7;">{{ o.delivery_partner.get_full_name|default:o.delivery_partner.username }}</strong>
+              <div style="font-size: 11px; color: var(--text-muted);">Status: {{ o.delivery_assignment_status }}</div>
+            {% else %}
+              <span class="badge" style="background: rgba(245,158,11,0.12); color: #d97706; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px;">Unassigned</span>
+            {% endif %}
+          </td>
+          <td style="padding: 12px 14px; text-align: right;">
+            <form method="POST" action="{% url 'super_admin_delivery_assign' o.id %}" style="display: inline-flex; gap: 6px;">
+              {% csrf_token %}
+              <select name="rider_id" required style="padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 11.5px; outline: none; width: 140px;">
+                <option value="">Choose Rider...</option>
+                {% for r in riders %}
+                  <option value="{{ r.user.id }}" {% if o.delivery_partner_id == r.user.id %}selected{% endif %}>
+                    {{ r.user.get_full_name|default:r.user.username }}
+                  </option>
+                {% endfor %}
+              </select>
+              <button type="submit" style="background: #0284c7; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11.5px; font-weight: 700; cursor: pointer;">
+                Dispatch
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 32px; color: var(--text-muted);">
+            No packed orders currently awaiting dispatch. All orders assigned!
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

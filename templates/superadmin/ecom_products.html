@@ -1,0 +1,148 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}4.C Product Catalog &amp; Inventory - Sindhiga Admin{% endblock %}
+{% block header_title %}4.C. Product Catalog &amp; Inventory Management{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'super_admin_ecom_product_create' %}" class="btn btn-primary btn-sm" style="background: var(--accent); color: white; padding: 8px 16px; border-radius: var(--r-sm); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+  <i class="fa-solid fa-plus"></i> Add Store Item
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="padding: 20px;">
+  <!-- Filter & Inventory Control Strip -->
+  <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 20px;">
+    <div>
+      <h3 style="font-size: 16px; font-weight: 800; color: var(--text-main); margin: 0;">Stock &amp; Catalog Management</h3>
+      <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Total products in catalog: <strong>{{ total_count }}</strong></p>
+    </div>
+
+    <form method="GET" style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <input type="text" name="q" value="{{ q }}" placeholder="Search title, SKU, brand..." style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--r-sm); font-size: 12.5px; width: 200px; outline: none;">
+      
+      <select name="category" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--r-sm); font-size: 12.5px; outline: none;">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="stock" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--r-sm); font-size: 12.5px; outline: none;">
+        <option value="">All Stock Levels</option>
+        <option value="in_stock" {% if stock_status == 'in_stock' %}selected{% endif %}>In Stock (&gt;10)</option>
+        <option value="low" {% if stock_status == 'low' %}selected{% endif %}>Low Stock (&le;10)</option>
+        <option value="out" {% if stock_status == 'out' %}selected{% endif %}>Out of Stock (0)</option>
+      </select>
+
+      <button type="submit" class="btn btn-primary btn-sm" style="background: var(--accent); color: white; border: none; padding: 8px 14px; border-radius: var(--r-sm); font-weight: 700; cursor: pointer;">
+        <i class="fa-solid fa-filter"></i> Filter
+      </button>
+      {% if q or selected_category or stock_status %}
+        <a href="{% url 'super_admin_ecom_products' %}" class="btn btn-outline btn-sm" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--r-sm); font-size: 12px; color: var(--text-muted); text-decoration: none;">Clear</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Products Data Table -->
+  <div style="overflow-x: auto;">
+    <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--border); text-align: left; background: #f8fafc;">
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Product</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Category</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Pricing</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Stock Inventory</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Status</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted); text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 12px 14px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 44px; height: 44px; border-radius: 8px; background: #f8fafc; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                {% if p.main_image %}
+                  <img src="{{ p.main_image.url }}" alt="{{ p.title }}" style="width: 100%; height: 100%; object-fit: contain;">
+                {% else %}
+                  <i class="fa-solid fa-image" style="color: #cbd5e1; font-size: 18px;"></i>
+                {% endif %}
+              </div>
+              <div>
+                <a href="{% url 'super_admin_ecom_product_edit' p.id %}" style="font-weight: 750; color: var(--text-main); text-decoration: none; display: block; max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  {{ p.title }}
+                </a>
+                <span style="font-size: 11px; color: var(--text-muted);">SKU: {{ p.sku }} &bull; Brand: {{ p.brand|default:"Sindhiga" }}</span>
+              </div>
+            </div>
+          </td>
+          <td style="padding: 12px 14px; font-weight: 600; color: var(--text-muted); font-size: 12.5px;">
+            {{ p.category.name|default:"Unassigned" }}
+          </td>
+          <td style="padding: 12px 14px;">
+            <div style="font-weight: 800; color: var(--text-main); font-size: 13.5px;">₹{{ p.price|floatformat:0 }}</div>
+            {% if p.mrp > p.price %}
+              <div style="font-size: 11px; color: var(--text-muted); text-decoration: line-through;">₹{{ p.mrp|floatformat:0 }}</div>
+            {% endif %}
+          </td>
+          <td style="padding: 12px 14px;">
+            {% if p.stock_quantity <= 0 %}
+              <span class="badge" style="background: rgba(239,68,68,0.12); color: #dc2626; padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 11px;">
+                Out of Stock (0)
+              </span>
+            {% elif p.stock_quantity <= 10 %}
+              <span class="badge" style="background: rgba(245,158,11,0.12); color: #d97706; padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 11px;">
+                Low Stock ({{ p.stock_quantity }})
+              </span>
+            {% else %}
+              <span class="badge" style="background: rgba(16,185,129,0.12); color: #059669; padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 11px;">
+                {{ p.stock_quantity }} units
+              </span>
+            {% endif %}
+          </td>
+          <td style="padding: 12px 14px;">
+            {% if p.is_available %}
+              <span style="font-size: 11.5px; font-weight: 700; color: #059669;"><i class="fa-solid fa-circle" style="font-size: 8px; margin-right: 4px;"></i> Live</span>
+            {% else %}
+              <span style="font-size: 11.5px; font-weight: 700; color: #94a3b8;"><i class="fa-solid fa-circle" style="font-size: 8px; margin-right: 4px;"></i> Hidden</span>
+            {% endif %}
+          </td>
+          <td style="padding: 12px 14px; text-align: right;">
+            <div style="display: inline-flex; gap: 6px;">
+              <a href="{% url 'super_admin_ecom_product_edit' p.id %}" class="btn btn-outline btn-sm" style="padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px; text-decoration: none; font-size: 11.5px; font-weight: 600; color: var(--text-main);">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </a>
+              <a href="{% url 'super_admin_ecom_product_delete' p.id %}" onclick="return confirm('Delete product {{ p.title }}?');" class="btn btn-sm" style="padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 11.5px; font-weight: 600; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;">
+                <i class="fa-solid fa-trash"></i>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 32px; color: var(--text-muted);">
+            No items in catalog matching your filter.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if products.has_other_pages %}
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px;">
+    <span style="color: var(--text-muted);">Page {{ products.number }} of {{ products.paginator.num_pages }}</span>
+    <div style="display: flex; gap: 6px;">
+      {% if products.has_previous %}
+        <a href="?page={{ products.previous_page_number }}&q={{ q }}&category={{ selected_category }}&stock={{ stock_status }}" style="padding: 5px 12px; border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--text-main);">Previous</a>
+      {% endif %}
+      {% if products.has_next %}
+        <a href="?page={{ products.next_page_number }}&q={{ q }}&category={{ selected_category }}&stock={{ stock_status }}" style="padding: 5px 12px; border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--text-main);">Next</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

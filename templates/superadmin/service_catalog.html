@@ -1,0 +1,55 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}4.D Service Catalog &amp; Pricing - Sindhiga Admin{% endblock %}
+{% block header_title %}4.D. Home Services Catalog &amp; Fixed Pricing{% endblock %}
+
+{% block content %}
+<div class="card" style="padding: 20px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div>
+      <h3 style="font-size: 16px; font-weight: 800; color: var(--text-main); margin: 0;">Verified Doorstep Services &amp; Fixed Rates</h3>
+      <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Pre-priced fixed services with guaranteed arrival duration.</p>
+    </div>
+  </div>
+
+  <div style="overflow-x: auto;">
+    <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--border); text-align: left; background: #f8fafc;">
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Service Title</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Category</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Fixed Price</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Est. Duration</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in services %}
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 12px 14px;">
+            <strong style="font-size: 13.5px; color: var(--text-main); display: block;">{{ s.title }}</strong>
+            <span style="font-size: 11px; color: var(--text-muted);">{{ s.description|truncatechars:70 }}</span>
+          </td>
+          <td style="padding: 12px 14px; font-weight: 600; color: var(--text-muted);">
+            {{ s.category.name|default:"General" }}
+          </td>
+          <td style="padding: 12px 14px; font-weight: 850; font-size: 14px; color: #059669;">
+            ₹{{ s.price|floatformat:0 }}
+          </td>
+          <td style="padding: 12px 14px; color: var(--text-muted); font-size: 12px;">
+            <i class="fa-solid fa-clock" style="color: var(--accent); margin-right: 4px;"></i> {{ s.duration|default:"45 mins" }}
+          </td>
+          <td style="padding: 12px 14px;">
+            <span class="badge" style="background: rgba(16,185,129,0.12); color: #059669; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px;">Active</span>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 32px; color: var(--text-muted);">No services listed.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

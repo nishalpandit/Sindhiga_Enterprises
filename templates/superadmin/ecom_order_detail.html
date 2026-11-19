@@ -1,0 +1,141 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}Order #{{ order.order_number }} - Sindhiga Admin{% endblock %}
+{% block header_title %}Order Fulfillment &amp; Dispatch: #{{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+  <a href="{% url 'super_admin_ecom_orders' %}" style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--accent); text-decoration: none;">
+    <i class="fa-solid fa-arrow-left"></i> Back to All Orders
+  </a>
+</div>
+
+<!-- Order Summary Banner -->
+<div class="card" style="padding: 24px; margin-bottom: 24px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+  <div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <h2 style="font-size: 20px; font-weight: 850; color: var(--text-main); margin: 0;">Order #{{ order.order_number }}</h2>
+      <span class="badge" style="background: rgba(2,132,199,0.12); color: #0284c7; padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 11.5px;">
+        {{ order.get_order_status_display }}
+      </span>
+    </div>
+    <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 4px;">
+      Placed on {{ order.created_at|date:"d M Y, h:i A" }} &bull; Handover Verification OTP: <strong style="color: #059669; font-size: 14px; letter-spacing: 2px;">{{ order.delivery_otp }}</strong>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 10px; align-items: center;">
+    {% if order.order_status == 'PENDING' or order.order_status == 'CONFIRMED' %}
+      <a href="{% url 'super_admin_ecom_order_pack' order.id %}" class="btn btn-sm" style="background: #0284c7; color: white; padding: 10px 18px; border-radius: 8px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+        <i class="fa-solid fa-box"></i> Mark Order as PACKED
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+  <!-- Left Column: Items List -->
+  <div class="card" style="padding: 20px;">
+    <h3 style="font-size: 15px; font-weight: 800; color: var(--text-main); margin: 0 0 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
+      Order Items ({{ items.count }})
+    </h3>
+
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      {% for item in items %}
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--r-sm);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 44px; height: 44px; border-radius: 6px; background: white; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+            {% if item.product.main_image %}
+              <img src="{{ item.product.main_image.url }}" alt="{{ item.product.title }}" style="width: 100%; height: 100%; object-fit: contain;">
+            {% else %}
+              <i class="fa-solid fa-box" style="color: #94a3b8;"></i>
+            {% endif %}
+          </div>
+          <div>
+            <div style="font-weight: 750; color: var(--text-main); font-size: 13px;">{{ item.product.title }}</div>
+            <div style="font-size: 11.5px; color: var(--text-muted);">Qty: <strong>{{ item.quantity }}</strong> &times; ₹{{ item.unit_price }}</div>
+          </div>
+        </div>
+        <div style="font-size: 14px; font-weight: 850; color: var(--text-main);">
+          ₹{{ item.total_price }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Totals -->
+    <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; font-size: 13px;">
+      <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+        <span>Subtotal</span>
+        <span>₹{{ order.subtotal_amount }}</span>
+      </div>
+      {% if order.discount_amount > 0 %}
+      <div style="display: flex; justify-content: space-between; color: #059669;">
+        <span>Coupon Discount</span>
+        <span>-₹{{ order.discount_amount }}</span>
+      </div>
+      {% endif %}
+      <div style="display: flex; justify-content: space-between; font-weight: 850; font-size: 16px; color: var(--text-main); padding-top: 8px; border-top: 1px dashed var(--border);">
+        <span>Total Amount</span>
+        <span>₹{{ order.total_amount }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Delivery Assignment & Customer Destination -->
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    
+    <!-- Delivery Assignment Action Card -->
+    <div class="card" style="padding: 20px;">
+      <h3 style="font-size: 14.5px; font-weight: 800; color: var(--text-main); margin: 0 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-motorcycle" style="color: var(--accent);"></i> Delivery Partner Assignment
+      </h3>
+
+      {% if order.delivery_partner %}
+        <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: var(--r-sm); padding: 12px; margin-bottom: 12px;">
+          <span style="font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: #0284c7; display: block;">Assigned Partner</span>
+          <div style="font-size: 14px; font-weight: 800; color: #0369a1; margin-top: 2px;">{{ order.delivery_partner.get_full_name|default:order.delivery_partner.username }}</div>
+          <div style="font-size: 12px; color: #0284c7; margin-top: 2px;"><i class="fa-solid fa-phone"></i> {{ order.delivery_partner.user_profile.phone_number|default:"Available" }}</div>
+          <div style="font-size: 11px; color: #075985; margin-top: 4px;">Status: <strong>{{ order.delivery_assignment_status }}</strong></div>
+        </div>
+      {% else %}
+        <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--r-sm); padding: 12px; margin-bottom: 14px; font-size: 12px; color: #92400e;">
+          <i class="fa-solid fa-circle-exclamation" style="margin-right: 4px;"></i> No delivery rider assigned yet.
+        </div>
+      {% endif %}
+
+      {% if order.order_status == 'PACKED' or order.order_status == 'CONFIRMED' %}
+        <form method="POST" action="{% url 'super_admin_delivery_assign' order.id %}">
+          {% csrf_token %}
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">Assign Verified Delivery Partner</label>
+          <select name="rider_id" required style="width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px; margin-bottom: 10px; outline: none;">
+            <option value="">Select Rider...</option>
+            {% for r in available_riders %}
+              <option value="{{ r.user.id }}" {% if order.delivery_partner_id == r.user.id %}selected{% endif %}>
+                {{ r.user.get_full_name|default:r.user.username }} ({{ r.vehicle_type|default:"Bike" }} - {{ r.vehicle_number|default:"Registered" }})
+              </option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-sm" style="width: 100%; background: #0284c7; color: white; padding: 9px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">
+            Assign &amp; Notify Partner
+          </button>
+        </form>
+      {% endif %}
+    </div>
+
+    <!-- Customer Destination Address -->
+    <div class="card" style="padding: 20px;">
+      <h3 style="font-size: 14.5px; font-weight: 800; color: var(--text-main); margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-location-dot" style="color: #059669;"></i> Delivery Destination
+      </h3>
+      <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">{{ order.customer_name }}</div>
+      <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">{{ order.delivery_address }}</div>
+      <div style="font-size: 12px; color: var(--text-muted);">{{ order.delivery_city }}, {{ order.delivery_state }} — <strong>{{ order.delivery_pincode }}</strong></div>
+      <div style="font-size: 12px; color: var(--text-main); font-weight: 700; margin-top: 6px;">
+        <i class="fa-solid fa-phone" style="color: var(--accent);"></i> {{ order.customer_phone }}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

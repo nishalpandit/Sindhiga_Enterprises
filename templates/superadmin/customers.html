@@ -1,0 +1,115 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}4.B Customer Management - Sindhiga Admin{% endblock %}
+{% block header_title %}4.B. Customer Management Directory{% endblock %}
+
+{% block content %}
+<div class="card" style="padding: 20px; margin-bottom: 24px;">
+  <div style="display: flex; flex-wrap: wrap; items-center: center; justify-content: space-between; gap: 16px; margin-bottom: 20px;">
+    <div>
+      <h3 style="font-size: 16px; font-weight: 800; color: var(--text-main); margin: 0;">Registered Customers Directory</h3>
+      <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Total verified accounts: <strong>{{ total_count }}</strong></p>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <form method="GET" style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <input type="text" name="q" value="{{ q }}" placeholder="Search name, phone, email..." style="padding: 8px 14px; border: 1px solid var(--border); border-radius: var(--r-sm); font-size: 12.5px; width: 240px; outline: none;">
+      <select name="status" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--r-sm); font-size: 12.5px; outline: none;">
+        <option value="">All Statuses</option>
+        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active Only</option>
+        <option value="blocked" {% if status_filter == 'blocked' %}selected{% endif %}>Blocked Only</option>
+      </select>
+      <button type="submit" class="btn btn-primary btn-sm" style="background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: var(--r-sm); font-weight: 700; cursor: pointer;">
+        <i class="fa-solid fa-magnifying-glass"></i> Filter
+      </button>
+      {% if q or status_filter %}
+        <a href="{% url 'super_admin_customers' %}" class="btn btn-outline btn-sm" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--r-sm); font-size: 12px; color: var(--text-muted); text-decoration: none;">Clear</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Customers Table -->
+  <div style="overflow-x: auto;">
+    <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--border); text-align: left; background: #f8fafc;">
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Customer</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Contact Details</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Joined On</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Account Status</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted); text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in customers %}
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 12px 14px;">
+            <div style="display: flex; items-center: center; gap: 10px;">
+              <div style="width: 34px; height: 34px; border-radius: 50%; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+                {{ c.first_name|default:c.username|slice:":1"|upper }}
+              </div>
+              <div>
+                <a href="{% url 'super_admin_customer_detail' c.id %}" style="font-weight: 700; color: var(--text-main); text-decoration: none;">
+                  {{ c.get_full_name|default:c.username }}
+                </a>
+                <span style="display: block; font-size: 11px; color: var(--text-muted);">@{{ c.username }}</span>
+              </div>
+            </div>
+          </td>
+          <td style="padding: 12px 14px;">
+            <div style="font-weight: 600; color: var(--text-main);">{{ c.user_profile.phone_number|default:"No phone registered" }}</div>
+            <div style="font-size: 11px; color: var(--text-muted);">{{ c.email }}</div>
+          </td>
+          <td style="padding: 12px 14px; color: var(--text-muted); font-size: 12px;">
+            {{ c.date_joined|date:"d M Y, h:i A" }}
+          </td>
+          <td style="padding: 12px 14px;">
+            {% if c.is_active %}
+              <span class="badge" style="background: rgba(16,185,129,0.12); color: #059669; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px;">
+                <i class="fa-solid fa-circle-check" style="margin-right: 4px;"></i> Active
+              </span>
+            {% else %}
+              <span class="badge" style="background: rgba(239,68,68,0.12); color: #dc2626; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px;">
+                <i class="fa-solid fa-ban" style="margin-right: 4px;"></i> Blocked
+              </span>
+            {% endif %}
+          </td>
+          <td style="padding: 12px 14px; text-align: right;">
+            <div style="display: inline-flex; gap: 8px;">
+              <a href="{% url 'super_admin_customer_detail' c.id %}" class="btn btn-outline btn-sm" style="padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px; text-decoration: none; font-size: 11.5px; font-weight: 600; color: var(--text-main);">
+                <i class="fa-solid fa-eye"></i> View
+              </a>
+              <a href="{% url 'super_admin_customer_toggle' c.id %}" class="btn btn-sm" onclick="return confirm('Toggle account access for {{ c.username }}?');" style="padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 11.5px; font-weight: 600; {% if c.is_active %}background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;{% else %}background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0;{% endif %}">
+                {% if c.is_active %}<i class="fa-solid fa-ban"></i> Block{% else %}<i class="fa-solid fa-unlock"></i> Unblock{% endif %}
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 32px; color: var(--text-muted);">
+            <i class="fa-solid fa-user-xmark" style="font-size: 32px; color: #cbd5e1; margin-bottom: 8px; display: block;"></i>
+            No customers found matching the search criteria.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if customers.has_other_pages %}
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px;">
+    <span style="color: var(--text-muted);">Page {{ customers.number }} of {{ customers.paginator.num_pages }}</span>
+    <div style="display: flex; gap: 6px;">
+      {% if customers.has_previous %}
+        <a href="?page={{ customers.previous_page_number }}&q={{ q }}&status={{ status_filter }}" style="padding: 5px 12px; border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--text-main);">Previous</a>
+      {% endif %}
+      {% if customers.has_next %}
+        <a href="?page={{ customers.next_page_number }}&q={{ q }}&status={{ status_filter }}" style="padding: 5px 12px; border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--text-main);">Next</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

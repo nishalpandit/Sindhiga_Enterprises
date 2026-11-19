@@ -2,6 +2,7 @@ from django.urls import re_path, path
 from . import views
 from . import Api_views
 from . import super_admin_views
+from . import sindhiga_superadmin_canonical_views as canon_admin
 from . import beauty_views
 from . import sindhiga_ecommerce_views as ecom_api
 from . import sindhiga_delivery_views as delivery_api
@@ -49,155 +50,63 @@ urlpatterns = [
     path('api/detect-location/', views.detect_location_api, name='detect_location_api'),
     path('api/search-locations/', views.search_locations_api, name='search_locations_api'),
 
-    # Super Admin Dashboard
+    # =====================================================================
+    # SINDHIGA CANONICAL ADMIN PANEL (6 SECTIONS FROM REQUIREMENTS & FLOWCHART)
+    # =====================================================================
+    # 4.A. Dashboard
     path('super-admin/login/', super_admin_views.super_admin_login_view, name='super_admin_login_slash'),
     path('super-admin/login', super_admin_views.super_admin_login_view, name='super_admin_login'),
-    path('super-admin/', super_admin_views.super_admin_dashboard, name='super_admin_dashboard_slash'),
-    path('super-admin', super_admin_views.super_admin_dashboard, name='super_admin_dashboard'),
-    
-    # Users CRUD
-    path('super-admin/users/', super_admin_views.super_admin_users, name='super_admin_users'),
-    path('super-admin/users/create/', super_admin_views.super_admin_user_create, name='super_admin_user_create'),
-    path('super-admin/users/<int:user_id>/edit/', super_admin_views.super_admin_user_edit, name='super_admin_user_edit'),
-    path('super-admin/users/<int:user_id>/delete/', super_admin_views.super_admin_user_delete, name='super_admin_user_delete'),
-    path('super-admin/users/<int:user_id>/toggle/', super_admin_views.super_admin_user_toggle, name='super_admin_user_toggle'),
-    
-    # Area Admins Management
-    path('super-admin/area-admins/', super_admin_views.super_admin_area_admins, name='super_admin_area_admins'),
-    path('super-admin/area-admins/create/', super_admin_views.super_admin_area_admin_create, name='super_admin_area_admin_create'),
-    path('super-admin/area-admins/<int:admin_id>/edit/', super_admin_views.super_admin_area_admin_edit, name='super_admin_area_admin_edit'),
-    path('super-admin/area-admins/<int:admin_id>/delete/', super_admin_views.super_admin_area_admin_delete, name='super_admin_area_admin_delete'),
-    path('super-admin/area-admins/<int:admin_id>/toggle/', super_admin_views.super_admin_area_admin_toggle, name='super_admin_area_admin_toggle'),
+    path('super-admin/', canon_admin.super_admin_dashboard, name='super_admin_dashboard_slash'),
+    path('super-admin', canon_admin.super_admin_dashboard, name='super_admin_dashboard'),
+    path('super-admin/dashboard/', canon_admin.super_admin_dashboard, name='super_admin_dashboard_alias'),
 
-    # Vendors CRUD
-    path('super-admin/vendors/', super_admin_views.super_admin_vendors, name='super_admin_vendors'),
-    path('super-admin/vendors/create/', super_admin_views.super_admin_vendor_create, name='super_admin_vendor_create'),
-    path('super-admin/vendors/<int:vendor_id>/edit/', super_admin_views.super_admin_vendor_edit, name='super_admin_vendor_edit'),
-    path('super-admin/vendors/<int:vendor_id>/delete/', super_admin_views.super_admin_vendor_delete, name='super_admin_vendor_delete'),
-    
-    # KYC 
-    path('super-admin/kyc/', super_admin_views.super_admin_kyc, name='super_admin_kyc'),
-    path('super-admin/kyc/<int:kyc_id>/approve/', super_admin_views.super_admin_kyc_approve, name='super_admin_kyc_approve'),
-    path('super-admin/kyc/<int:kyc_id>/reject/', super_admin_views.super_admin_kyc_reject, name='super_admin_kyc_reject'),
-    
-    # Payouts & Settlements
-    path('super-admin/payouts/', super_admin_views.super_admin_payouts, name='super_admin_payouts'),
-    path('super-admin/payouts/<int:payout_id>/approve/', super_admin_views.super_admin_payout_approve, name='super_admin_payout_approve'),
-    path('super-admin/payouts/<int:payout_id>/reject/', super_admin_views.super_admin_payout_reject, name='super_admin_payout_reject'),
-    
-    # CMS: Categories + Locations
-    path('super-admin/categories/', super_admin_views.super_admin_categories, name='super_admin_categories'),
-    path('super-admin/locations/', super_admin_views.super_admin_locations, name='super_admin_locations'),
-    path('super-admin/cms/category/create/', super_admin_views.super_admin_category_create, name='super_admin_category_create'),
-    path('super-admin/cms/category/<int:cat_id>/edit/', super_admin_views.super_admin_category_edit, name='super_admin_category_edit'),
-    path('super-admin/cms/category/<int:cat_id>/delete/', super_admin_views.super_admin_category_delete, name='super_admin_category_delete'),
-    path('super-admin/subcategory/create/', super_admin_views.super_admin_subcategory_create, name='super_admin_subcategory_create'),
-    path('super-admin/subcategory/<int:sub_id>/edit/', super_admin_views.super_admin_subcategory_edit, name='super_admin_subcategory_edit'),
-    path('super-admin/subcategory/<int:sub_id>/delete/', super_admin_views.super_admin_subcategory_delete, name='super_admin_subcategory_delete'),
+    # 4.B. Customer Management
+    path('super-admin/customers/', canon_admin.super_admin_customers, name='super_admin_customers'),
+    path('super-admin/customers/<int:user_id>/', canon_admin.super_admin_customer_detail, name='super_admin_customer_detail'),
+    path('super-admin/customers/<int:user_id>/toggle/', canon_admin.super_admin_customer_toggle, name='super_admin_customer_toggle'),
+    # Legacy aliases
+    path('super-admin/users/', canon_admin.super_admin_customers, name='super_admin_users'),
 
-    # States CRUD
-    path('super-admin/cms/state/create/', super_admin_views.super_admin_state_create, name='super_admin_state_create'),
-    path('super-admin/cms/state/<int:state_id>/edit/', super_admin_views.super_admin_state_edit, name='super_admin_state_edit'),
-    path('super-admin/cms/state/<int:state_id>/delete/', super_admin_views.super_admin_state_delete, name='super_admin_state_delete'),
-    
-    # Cities / Locations CRUD
-    path('super-admin/cms/city/create/', super_admin_views.super_admin_location_create, name='super_admin_city_create'),
-    path('super-admin/cms/location/create/', super_admin_views.super_admin_location_create, name='super_admin_location_create'),
-    path('super-admin/cms/location/<int:loc_id>/edit/', super_admin_views.super_admin_location_edit, name='super_admin_location_edit'),
-    path('super-admin/cms/location/<int:loc_id>/delete/', super_admin_views.super_admin_location_delete, name='super_admin_location_delete'),
-    
-    # Jobs CRUD
-    path('super-admin/jobs/', super_admin_views.super_admin_jobs, name='super_admin_jobs'),
-    path('super-admin/jobs/create/', super_admin_views.super_admin_job_create, name='super_admin_job_create'),
-    path('super-admin/jobs/<int:job_id>/edit/', super_admin_views.super_admin_job_edit, name='super_admin_job_edit'),
-    path('super-admin/jobs/<int:job_id>/bids/', super_admin_views.super_admin_job_bids, name='super_admin_job_bids'),
-    path('super-admin/jobs/<int:job_id>/delete/', super_admin_views.super_admin_job_delete, name='super_admin_job_delete'),
-    
-    # Quick Services CRUD
-    path('super-admin/quick-services/', super_admin_views.super_admin_quick_services, name='super_admin_quick_services'),
-    path('super-admin/quick-services/create/', super_admin_views.super_admin_qs_create, name='super_admin_qs_create'),
-    path('super-admin/quick-services/<int:qs_id>/edit/', super_admin_views.super_admin_qs_edit, name='super_admin_qs_edit'),
-    path('super-admin/quick-services/<int:qs_id>/delete/', super_admin_views.super_admin_qs_delete, name='super_admin_qs_delete'),
-    
-    # Bids CRUD
-    path('super-admin/bids/', super_admin_views.super_admin_bids, name='super_admin_bids'),
-    path('super-admin/bids/create/', super_admin_views.super_admin_bid_create, name='super_admin_bid_create'),
-    path('super-admin/bids/<int:bid_id>/edit/', super_admin_views.super_admin_bid_edit, name='super_admin_bid_edit'),
-    path('super-admin/bids/<int:bid_id>/delete/', super_admin_views.super_admin_bid_delete, name='super_admin_bid_delete'),
-    
-    # Bid Management & Pricing Plans (replaces old subscriptions & service packages)
-    path('super-admin/bid-plans/', super_admin_views.super_admin_bid_plans, name='super_admin_bid_plans'),
-    path('super-admin/bid-plans/settings/', super_admin_views.super_admin_bid_settings_update, name='super_admin_bid_settings_update'),
-    path('super-admin/bid-plans/create/', super_admin_views.super_admin_bid_plan_create, name='super_admin_bid_plan_create'),
-    path('super-admin/bid-plans/<int:plan_id>/edit/', super_admin_views.super_admin_bid_plan_edit, name='super_admin_bid_plan_edit'),
-    path('super-admin/bid-plans/<int:plan_id>/delete/', super_admin_views.super_admin_bid_plan_delete, name='super_admin_bid_plan_delete'),
-    path('super-admin/bid-plans/<int:plan_id>/toggle/', super_admin_views.super_admin_bid_plan_toggle, name='super_admin_bid_plan_toggle'),
-    path('super-admin/bid-plans/grant/', super_admin_views.super_admin_manual_bid_grant, name='super_admin_manual_bid_grant'),
-    
-    # Old Subscriptions aliases (redirect to super_admin_bid_plans)
-    path('super-admin/subscriptions/', super_admin_views.super_admin_subscriptions, name='super_admin_subscriptions'),
-    path('super-admin/subscriptions/create/', super_admin_views.super_admin_subscription_create, name='super_admin_subscription_create'),
-    path('super-admin/subscriptions/<int:sub_id>/delete/', super_admin_views.super_admin_subscription_delete, name='super_admin_subscription_delete'),
-    
-    # Messages
-    path('super-admin/messages/', super_admin_views.super_admin_messages, name='super_admin_messages'),
-    path('super-admin/messages/<int:msg_id>/delete/', super_admin_views.super_admin_message_delete, name='super_admin_message_delete'),
-    
-    # Disputes & Complaint Resolution
-    path('super-admin/disputes/', super_admin_views.super_admin_disputes, name='super_admin_disputes'),
-    path('super-admin/disputes/<int:dispute_id>/', super_admin_views.super_admin_dispute_detail, name='super_admin_dispute_detail'),
-    
-    # Global Settings
-    path('super-admin/settings/', super_admin_views.super_admin_settings, name='super_admin_settings'),
+    # 4.C. E-Commerce Management
+    path('super-admin/ecom/categories/', canon_admin.super_admin_ecom_categories, name='super_admin_ecom_categories'),
+    path('super-admin/ecom/categories/create/', canon_admin.super_admin_ecom_category_create, name='super_admin_ecom_category_create'),
+    path('super-admin/ecom/categories/<int:cat_id>/edit/', canon_admin.super_admin_ecom_category_edit, name='super_admin_ecom_category_edit'),
+    path('super-admin/ecom/categories/<int:cat_id>/delete/', canon_admin.super_admin_ecom_category_delete, name='super_admin_ecom_category_delete'),
+    path('super-admin/ecom/products/', canon_admin.super_admin_ecom_products, name='super_admin_ecom_products'),
+    path('super-admin/ecom/products/create/', canon_admin.super_admin_ecom_product_create, name='super_admin_ecom_product_create'),
+    path('super-admin/ecom/products/<int:product_id>/edit/', canon_admin.super_admin_ecom_product_edit, name='super_admin_ecom_product_edit'),
+    path('super-admin/ecom/products/<int:product_id>/delete/', canon_admin.super_admin_ecom_product_delete, name='super_admin_ecom_product_delete'),
+    path('super-admin/ecom/orders/', canon_admin.super_admin_ecom_orders, name='super_admin_ecom_orders'),
+    path('super-admin/ecom/orders/<int:order_id>/', canon_admin.super_admin_ecom_order_detail, name='super_admin_ecom_order_detail'),
+    path('super-admin/ecom/orders/<int:order_id>/pack/', canon_admin.super_admin_ecom_order_pack, name='super_admin_ecom_order_pack'),
+    path('super-admin/ecom/coupons/', canon_admin.super_admin_ecom_coupons, name='super_admin_ecom_coupons'),
+    path('super-admin/ecom/coupons/create/', canon_admin.super_admin_ecom_coupon_create, name='super_admin_ecom_coupon_create'),
+    path('super-admin/ecom/returns/', canon_admin.super_admin_ecom_returns, name='super_admin_ecom_returns'),
+    path('super-admin/ecom/returns/<int:return_id>/<str:action>/', canon_admin.super_admin_ecom_return_action, name='super_admin_ecom_return_action'),
 
-    # Landing Page Dynamic CMS
-    path('super-admin/landing/', super_admin_views.super_admin_landing_overview, name='super_admin_landing_overview'),
-    path('super-admin/landing/branding/', super_admin_views.super_admin_landing_branding, name='super_admin_landing_branding'),
-    path('super-admin/landing/hero/', super_admin_views.super_admin_landing_hero, name='super_admin_landing_hero'),
-    
-    # Why Choose Sugu Services CMS
-    path('super-admin/landing/why-choose/', super_admin_views.super_admin_landing_why_choose, name='super_admin_landing_why_choose'),
-    path('super-admin/landing/why-choose/save-section/', super_admin_views.super_admin_landing_why_choose_section_save, name='super_admin_landing_why_choose_section_save'),
-    path('super-admin/landing/why-choose/create/', super_admin_views.super_admin_landing_why_choose_create, name='super_admin_landing_why_choose_create'),
-    path('super-admin/landing/why-choose/<int:item_id>/edit/', super_admin_views.super_admin_landing_why_choose_edit, name='super_admin_landing_why_choose_edit'),
-    path('super-admin/landing/why-choose/<int:item_id>/delete/', super_admin_views.super_admin_landing_why_choose_delete, name='super_admin_landing_why_choose_delete'),
-    path('super-admin/landing/why-choose/<int:item_id>/toggle/', super_admin_views.super_admin_landing_why_choose_toggle, name='super_admin_landing_why_choose_toggle'),
+    # 4.D. Service Management
+    path('super-admin/services/categories/', canon_admin.super_admin_service_categories, name='super_admin_service_categories'),
+    path('super-admin/services/catalog/', canon_admin.super_admin_service_catalog, name='super_admin_service_catalog'),
+    path('super-admin/services/providers/', canon_admin.super_admin_service_providers, name='super_admin_service_providers'),
+    path('super-admin/services/bookings/', canon_admin.super_admin_service_bookings, name='super_admin_service_bookings'),
+    path('super-admin/services/bookings/<int:booking_id>/assign/', canon_admin.super_admin_service_booking_assign, name='super_admin_service_booking_assign'),
+    path('super-admin/services/time-slots/', canon_admin.super_admin_service_time_slots, name='super_admin_service_time_slots'),
+    # Legacy aliases
+    path('super-admin/vendors/', canon_admin.super_admin_service_providers, name='super_admin_vendors'),
+    path('super-admin/quick-services/', canon_admin.super_admin_service_bookings, name='super_admin_quick_services'),
 
-    # Watch How Sugu Transforms Homes (Videos CMS)
-    path('super-admin/landing/transform-videos/', super_admin_views.super_admin_landing_transform_videos, name='super_admin_landing_transform_videos'),
-    path('super-admin/landing/transform-videos/save-section/', super_admin_views.super_admin_landing_transform_section_save, name='super_admin_landing_transform_section_save'),
-    path('super-admin/landing/transform-videos/create/', super_admin_views.super_admin_landing_transform_video_create, name='super_admin_landing_transform_video_create'),
-    path('super-admin/landing/transform-videos/<int:video_id>/edit/', super_admin_views.super_admin_landing_transform_video_edit, name='super_admin_landing_transform_video_edit'),
-    path('super-admin/landing/transform-videos/<int:video_id>/delete/', super_admin_views.super_admin_landing_transform_video_delete, name='super_admin_landing_transform_video_delete'),
-    path('super-admin/landing/transform-videos/<int:video_id>/toggle/', super_admin_views.super_admin_landing_transform_video_toggle, name='super_admin_landing_transform_video_toggle'),
+    # 4.E. Delivery Management
+    path('super-admin/delivery/partners/', canon_admin.super_admin_delivery_partners, name='super_admin_delivery_partners'),
+    path('super-admin/delivery/assignments/', canon_admin.super_admin_delivery_assignments, name='super_admin_delivery_assignments'),
+    path('super-admin/delivery/assignments/<int:order_id>/', canon_admin.super_admin_delivery_assign, name='super_admin_delivery_assign'),
+    path('super-admin/delivery/tracking/', canon_admin.super_admin_delivery_tracking, name='super_admin_delivery_tracking'),
 
-    # Quick Service Cards (Legacy redirect)
-    path('super-admin/landing/quick-services/', super_admin_views.super_admin_landing_quick_services, name='super_admin_landing_quick_services'),
-    path('super-admin/landing/quick-services/create/', super_admin_views.super_admin_landing_quick_service_create, name='super_admin_landing_quick_service_create'),
-    path('super-admin/landing/quick-services/<int:card_id>/edit/', super_admin_views.super_admin_landing_quick_service_edit, name='super_admin_landing_quick_service_edit'),
-    path('super-admin/landing/quick-services/<int:card_id>/delete/', super_admin_views.super_admin_landing_quick_service_delete, name='super_admin_landing_quick_service_delete'),
-    path('super-admin/landing/quick-services/<int:card_id>/toggle/', super_admin_views.super_admin_landing_quick_service_toggle, name='super_admin_landing_quick_service_toggle'),
-
-    # Featured Projects
-    path('super-admin/landing/featured-projects/', super_admin_views.super_admin_landing_featured_projects, name='super_admin_landing_featured_projects'),
-    path('super-admin/landing/featured-projects/create/', super_admin_views.super_admin_landing_featured_project_create, name='super_admin_landing_featured_project_create'),
-    path('super-admin/landing/featured-projects/<int:card_id>/edit/', super_admin_views.super_admin_landing_featured_project_edit, name='super_admin_landing_featured_project_edit'),
-    path('super-admin/landing/featured-projects/<int:card_id>/delete/', super_admin_views.super_admin_landing_featured_project_delete, name='super_admin_landing_featured_project_delete'),
-    path('super-admin/landing/featured-projects/<int:card_id>/toggle/', super_admin_views.super_admin_landing_featured_project_toggle, name='super_admin_landing_featured_project_toggle'),
-
-    # Service Packages alias (redirected to super_admin_bid_plans)
-    path('super-admin/landing/packages/', super_admin_views.super_admin_landing_packages, name='super_admin_landing_packages'),
-    path('super-admin/landing/packages/create/', super_admin_views.super_admin_landing_package_create, name='super_admin_landing_package_create'),
-    path('super-admin/landing/packages/<int:card_id>/edit/', super_admin_views.super_admin_landing_package_edit, name='super_admin_landing_package_edit'),
-    path('super-admin/landing/packages/<int:card_id>/delete/', super_admin_views.super_admin_landing_package_delete, name='super_admin_landing_package_delete'),
-    path('super-admin/landing/packages/<int:card_id>/toggle/', super_admin_views.super_admin_landing_package_toggle, name='super_admin_landing_package_toggle'),
-
-    # Testimonials
-    path('super-admin/landing/testimonials/', super_admin_views.super_admin_landing_testimonials, name='super_admin_landing_testimonials'),
-    path('super-admin/landing/testimonials/create/', super_admin_views.super_admin_landing_testimonial_create, name='super_admin_landing_testimonial_create'),
-    path('super-admin/landing/testimonials/<int:card_id>/edit/', super_admin_views.super_admin_landing_testimonial_edit, name='super_admin_landing_testimonial_edit'),
-    path('super-admin/landing/testimonials/<int:card_id>/delete/', super_admin_views.super_admin_landing_testimonial_delete, name='super_admin_landing_testimonial_delete'),
-    path('super-admin/landing/testimonials/<int:card_id>/toggle/', super_admin_views.super_admin_landing_testimonial_toggle, name='super_admin_landing_testimonial_toggle'),
+    # 4.F. Payments & Reports
+    path('super-admin/payments/', canon_admin.super_admin_payments, name='super_admin_payments'),
+    path('super-admin/commissions/', canon_admin.super_admin_commissions, name='super_admin_commissions'),
+    path('super-admin/payouts/', canon_admin.super_admin_payouts, name='super_admin_payouts'),
+    path('super-admin/payouts/<int:payout_id>/<str:action>/', canon_admin.super_admin_payout_action, name='super_admin_payout_action'),
+    path('super-admin/reports/', canon_admin.super_admin_reports, name='super_admin_reports'),
 
     # General APIs (from Api_views.py)
     path('api/add-user/', Api_views.add_user_api, name='add_user_api'),

@@ -1,0 +1,58 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}4.F Payment Ledgers - Sindhiga Admin{% endblock %}
+{% block header_title %}4.F. Payment Ledgers &amp; Settlements{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+  
+  <!-- E-Commerce Paid Transactions -->
+  <div class="card" style="padding: 20px;">
+    <h3 style="font-size: 15px; font-weight: 800; color: var(--text-main); margin: 0 0 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+      <i class="fa-solid fa-cart-shopping" style="color: var(--accent);"></i> Paid E-Commerce Orders
+    </h3>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      {% for o in paid_orders %}
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--r-sm);">
+        <div>
+          <a href="{% url 'super_admin_ecom_order_detail' o.id %}" style="font-weight: 800; color: var(--accent); text-decoration: none; font-size: 13px;">#{{ o.order_number }}</a>
+          <div style="font-size: 11.5px; color: var(--text-muted);">{{ o.customer_name }} &bull; {{ o.created_at|date:"d M, h:i A" }}</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-weight: 850; color: #059669; font-size: 13.5px;">+₹{{ o.total_amount }}</div>
+          <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">{{ o.payment_method }} &bull; PAID</span>
+        </div>
+      </div>
+      {% empty %}
+      <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 12px;">No paid orders on record yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Service Bookings Paid Transactions -->
+  <div class="card" style="padding: 20px;">
+    <h3 style="font-size: 15px; font-weight: 800; color: var(--text-main); margin: 0 0 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+      <i class="fa-solid fa-calendar-check" style="color: #10b981;"></i> Paid Home Service Bookings
+    </h3>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      {% for s in paid_services %}
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--r-sm);">
+        <div>
+          <strong style="font-size: 13px; color: var(--text-main);">#{{ s.booking_number }} · {{ s.service_title|truncatechars:20 }}</strong>
+          <div style="font-size: 11.5px; color: var(--text-muted);">{{ s.customer.get_full_name|default:s.customer.username }} &bull; {{ s.booking_date|date:"d M Y" }}</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-weight: 850; color: #059669; font-size: 13.5px;">+₹{{ s.total_amount }}</div>
+          <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">{{ s.payment_method|default:"ONLINE" }} &bull; PAID</span>
+        </div>
+      </div>
+      {% empty %}
+      <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 12px;">No paid service bookings on record yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

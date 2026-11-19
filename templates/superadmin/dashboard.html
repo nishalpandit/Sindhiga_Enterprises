@@ -143,12 +143,12 @@
 
 <!-- Quick Actions -->
 <div class="card">
-  <h3 style="font-size: 16px; margin-bottom: 20px; font-weight: 700;">Quick Actions</h3>
+  <h3 style="font-size: 16px; margin-bottom: 20px; font-weight: 700;">Operational Shortcuts</h3>
   <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-    <a href="{% url 'super_admin_user_create' %}" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Add User</a>
-    <a href="{% url 'super_admin_category_create' %}" class="btn btn-outline"><i class="fa-solid fa-plus"></i> Add Category</a>
-    <a href="{% url 'super_admin_location_create' %}" class="btn btn-outline"><i class="fa-solid fa-map-pin"></i> Add Location</a>
-    <a href="{% url 'super_admin_landing_quick_services' %}" class="btn btn-outline"><i class="fa-solid fa-bolt"></i> Manage Services</a>
+    <a href="{% url 'super_admin_customers' %}" class="btn btn-primary" style="background: var(--accent); color: white; text-decoration: none;"><i class="fa-solid fa-users"></i> Manage Customers</a>
+    <a href="{% url 'super_admin_ecom_products' %}" class="btn btn-outline" style="text-decoration: none;"><i class="fa-solid fa-boxes-stacked"></i> Products &amp; Stock</a>
+    <a href="{% url 'super_admin_service_bookings' %}" class="btn btn-outline" style="text-decoration: none;"><i class="fa-solid fa-calendar-check"></i> Assign Service Bookings</a>
+    <a href="{% url 'super_admin_delivery_assignments' %}" class="btn btn-outline" style="text-decoration: none;"><i class="fa-solid fa-motorcycle"></i> Dispatch Delivery Partners</a>
   </div>
 </div>
 

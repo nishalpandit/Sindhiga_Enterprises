@@ -1,0 +1,41 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}4.F Commission Management - Sindhiga Admin{% endblock %}
+{% block header_title %}4.F. Commission Rules &amp; Revenue Splits{% endblock %}
+
+{% block content %}
+<div class="card" style="padding: 24px; max-width: 760px;">
+  <h3 style="font-size: 16px; font-weight: 800; color: var(--text-main); margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border);">
+    Platform Commission Configuration
+  </h3>
+
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <!-- Home Service Commission -->
+    <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: var(--r-sm); padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <strong style="font-size: 14px; color: var(--text-main); display: block;">Home Service Commission Rate</strong>
+        <span style="font-size: 12px; color: var(--text-muted);">Deducted from completed service booking amount credited to vendor wallet.</span>
+      </div>
+      <div style="font-size: 18px; font-weight: 850; color: var(--accent);">10%</div>
+    </div>
+
+    <!-- Delivery Partner Payout -->
+    <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: var(--r-sm); padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <strong style="font-size: 14px; color: var(--text-main); display: block;">Delivery Partner Flat Payout</strong>
+        <span style="font-size: 12px; color: var(--text-muted);">Flat per-order delivery fee credited to rider wallet upon OTP verification.</span>
+      </div>
+      <div style="font-size: 18px; font-weight: 850; color: #059669;">₹40.00 / drop</div>
+    </div>
+
+    <!-- Customer Convenience / Platform Fee -->
+    <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: var(--r-sm); padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <strong style="font-size: 14px; color: var(--text-main); display: block;">Customer Convenience Fee</strong>
+        <span style="font-size: 12px; color: var(--text-muted);">Standard platform handling charge on checkout.</span>
+      </div>
+      <div style="font-size: 18px; font-weight: 850; color: var(--text-main);">₹0.00 (Free)</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

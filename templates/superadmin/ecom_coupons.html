@@ -1,0 +1,72 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}4.C Coupons &amp; Offers - Sindhiga Admin{% endblock %}
+{% block header_title %}4.C. Coupon &amp; Promotional Offer Management{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'super_admin_ecom_coupon_create' %}" class="btn btn-primary btn-sm" style="background: var(--accent); color: white; padding: 8px 16px; border-radius: var(--r-sm); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+  <i class="fa-solid fa-plus"></i> Create Coupon Code
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="padding: 20px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div>
+      <h3 style="font-size: 16px; font-weight: 800; color: var(--text-main); margin: 0;">Promotional Coupons &amp; Discounts</h3>
+      <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Manage discount codes for cart checkout.</p>
+    </div>
+  </div>
+
+  <div style="overflow-x: auto;">
+    <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--border); text-align: left; background: #f8fafc;">
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Coupon Code</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Discount Value</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Min Order</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Valid Until</th>
+          <th style="padding: 12px 14px; font-weight: 700; color: var(--text-muted);">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in coupons %}
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 12px 14px;">
+            <span style="font-family: monospace; font-size: 14px; font-weight: 850; background: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 6px; letter-spacing: 1px;">
+              {{ c.code }}
+            </span>
+          </td>
+          <td style="padding: 12px 14px; font-weight: 750; color: var(--text-main);">
+            {% if c.discount_type == 'percentage' or c.discount_type == 'PERCENTAGE' %}
+              {{ c.discount_value|floatformat:0 }}% OFF
+            {% else %}
+              ₹{{ c.discount_value|floatformat:0 }} Flat OFF
+            {% endif %}
+          </td>
+          <td style="padding: 12px 14px; color: var(--text-muted);">
+            ₹{{ c.min_order_amount|floatformat:0 }}
+          </td>
+          <td style="padding: 12px 14px; color: var(--text-muted);">
+            {{ c.valid_until|date:"d M Y" }}
+          </td>
+          <td style="padding: 12px 14px;">
+            {% if c.is_active %}
+              <span class="badge" style="background: rgba(16,185,129,0.12); color: #059669; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px;">Active</span>
+            {% else %}
+              <span class="badge" style="background: rgba(100,116,139,0.12); color: #64748b; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px;">Disabled</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 32px; color: var(--text-muted);">
+            No coupons created yet. Click "Create Coupon Code" above.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
