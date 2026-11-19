@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign In - Sugu</title>
+  <title>Sign In - Sindhiga Enterprises</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -592,18 +592,18 @@
       <a href="/" class="back-btn">
         <i class="fa-solid fa-arrow-left"></i> Back to Home
       </a>
-      <span class="brand-mark">Sugu</span>
+      <span class="brand-mark">Sindhiga</span>
     </div>
 
     <!-- Brand Header -->
     <div class="brand-header">
       <div class="brand-icon" style="background:transparent; box-shadow:none; width:auto; height:auto; display:flex; align-items:center; justify-content:center; margin:0 auto 12px;">
-        <img src="{% static 'images/logo.png' %}" alt="Sugu Logo" style="height:64px; width:auto; object-fit:contain;">
+        <img src="{% static 'images/logo.png' %}" alt="Sindhiga Logo" style="height:64px; width:auto; object-fit:contain;">
       </div>
-      <h1>Welcome to Sugu</h1>
-      <p>Sign in to access your dashboard</p>
+      <h1>Welcome to Sindhiga</h1>
+      <p>Sign in to access your services and orders</p>
       <span class="unified-badge">
-        <i class="fa-solid fa-shield-halved"></i> Unified Login for Customers &amp; Vendors
+        <i class="fa-solid fa-shield-halved"></i> Unified Login for Customers &amp; Partners
       </span>
     </div>
 
@@ -721,14 +721,14 @@
   <div id="createAccountModal" class="modal-overlay">
     <div class="modal-content">
       <button class="close-btn" onclick="closeCreateAccountModal()"><i class="fa-solid fa-xmark"></i></button>
-      <h2 style="font-size: 20px; font-weight: 800; color: var(--ink); margin-bottom: 6px; text-align: center;">Join Sugu</h2>
+      <h2 style="font-size: 20px; font-weight: 800; color: var(--ink); margin-bottom: 6px; text-align: center;">Join Sindhiga Enterprises</h2>
       <p style="color: var(--muted); font-size: 13.5px; text-align: center; margin-bottom: 22px;">Choose how you want to get started:</p>
 
       <a href="{% url 'register_user' %}" class="role-option-card user-opt">
         <div class="icon-box"><i class="fa-solid fa-user"></i></div>
         <div style="flex: 1;">
           <h3>Continue as Customer</h3>
-          <p>Book quick services, post jobs, and hire verified local professionals</p>
+          <p>Book home services, order genuine products, and enjoy doorstep care</p>
         </div>
         <i class="fa-solid fa-arrow-right" style="color: var(--text-dim); font-size: 14px;"></i>
       </a>
@@ -736,8 +736,8 @@
       <a href="{% url 'register_vendor' %}" class="role-option-card vendor-opt">
         <div class="icon-box"><i class="fa-solid fa-store"></i></div>
         <div style="flex: 1;">
-          <h3>Continue as Vendor / Partner</h3>
-          <p>Provide professional services, bid on client jobs, and grow your revenue</p>
+          <h3>Continue as Partner</h3>
+          <p>Register as a certified service provider or delivery partner and earn on every job</p>
         </div>
         <i class="fa-solid fa-arrow-right" style="color: var(--text-dim); font-size: 14px;"></i>
       </a>

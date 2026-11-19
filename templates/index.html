@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sindhiga Enterprises | Services &amp; Store</title>
-  <meta name="description" content="Book certified local professionals or order genuine repair and maintenance essentials delivered to your doorstep in minutes." />
+  <title>Sindhiga Enterprises | Online Store &amp; Home Services</title>
+  <meta name="description" content="Shop genuine home repair essentials or book verified doorstep technicians in minutes with upfront pricing and secure OTP delivery." />
 
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,15 +25,14 @@
             sans: ['"Inter"', 'sans-serif'],
           },
           colors: {
-            brand: {
-              50: '#f0f9ff',
-              100: '#e0f2fe',
-              200: '#bae6fd',
-              500: '#0284c7',
-              600: '#0369a1',
-              700: '#075985',
-              800: '#0c4a6e',
-            }
+            navDark: '#131921',
+            navSub: '#232f3e',
+            shopYellow: '#ffd814',
+            shopYellowHover: '#f7ca00',
+            shopOrange: '#ff9900',
+            shopGreen: '#388e3c',
+            shopBlue: '#2874f0',
+            pageBg: '#f1f3f6',
           }
         }
       }
@@ -46,7 +45,8 @@
 
   <style>
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f1f3f6;
       -webkit-font-smoothing: antialiased;
     }
     .custom-scrollbar::-webkit-scrollbar {
@@ -60,959 +60,1069 @@
     .custom-scrollbar::-webkit-scrollbar-track {
       background: #f1f5f9;
     }
+    .card-active {
+      border-color: #2874f0 !important;
+      box-shadow: 0 0 0 2px rgba(40, 116, 240, 0.4), 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+    }
   </style>
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-900 selection:bg-sky-500 selection:text-white flex flex-col">
+<body class="min-h-screen text-slate-800 flex flex-col selection:bg-amber-400 selection:text-slate-900">
 
   <!-- ===================================================================== -->
-  <!-- 1. STICKY GLASSMORPHISM NAVBAR                                        -->
+  <!-- 1. AMAZON/FLIPKART STYLE TOP HEADER BAR                               -->
   <!-- ===================================================================== -->
-  <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md transition-all shadow-xs">
-    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:flex-nowrap lg:gap-6">
+  <header class="sticky top-0 z-40 bg-[#131921] text-white shadow-md">
+    <!-- Main Header Row -->
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-3 py-2.5 sm:px-6 lg:gap-6">
       
       <!-- Brand Logo -->
-      <a href="{% url 'home' %}" class="flex items-center gap-2.5 text-left group">
-        <span class="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-sm transition-transform duration-200 group-hover:scale-105">
-          <i class="fa-solid fa-toolbox text-lg"></i>
+      <a href="{% url 'home' %}" class="flex items-center gap-2 shrink-0 group">
+        <span class="flex size-9 items-center justify-center rounded-lg bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 font-black shadow-xs">
+          <i class="fa-solid fa-boxes-packing text-lg"></i>
         </span>
-        <span class="leading-tight">
-          <span class="block text-base font-bold tracking-tight text-slate-900 group-hover:text-sky-600 transition-colors">Sindhiga Enterprises</span>
-          <span class="block text-xs font-medium text-slate-500">Services &amp; Store</span>
-        </span>
+        <div class="leading-tight">
+          <span class="block text-base font-extrabold tracking-tight text-white group-hover:text-yellow-400 transition-colors">
+            Sindhiga<span class="text-yellow-400 font-normal">.in</span>
+          </span>
+          <span class="block text-[10px] text-slate-400 font-medium">Services &amp; Store</span>
+        </div>
       </a>
 
-      <!-- Location Selector Pill -->
-      <button type="button" onclick="showToast('Serving Koramangala & central Bengaluru areas.')" class="hidden items-center gap-2 rounded-full border border-sky-200 bg-sky-50/80 px-3.5 py-1.5 text-xs font-semibold text-sky-800 transition-colors hover:bg-sky-100 md:inline-flex">
-        <i class="fa-solid fa-location-dot text-amber-500 text-sm"></i>
-        <span class="text-slate-500 font-normal">Delivering to:</span>
-        <span>Koramangala, Bengaluru</span>
-        <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+      <!-- Delivering To Location Pill (Amazon Style) -->
+      <button type="button" onclick="showToast('Delivery service available in Bengaluru & surrounding pin codes.')" class="hidden lg:flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-left text-xs hover:border hover:border-white/30 transition-all">
+        <i class="fa-solid fa-location-dot text-amber-400 text-base mt-0.5"></i>
+        <div class="leading-tight">
+          <span class="block text-[11px] text-slate-400">Deliver to</span>
+          <span class="block font-bold text-white">Bengaluru 560034</span>
+        </div>
       </button>
 
-      <!-- Center Dual-Mode Segment Switcher -->
-      <div class="inline-flex rounded-full bg-slate-100 p-1 border border-slate-200/80 shadow-inner">
-        <button type="button" id="btnModeServices" onclick="setMode('services')" class="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-200 bg-white text-sky-800 shadow-xs">
-          <i class="fa-solid fa-wrench text-xs text-sky-600"></i>
-          <span>Home Services</span>
-        </button>
-        <button type="button" id="btnModeProducts" onclick="setMode('products')" class="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-200 text-slate-600 hover:text-slate-900">
-          <i class="fa-solid fa-bag-shopping text-xs"></i>
-          <span>Shop Products</span>
-        </button>
+      <!-- Center Prominent Search Bar (Amazon / Flipkart Wide Search) -->
+      <div class="relative flex-1 max-w-2xl mx-1 sm:mx-2">
+        <div class="flex h-10 w-full overflow-hidden rounded-md bg-white shadow-inner focus-within:ring-2 focus-within:ring-amber-400">
+          <!-- Dropdown Filter -->
+          <div class="hidden sm:flex items-center bg-slate-100 border-r border-slate-300 px-3 text-xs text-slate-700 font-medium shrink-0 cursor-pointer">
+            <select id="searchCategorySelect" onchange="handleCategorySelect(this.value)" class="bg-transparent outline-none cursor-pointer text-slate-700 font-semibold pr-1">
+              <option value="all">All Items</option>
+              <option value="services">Home Services</option>
+              <option value="products">Store Essentials</option>
+              <option value="ac">AC Repair</option>
+              <option value="electrician">Electrician</option>
+              <option value="plumber">Plumbing</option>
+              <option value="cleaning">Deep Cleaning</option>
+              <option value="hardware">Tools &amp; Hardware</option>
+              <option value="bath-kitchen">Sealants &amp; Care</option>
+            </select>
+          </div>
+
+          <!-- Search Input -->
+          <input
+            id="mainSearchInput"
+            type="text"
+            oninput="handleSearch(this.value)"
+            placeholder="Search for repair services, plumbers, silicone sealants, toolkits..."
+            class="h-full flex-1 bg-transparent px-3.5 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+          />
+
+          <!-- Big Amber Search Button -->
+          <button type="button" onclick="scrollToCatalog()" class="flex w-12 items-center justify-center bg-[#febd69] hover:bg-[#f3a847] text-slate-900 transition-colors shrink-0" title="Search">
+            <i class="fa-solid fa-magnifying-glass text-base"></i>
+          </button>
+        </div>
       </div>
 
-      <!-- Action Buttons -->
-      <div class="flex items-center gap-2">
-        <button type="button" onclick="focusSearchInput()" class="flex size-9 items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 transition-colors" title="Search">
-          <i class="fa-solid fa-magnifying-glass text-sm"></i>
-        </button>
+      <!-- Right Navigation Actions -->
+      <div class="flex items-center gap-2 sm:gap-4 shrink-0 text-xs">
+        
+        <!-- Mode Switcher Pill (Home Services vs E-Commerce) -->
+        <div class="hidden sm:inline-flex rounded-full bg-[#232f3e] p-0.5 border border-slate-700">
+          <button type="button" id="btnModeServices" onclick="setMode('services')" class="rounded-full px-3 py-1 font-bold text-slate-900 bg-[#febd69] shadow-xs transition-all">
+            <i class="fa-solid fa-screwdriver-wrench mr-1"></i>Services
+          </button>
+          <button type="button" id="btnModeProducts" onclick="setMode('products')" class="rounded-full px-3 py-1 font-bold text-slate-300 hover:text-white transition-all">
+            <i class="fa-solid fa-bag-shopping mr-1"></i>Store
+          </button>
+        </div>
 
-        <!-- Cart Button with Animated Badge -->
-        <button type="button" onclick="toggleCartDrawer(true)" class="relative flex size-9 items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 transition-colors" title="View Cart">
-          <i class="fa-solid fa-cart-shopping text-sm"></i>
-          <span id="navCartBadge" class="hidden absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold text-white shadow-xs">
-            0
-          </span>
-        </button>
-
+        <!-- Account / Sign In -->
         {% if user.is_authenticated %}
           {% if user.is_superuser %}
-            <a href="{% url 'super_admin_dashboard' %}" class="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 transition-colors shadow-xs">
-              <i class="fa-solid fa-gauge text-xs text-sky-400"></i>
-              <span>Admin Panel</span>
+            <a href="{% url 'super_admin_dashboard' %}" class="flex flex-col px-2 py-1 hover:border hover:border-white/30 rounded-md transition-all text-left">
+              <span class="text-[10px] text-slate-400">Welcome, Admin</span>
+              <span class="font-extrabold text-white flex items-center gap-1">
+                Dashboard <i class="fa-solid fa-angle-right text-[10px] text-amber-400"></i>
+              </span>
             </a>
           {% else %}
-            <a href="{% url 'logout' %}" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
-              <i class="fa-solid fa-arrow-right-from-bracket text-xs text-slate-400"></i>
-              <span>Logout</span>
+            <a href="{% url 'logout' %}" class="flex flex-col px-2 py-1 hover:border hover:border-white/30 rounded-md transition-all text-left">
+              <span class="text-[10px] text-slate-400">Hello, {{ user.username|truncatechars:10 }}</span>
+              <span class="font-extrabold text-white">Sign Out</span>
             </a>
           {% endif %}
         {% else %}
-          <a href="{% url 'super_admin_login' %}" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
-            <i class="fa-solid fa-user text-xs text-slate-400"></i>
-            <span>Sign In</span>
+          <a href="{% url 'login' %}" class="flex flex-col px-2 py-1 hover:border hover:border-white/30 rounded-md transition-all text-left">
+            <span class="text-[10px] text-slate-400">Hello, Sign in</span>
+            <span class="font-extrabold text-white">Account &amp; Lists</span>
           </a>
         {% endif %}
-      </div>
 
+        <!-- Shopping Cart with Badge (Amazon / Flipkart Style) -->
+        <button type="button" onclick="toggleCartDrawer(true)" class="relative flex items-center gap-1.5 px-2 py-1.5 hover:border hover:border-white/30 rounded-md transition-all">
+          <div class="relative">
+            <i class="fa-solid fa-cart-shopping text-xl text-amber-400"></i>
+            <span id="navCartBadge" class="hidden absolute -top-2 -right-2 flex size-4 items-center justify-center rounded-full bg-orange-600 text-[10px] font-black text-white">
+              0
+            </span>
+          </div>
+          <span class="hidden md:inline font-bold text-white text-xs">Cart</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- 2. FLIPKART/AMAZON STYLE SUB-NAV CATEGORY STRIP -->
+    <div class="bg-[#232f3e] border-t border-slate-700/80 px-3 py-1.5 text-xs text-slate-200">
+      <div class="mx-auto flex max-w-7xl items-center gap-4 overflow-x-auto custom-scrollbar whitespace-nowrap">
+        <button type="button" onclick="filterByCategory('all')" class="flex items-center gap-1.5 font-bold hover:text-amber-400 transition-colors">
+          <i class="fa-solid fa-bars text-sm"></i>
+          <span>All Categories</span>
+        </button>
+        <span class="text-slate-600">|</span>
+        <button type="button" onclick="filterByCategory('ac', 'services')" class="hover:text-amber-400 transition-colors">
+          <i class="fa-solid fa-snowflake text-sky-400 mr-1"></i>AC Repair &amp; Service
+        </button>
+        <button type="button" onclick="filterByCategory('electrician', 'services')" class="hover:text-amber-400 transition-colors">
+          <i class="fa-solid fa-bolt text-yellow-400 mr-1"></i>Electricians
+        </button>
+        <button type="button" onclick="filterByCategory('plumber', 'services')" class="hover:text-amber-400 transition-colors">
+          <i class="fa-solid fa-faucet-drip text-cyan-400 mr-1"></i>Plumbers
+        </button>
+        <button type="button" onclick="filterByCategory('cleaning', 'services')" class="hover:text-amber-400 transition-colors">
+          <i class="fa-solid fa-broom text-teal-400 mr-1"></i>Deep Cleaning
+        </button>
+        <button type="button" onclick="filterByCategory('salon', 'services')" class="hover:text-amber-400 transition-colors">
+          <i class="fa-solid fa-spa text-pink-400 mr-1"></i>Salon at Home
+        </button>
+        <span class="text-slate-600">|</span>
+        <button type="button" onclick="filterByCategory('hardware', 'products')" class="hover:text-amber-400 transition-colors">
+          <i class="fa-solid fa-wrench text-orange-400 mr-1"></i>Hardware &amp; Tools
+        </button>
+        <button type="button" onclick="filterByCategory('bath-kitchen', 'products')" class="hover:text-amber-400 transition-colors">
+          <i class="fa-solid fa-droplet text-blue-400 mr-1"></i>Kitchen &amp; Bath Sealants
+        </button>
+        <a href="{% url 'register_vendor' %}" class="ml-auto text-amber-300 font-bold hover:underline flex items-center gap-1">
+          <i class="fa-solid fa-handshake"></i> Partner With Us
+        </a>
+      </div>
     </div>
   </header>
 
   <!-- ===================================================================== -->
-  <!-- MAIN CONTENT CONTAINER                                                -->
+  <!-- PROMOTIONAL OFFER STRIP                                               -->
   <!-- ===================================================================== -->
-  <main class="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-6 space-y-12">
+  <div class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 py-1.5 px-3 text-center text-xs font-bold text-slate-950 shadow-inner">
+    <div class="mx-auto flex max-w-7xl items-center justify-center gap-2 flex-wrap">
+      <span>🎉 Welcome Offer: Flat ₹50 OFF on first service or order! Use code <span class="bg-slate-950 text-yellow-300 px-2 py-0.5 rounded font-black tracking-wider">WELCOME50</span></span>
+      <span class="hidden sm:inline">&bull; 100% Verified Technicians &bull; Secure 6-Digit OTP Handover</span>
+    </div>
+  </div>
 
-    <!-- 2. WELCOMING DUAL-ACTION HERO SECTION -->
-    <section class="grid items-center gap-8 rounded-3xl bg-gradient-to-br from-sky-100 via-white to-amber-50 p-6 md:p-10 lg:grid-cols-2 lg:gap-12 lg:p-12 border border-sky-100 shadow-xs">
-      <div>
-        <div class="inline-flex items-center gap-2 rounded-full bg-sky-200/60 px-3 py-1 text-xs font-bold text-sky-900 mb-4">
-          <i class="fa-solid fa-shield-halved text-sky-600"></i>
-          <span>Verified Experts &bull; Upfront Pricing &bull; Doorstep Care</span>
-        </div>
-        <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl leading-tight">
-          Your Home, <span class="bg-gradient-to-r from-sky-600 to-cyan-600 bg-clip-text text-transparent">Perfectlly Cared For.</span>
-        </h1>
-        <p class="mt-4 max-w-xl text-base text-slate-600 sm:text-lg leading-relaxed">
-          Book certified local professionals or order genuine repair &amp; maintenance essentials delivered to your door in minutes.
-        </p>
+  <!-- ===================================================================== -->
+  <!-- MAIN PAGE CONTENT                                                     -->
+  <!-- ===================================================================== -->
+  <main class="mx-auto w-full max-w-7xl flex-1 px-3 sm:px-6 py-5 space-y-8">
 
-        <!-- Search Bar with Instant Mode Filter -->
-        <div class="mt-8 rounded-2xl border border-slate-200 bg-white p-3 shadow-md shadow-slate-100">
-          <div class="mb-2.5 inline-flex rounded-full bg-slate-100 p-1 text-xs font-semibold">
-            <button type="button" id="heroTabServices" onclick="setMode('services')" class="rounded-full px-3 py-1 text-sky-800 bg-white shadow-xs transition-all">
-              Find a Service
-            </button>
-            <button type="button" id="heroTabProducts" onclick="setMode('products')" class="rounded-full px-3 py-1 text-slate-500 hover:text-slate-800 transition-all">
-              Shop Essentials
-            </button>
+    <!-- 3. TOP FLIPKART/AMAZON STYLE CATEGORY TILES BAR -->
+    <section class="bg-white rounded-xl p-4 border border-slate-200/90 shadow-xs">
+      <div class="grid grid-cols-4 sm:grid-cols-7 gap-3 text-center">
+        <!-- 1. AC Service -->
+        <button type="button" onclick="filterByCategory('ac', 'services')" class="group flex flex-col items-center gap-2 cursor-pointer">
+          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-blue-500 group-hover:shadow-md">
+            <img src="{% static 'images/cat-ac.jpg' %}" alt="AC Repair" class="size-full rounded-full object-cover">
           </div>
-
-          <div class="relative flex items-center">
-            <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-slate-400 text-sm"></i>
-            <input
-              id="heroSearchInput"
-              type="text"
-              oninput="handleSearch(this.value)"
-              placeholder="Try searching 'AC Service', 'Bathroom Sealant', 'Electrician', 'LED Bulbs'..."
-              class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-24 text-sm text-slate-800 outline-none transition-all focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-100 placeholder:text-slate-400"
-            />
-            <button type="button" onclick="scrollToCatalog()" class="absolute right-1.5 inline-flex items-center gap-1.5 rounded-lg bg-sky-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-sky-700 transition-colors shadow-xs">
-              <span>Search</span>
-            </button>
-          </div>
-
-          <!-- Quick Suggestion Tags -->
-          <div class="mt-3 flex flex-wrap items-center gap-2 text-xs">
-            <span class="text-slate-400 font-medium">Quick search:</span>
-            <button type="button" onclick="setSearchQuery('AC Servicing', 'services')" class="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-slate-600 font-medium hover:border-sky-500 hover:text-sky-700 transition-colors">
-              AC Servicing
-            </button>
-            <button type="button" onclick="setSearchQuery('Electrician', 'services')" class="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-slate-600 font-medium hover:border-sky-500 hover:text-sky-700 transition-colors">
-              Electrician
-            </button>
-            <button type="button" onclick="setSearchQuery('Plumbing', 'services')" class="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-slate-600 font-medium hover:border-sky-500 hover:text-sky-700 transition-colors">
-              Plumbing
-            </button>
-            <button type="button" onclick="setSearchQuery('Waterproof Sealant', 'products')" class="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-slate-600 font-medium hover:border-sky-500 hover:text-sky-700 transition-colors">
-              Waterproof Sealant
-            </button>
-            <button type="button" onclick="setSearchQuery('Tool Kit', 'products')" class="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-slate-600 font-medium hover:border-sky-500 hover:text-sky-700 transition-colors">
-              Tool Kit
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Hero Visual with Real Photography & Floating Trust Badges -->
-      <div class="relative overflow-hidden rounded-3xl shadow-xl shadow-slate-200 border border-slate-200/80">
-        <img
-          src="{% static 'images/hero-banner.jpg' %}"
-          alt="A certified technician with tablet and toolkit in a bright modern home"
-          class="aspect-[4/3] w-full object-cover transition-transform duration-700 hover:scale-105"
-        />
-        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-transparent to-transparent"></div>
-        <div class="absolute inset-x-4 bottom-4 flex flex-wrap gap-2">
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-md">
-            <i class="fa-solid fa-circle-check text-sky-600"></i>
-            <span>Background-Checked Technicians</span>
-          </span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-md">
-            <i class="fa-solid fa-clock text-amber-500"></i>
-            <span>Guaranteed Arrival Times</span>
-          </span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-md">
-            <i class="fa-solid fa-lock text-emerald-600"></i>
-            <span>Secure 6-Digit OTP Verification</span>
-          </span>
-        </div>
-      </div>
-    </section>
-
-    <!-- 3. BROWSE BY CATEGORY (VISUAL ICON TILES) -->
-    <section id="categoriesSection" class="py-4">
-      <div class="flex items-center justify-between mb-5">
-        <div>
-          <h2 class="text-2xl font-bold tracking-tight text-slate-900">Browse by Category</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Explore certified home repair services and genuine essentials</p>
-        </div>
-        <button type="button" onclick="filterByCategory('all')" id="btnClearCategory" class="hidden text-xs font-semibold text-sky-600 hover:text-sky-800">
-          Show All
-        </button>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3.5 sm:grid-cols-4 lg:grid-cols-7">
-        <!-- 1. AC Repair -->
-        <button type="button" onclick="filterByCategory('ac', 'services')" class="category-tile group flex flex-col items-center gap-2.5 rounded-2xl border border-slate-200/80 bg-white p-3 text-center transition-all duration-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-md">
-          <div class="aspect-square size-16 overflow-hidden rounded-xl bg-sky-50">
-            <img src="{% static 'images/cat-ac.jpg' %}" alt="AC Repair" class="size-full object-cover transition-transform duration-300 group-hover:scale-110" />
-          </div>
-          <span class="text-xs font-bold text-slate-800 group-hover:text-sky-700">AC Repair</span>
+          <span class="text-xs font-bold text-slate-800 group-hover:text-blue-600">AC Repair</span>
         </button>
 
-        <!-- 2. Electricians -->
-        <button type="button" onclick="filterByCategory('electrician', 'services')" class="category-tile group flex flex-col items-center gap-2.5 rounded-2xl border border-slate-200/80 bg-white p-3 text-center transition-all duration-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-md">
-          <div class="aspect-square size-16 overflow-hidden rounded-xl bg-sky-50">
-            <img src="{% static 'images/cat-electrician.jpg' %}" alt="Electricians" class="size-full object-cover transition-transform duration-300 group-hover:scale-110" />
+        <!-- 2. Electrician -->
+        <button type="button" onclick="filterByCategory('electrician', 'services')" class="group flex flex-col items-center gap-2 cursor-pointer">
+          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-blue-500 group-hover:shadow-md">
+            <img src="{% static 'images/cat-electrician.jpg' %}" alt="Electricians" class="size-full rounded-full object-cover">
           </div>
-          <span class="text-xs font-bold text-slate-800 group-hover:text-sky-700">Electricians</span>
+          <span class="text-xs font-bold text-slate-800 group-hover:text-blue-600">Electricians</span>
         </button>
 
         <!-- 3. Plumbers -->
-        <button type="button" onclick="filterByCategory('plumber', 'services')" class="category-tile group flex flex-col items-center gap-2.5 rounded-2xl border border-slate-200/80 bg-white p-3 text-center transition-all duration-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-md">
-          <div class="aspect-square size-16 overflow-hidden rounded-xl bg-sky-50">
-            <img src="{% static 'images/cat-plumber.jpg' %}" alt="Plumbers" class="size-full object-cover transition-transform duration-300 group-hover:scale-110" />
+        <button type="button" onclick="filterByCategory('plumber', 'services')" class="group flex flex-col items-center gap-2 cursor-pointer">
+          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-blue-500 group-hover:shadow-md">
+            <img src="{% static 'images/cat-plumber.jpg' %}" alt="Plumbers" class="size-full rounded-full object-cover">
           </div>
-          <span class="text-xs font-bold text-slate-800 group-hover:text-sky-700">Plumbers</span>
+          <span class="text-xs font-bold text-slate-800 group-hover:text-blue-600">Plumbers</span>
         </button>
 
         <!-- 4. Deep Cleaning -->
-        <button type="button" onclick="filterByCategory('cleaning', 'services')" class="category-tile group flex flex-col items-center gap-2.5 rounded-2xl border border-slate-200/80 bg-white p-3 text-center transition-all duration-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-md">
-          <div class="aspect-square size-16 overflow-hidden rounded-xl bg-sky-50">
-            <img src="{% static 'images/cat-cleaning.jpg' %}" alt="Deep Cleaning" class="size-full object-cover transition-transform duration-300 group-hover:scale-110" />
+        <button type="button" onclick="filterByCategory('cleaning', 'services')" class="group flex flex-col items-center gap-2 cursor-pointer">
+          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-blue-500 group-hover:shadow-md">
+            <img src="{% static 'images/cat-cleaning.jpg' %}" alt="Deep Cleaning" class="size-full rounded-full object-cover">
           </div>
-          <span class="text-xs font-bold text-slate-800 group-hover:text-sky-700">Deep Cleaning</span>
+          <span class="text-xs font-bold text-slate-800 group-hover:text-blue-600">Deep Cleaning</span>
         </button>
 
-        <!-- 5. At-Home Salon -->
-        <button type="button" onclick="filterByCategory('salon', 'services')" class="category-tile group flex flex-col items-center gap-2.5 rounded-2xl border border-slate-200/80 bg-white p-3 text-center transition-all duration-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-md">
-          <div class="aspect-square size-16 overflow-hidden rounded-xl bg-sky-50">
-            <img src="{% static 'images/cat-salon.jpg' %}" alt="At-Home Salon" class="size-full object-cover transition-transform duration-300 group-hover:scale-110" />
+        <!-- 5. Salon at Home -->
+        <button type="button" onclick="filterByCategory('salon', 'services')" class="group flex flex-col items-center gap-2 cursor-pointer">
+          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-blue-500 group-hover:shadow-md">
+            <img src="{% static 'images/cat-salon.jpg' %}" alt="Salon at Home" class="size-full rounded-full object-cover">
           </div>
-          <span class="text-xs font-bold text-slate-800 group-hover:text-sky-700">At-Home Salon</span>
+          <span class="text-xs font-bold text-slate-800 group-hover:text-blue-600">Salon at Home</span>
         </button>
 
         <!-- 6. Hardware & Tools -->
-        <button type="button" onclick="filterByCategory('hardware', 'products')" class="category-tile group flex flex-col items-center gap-2.5 rounded-2xl border border-slate-200/80 bg-white p-3 text-center transition-all duration-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-md">
-          <div class="aspect-square size-16 overflow-hidden rounded-xl bg-sky-50">
-            <img src="{% static 'images/prod-toolkit.jpg' %}" alt="Hardware & Tools" class="size-full object-cover transition-transform duration-300 group-hover:scale-110" />
+        <button type="button" onclick="filterByCategory('hardware', 'products')" class="group flex flex-col items-center gap-2 cursor-pointer">
+          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-blue-500 group-hover:shadow-md">
+            <img src="{% static 'images/prod-toolkit.jpg' %}" alt="Hardware & Tools" class="size-full rounded-full object-cover">
           </div>
-          <span class="text-xs font-bold text-slate-800 group-hover:text-sky-700">Hardware Tools</span>
+          <span class="text-xs font-bold text-slate-800 group-hover:text-blue-600">Hardware &amp; Tools</span>
         </button>
 
         <!-- 7. Kitchen & Bath Care -->
-        <button type="button" onclick="filterByCategory('bath-kitchen', 'products')" class="category-tile group flex flex-col items-center gap-2.5 rounded-2xl border border-slate-200/80 bg-white p-3 text-center transition-all duration-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-md">
-          <div class="aspect-square size-16 overflow-hidden rounded-xl bg-sky-50">
-            <img src="{% static 'images/cat-sealant.jpg' %}" alt="Kitchen & Bath Care" class="size-full object-cover transition-transform duration-300 group-hover:scale-110" />
+        <button type="button" onclick="filterByCategory('bath-kitchen', 'products')" class="group flex flex-col items-center gap-2 cursor-pointer">
+          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-blue-500 group-hover:shadow-md">
+            <img src="{% static 'images/cat-sealant.jpg' %}" alt="Sealants & Kitchen Care" class="size-full rounded-full object-cover">
           </div>
-          <span class="text-xs font-bold text-slate-800 group-hover:text-sky-700">Kitchen &amp; Bath</span>
+          <span class="text-xs font-bold text-slate-800 group-hover:text-blue-600">Sealants &amp; Care</span>
         </button>
       </div>
     </section>
 
-    <!-- 4. MOST-BOOKED DOORSTEP HOME SERVICES -->
-    <section id="servicesCatalogSection" class="scroll-mt-24 pt-4">
-      <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+    <!-- 4. AMAZON-STYLE HIGH-IMPACT HERO BANNER -->
+    <section class="grid gap-6 rounded-2xl bg-white p-5 sm:p-7 border border-slate-200/90 shadow-sm md:grid-cols-12 items-center">
+      <div class="md:col-span-7 space-y-4">
+        <div class="inline-flex items-center gap-2 rounded-md bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 border border-blue-200">
+          <i class="fa-solid fa-shield-halved"></i> Sindhiga Assured Doorstep Guarantee
+        </div>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+          Everything Your Home Needs, <span class="text-[#2874f0]">Delivered &amp; Fixed.</span>
+        </h1>
+        <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+          Book verified local technicians or order genuine repair materials with express local delivery and secure 6-digit OTP verification.
+        </p>
+
+        <div class="flex flex-wrap items-center gap-3 pt-1">
+          <button type="button" onclick="setMode('services'); scrollToCatalog();" class="rounded-lg bg-[#2874f0] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 transition-colors flex items-center gap-1.5">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>Book a Service</span>
+          </button>
+          <button type="button" onclick="setMode('products'); scrollToCatalog();" class="rounded-lg bg-[#ffd814] px-5 py-2.5 text-xs font-bold text-slate-900 shadow-sm hover:bg-[#f7ca00] transition-colors flex items-center gap-1.5">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>Shop Store Products</span>
+          </button>
+        </div>
+
+        <div class="pt-2 flex flex-wrap gap-4 text-xs font-semibold text-slate-600">
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-emerald-600"></i> Zero Diagnosis Fee</span>
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-emerald-600"></i> 100% Genuine Items</span>
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-emerald-600"></i> 7-Day Free Re-work</span>
+        </div>
+      </div>
+
+      <div class="md:col-span-5 relative rounded-xl overflow-hidden shadow-md border border-slate-200">
+        <img src="{% static 'images/hero-banner.jpg' %}" alt="Technician ready with kit" class="size-full object-cover aspect-[4/3]">
+        <div class="absolute bottom-2.5 left-2.5 right-2.5 rounded-lg bg-black/75 backdrop-blur-xs p-2 text-center text-white text-xs font-semibold">
+          ⚡ Technicians &amp; Riders reaching your door in 30–45 mins
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- 5. CRITICAL DYNAMIC SECTION: SIMILAR PRODUCTS / SERVICES SUGGESTIONS  -->
+    <!-- (Appears dynamically below when user clicks on ANY card)             -->
+    <!-- ===================================================================== -->
+    <section id="similarItemsSection" class="hidden scroll-mt-24 rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50 to-amber-50 p-5 sm:p-6 border-2 border-blue-400 shadow-lg">
+      <div class="flex items-start justify-between border-b border-blue-200 pb-3 mb-4">
         <div>
-          <span class="inline-flex items-center gap-1.5 text-xs font-bold text-sky-700 bg-sky-100 rounded-full px-3 py-0.5 mb-1.5">
-            <i class="fa-solid fa-bolt"></i> Doorstep Services
-          </span>
-          <h2 class="text-2xl font-bold tracking-tight text-slate-900">Most-Booked Doorstep Services</h2>
-          <p class="text-sm text-slate-500">Transparent pricing with certified technicians &bull; Time duration listed upfront</p>
+          <div class="flex items-center gap-2">
+            <span class="size-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">
+              <i class="fa-solid fa-lightbulb"></i>
+            </span>
+            <h3 class="text-lg font-bold text-slate-900">Similar &amp; Complementary Recommendations</h3>
+          </div>
+          <p id="similarSectionSubtitle" class="text-xs text-slate-600 mt-1">
+            Customers who viewed this item also checked these related essentials and doorstep fixes:
+          </p>
+        </div>
+        <button type="button" onclick="closeSimilarSection()" class="rounded-lg bg-white px-2.5 py-1 text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-300">
+          <i class="fa-solid fa-xmark mr-1"></i> Close
+        </button>
+      </div>
+
+      <!-- Suggested Cards Grid -->
+      <div id="similarItemsGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <!-- Injected via JavaScript dynamically -->
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- 6. HOME SERVICES CATALOG (AMAZON / FLIPKART STYLE CARDS)              -->
+    <!-- ===================================================================== -->
+    <section id="servicesCatalogSection" class="scroll-mt-24 bg-white rounded-xl p-5 sm:p-6 border border-slate-200/90 shadow-xs">
+      <div class="flex flex-wrap items-end justify-between gap-3 mb-5 border-b border-slate-100 pb-4">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Verified Doorstep Services</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Click any service to view details &amp; discover similar category products</p>
         </div>
         <div class="flex items-center gap-2">
-          <span class="text-xs text-slate-400" id="servicesCounter">5 services available</span>
+          <span class="rounded bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700" id="servicesCounter">5 Services</span>
         </div>
       </div>
 
       <!-- Services Grid -->
-      <div id="servicesGrid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div id="servicesGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
         <!-- Service 1: AC Complete Servicing -->
-        <article class="service-card group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-md" data-category="ac" data-keywords="ac service servicing air conditioner cooling">
+        <div onclick="selectItem('ac-service', 'ac', 'Split AC Complete Servicing')" class="catalog-card cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition-all duration-200 hover:border-blue-400 hover:shadow-md bg-white" data-category="ac" data-id="ac-service">
           <div>
-            <div class="relative aspect-[16/10] overflow-hidden rounded-xl bg-slate-100 mb-4">
-              <img src="{% static 'images/cat-ac.jpg' %}" alt="Split AC Complete Servicing" class="size-full object-cover transition-transform duration-300 group-hover:scale-105" />
-              <span class="absolute top-2.5 right-2.5 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-slate-800 shadow-xs">
-                <i class="fa-solid fa-clock text-sky-600 mr-1"></i>45 mins
+            <div class="relative aspect-[16/10] overflow-hidden rounded-lg bg-slate-100 mb-3">
+              <img src="{% static 'images/cat-ac.jpg' %}" alt="Split AC Servicing" class="size-full object-cover transition-transform duration-300 group-hover:scale-105">
+              <span class="absolute top-2 right-2 rounded bg-white/95 px-2 py-0.5 text-[11px] font-bold text-slate-800 shadow-xs">
+                <i class="fa-solid fa-clock text-blue-600 mr-1"></i>45 mins
               </span>
             </div>
-            <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
-              <span class="font-semibold text-sky-700 uppercase tracking-wider text-[11px]">AC Repair &amp; Service</span>
-              <span class="inline-flex items-center gap-1 font-bold text-amber-500">
-                <i class="fa-solid fa-star"></i> 4.88 (4.2k)
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+                4.88 <i class="fa-solid fa-star text-[9px]"></i>
               </span>
+              <span class="text-[11px] text-slate-400 font-semibold">(4,200 reviews)</span>
+              <span class="ml-auto text-[10px] font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">ASSURED</span>
             </div>
-            <h3 class="text-lg font-bold text-slate-900 leading-snug group-hover:text-sky-700 transition-colors">
+            <h3 class="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">
               Split AC Complete Servicing
             </h3>
-            <p class="mt-2 text-xs text-slate-600 line-clamp-2 leading-relaxed">
-              Full clean of filters, indoor coil, and drain line, followed by gas pressure and cooling check.
+            <p class="text-xs text-slate-500 mt-1 line-clamp-2">
+              Full powerjet clean of filters, indoor coil, and drain line with gas pressure check.
             </p>
           </div>
-          <div class="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
             <div>
-              <span class="block text-[11px] text-slate-400">Fixed upfront price</span>
-              <span class="text-xl font-extrabold text-slate-900">₹499</span>
+              <span class="text-[10px] text-slate-400 block font-medium">Standard Fixed Price</span>
+              <span class="text-lg font-black text-slate-900">₹499</span>
             </div>
-            <button type="button" onclick="openBookingModal('Split AC Complete Servicing', 499, '45 mins')" class="inline-flex items-center gap-1.5 rounded-xl bg-sky-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-sky-700 transition-colors">
-              <span>Book Slot</span>
-              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            <button type="button" onclick="event.stopPropagation(); openBookingModal('Split AC Complete Servicing', 499, '45 mins')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3.5 py-1.5 text-xs font-bold shadow-xs transition-colors">
+              Book Slot
             </button>
           </div>
-        </article>
+        </div>
 
         <!-- Service 2: Switchboard, Socket & MCB -->
-        <article class="service-card group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-md" data-category="electrician" data-keywords="electrician electrical switchboard socket mcb wiring">
+        <div onclick="selectItem('switchboard', 'electrician', 'Switchboard, Socket & MCB Repair')" class="catalog-card cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition-all duration-200 hover:border-blue-400 hover:shadow-md bg-white" data-category="electrician" data-id="switchboard">
           <div>
-            <div class="relative aspect-[16/10] overflow-hidden rounded-xl bg-slate-100 mb-4">
-              <img src="{% static 'images/cat-electrician.jpg' %}" alt="Switchboard, Socket & MCB Repair" class="size-full object-cover transition-transform duration-300 group-hover:scale-105" />
-              <span class="absolute top-2.5 right-2.5 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-slate-800 shadow-xs">
-                <i class="fa-solid fa-clock text-sky-600 mr-1"></i>30 mins
+            <div class="relative aspect-[16/10] overflow-hidden rounded-lg bg-slate-100 mb-3">
+              <img src="{% static 'images/cat-electrician.jpg' %}" alt="Electrician Repair" class="size-full object-cover transition-transform duration-300 group-hover:scale-105">
+              <span class="absolute top-2 right-2 rounded bg-white/95 px-2 py-0.5 text-[11px] font-bold text-slate-800 shadow-xs">
+                <i class="fa-solid fa-clock text-blue-600 mr-1"></i>30 mins
               </span>
             </div>
-            <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
-              <span class="font-semibold text-sky-700 uppercase tracking-wider text-[11px]">Electrician</span>
-              <span class="inline-flex items-center gap-1 font-bold text-amber-500">
-                <i class="fa-solid fa-star"></i> 4.85 (3.1k)
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+                4.85 <i class="fa-solid fa-star text-[9px]"></i>
               </span>
+              <span class="text-[11px] text-slate-400 font-semibold">(3,100 reviews)</span>
+              <span class="ml-auto text-[10px] font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">ASSURED</span>
             </div>
-            <h3 class="text-lg font-bold text-slate-900 leading-snug group-hover:text-sky-700 transition-colors">
+            <h3 class="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">
               Switchboard, Socket &amp; MCB Repair
             </h3>
-            <p class="mt-2 text-xs text-slate-600 line-clamp-2 leading-relaxed">
-              Diagnosis and repair of loose sockets, faulty switches, and tripping MCBs. All parts quoted before work.
+            <p class="text-xs text-slate-500 mt-1 line-clamp-2">
+              Diagnosis and replacement of loose sockets, faulty switches, and tripping breakers.
             </p>
           </div>
-          <div class="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
             <div>
-              <span class="block text-[11px] text-slate-400">Fixed upfront price</span>
-              <span class="text-xl font-extrabold text-slate-900">₹149</span>
+              <span class="text-[10px] text-slate-400 block font-medium">Standard Fixed Price</span>
+              <span class="text-lg font-black text-slate-900">₹149</span>
             </div>
-            <button type="button" onclick="openBookingModal('Switchboard, Socket & MCB Repair', 149, '30 mins')" class="inline-flex items-center gap-1.5 rounded-xl bg-sky-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-sky-700 transition-colors">
-              <span>Book Slot</span>
-              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            <button type="button" onclick="event.stopPropagation(); openBookingModal('Switchboard, Socket & MCB Repair', 149, '30 mins')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3.5 py-1.5 text-xs font-bold shadow-xs transition-colors">
+              Book Slot
             </button>
           </div>
-        </article>
+        </div>
 
         <!-- Service 3: Tap, Pipe & Flush Tank Repair -->
-        <article class="service-card group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-md" data-category="plumber" data-keywords="plumbing plumber tap pipe flush tank leak">
+        <div onclick="selectItem('tap-pipe', 'plumber', 'Tap, Pipe & Flush Tank Repair')" class="catalog-card cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition-all duration-200 hover:border-blue-400 hover:shadow-md bg-white" data-category="plumber" data-id="tap-pipe">
           <div>
-            <div class="relative aspect-[16/10] overflow-hidden rounded-xl bg-slate-100 mb-4">
-              <img src="{% static 'images/cat-plumber.jpg' %}" alt="Tap, Pipe & Flush Tank Repair" class="size-full object-cover transition-transform duration-300 group-hover:scale-105" />
-              <span class="absolute top-2.5 right-2.5 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-slate-800 shadow-xs">
-                <i class="fa-solid fa-clock text-sky-600 mr-1"></i>45 mins
+            <div class="relative aspect-[16/10] overflow-hidden rounded-lg bg-slate-100 mb-3">
+              <img src="{% static 'images/cat-plumber.jpg' %}" alt="Plumber Fixing Tap" class="size-full object-cover transition-transform duration-300 group-hover:scale-105">
+              <span class="absolute top-2 right-2 rounded bg-white/95 px-2 py-0.5 text-[11px] font-bold text-slate-800 shadow-xs">
+                <i class="fa-solid fa-clock text-blue-600 mr-1"></i>45 mins
               </span>
             </div>
-            <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
-              <span class="font-semibold text-sky-700 uppercase tracking-wider text-[11px]">Plumber</span>
-              <span class="inline-flex items-center gap-1 font-bold text-amber-500">
-                <i class="fa-solid fa-star"></i> 4.90 (5.8k)
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+                4.91 <i class="fa-solid fa-star text-[9px]"></i>
               </span>
+              <span class="text-[11px] text-slate-400 font-semibold">(5,800 reviews)</span>
+              <span class="ml-auto text-[10px] font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">ASSURED</span>
             </div>
-            <h3 class="text-lg font-bold text-slate-900 leading-snug group-hover:text-sky-700 transition-colors">
+            <h3 class="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">
               Tap, Pipe &amp; Flush Tank Repair
             </h3>
-            <p class="mt-2 text-xs text-slate-600 line-clamp-2 leading-relaxed">
-              Fixes for dripping taps, leaking pipe joints, and weak flush valves. Clean-up done after completion.
+            <p class="text-xs text-slate-500 mt-1 line-clamp-2">
+              Quick fixes for dripping taps, leaking joints, and flush valve replacements.
             </p>
           </div>
-          <div class="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
             <div>
-              <span class="block text-[11px] text-slate-400">Fixed upfront price</span>
-              <span class="text-xl font-extrabold text-slate-900">₹199</span>
+              <span class="text-[10px] text-slate-400 block font-medium">Standard Fixed Price</span>
+              <span class="text-lg font-black text-slate-900">₹199</span>
             </div>
-            <button type="button" onclick="openBookingModal('Tap, Pipe & Flush Tank Repair', 199, '45 mins')" class="inline-flex items-center gap-1.5 rounded-xl bg-sky-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-sky-700 transition-colors">
-              <span>Book Slot</span>
-              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            <button type="button" onclick="event.stopPropagation(); openBookingModal('Tap, Pipe & Flush Tank Repair', 199, '45 mins')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3.5 py-1.5 text-xs font-bold shadow-xs transition-colors">
+              Book Slot
             </button>
           </div>
-        </article>
+        </div>
 
         <!-- Service 4: Kitchen & Bathroom Deep Steam Clean -->
-        <article class="service-card group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-md" data-category="cleaning" data-keywords="cleaning deep clean steam kitchen bathroom">
+        <div onclick="selectItem('deep-clean', 'cleaning', 'Kitchen & Bathroom Deep Clean')" class="catalog-card cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition-all duration-200 hover:border-blue-400 hover:shadow-md bg-white" data-category="cleaning" data-id="deep-clean">
           <div>
-            <div class="relative aspect-[16/10] overflow-hidden rounded-xl bg-slate-100 mb-4">
-              <img src="{% static 'images/cat-cleaning.jpg' %}" alt="Kitchen & Bathroom Deep Clean" class="size-full object-cover transition-transform duration-300 group-hover:scale-105" />
-              <span class="absolute top-2.5 right-2.5 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-slate-800 shadow-xs">
-                <i class="fa-solid fa-clock text-sky-600 mr-1"></i>2 hours
+            <div class="relative aspect-[16/10] overflow-hidden rounded-lg bg-slate-100 mb-3">
+              <img src="{% static 'images/cat-cleaning.jpg' %}" alt="Deep Steam Cleaning" class="size-full object-cover transition-transform duration-300 group-hover:scale-105">
+              <span class="absolute top-2 right-2 rounded bg-white/95 px-2 py-0.5 text-[11px] font-bold text-slate-800 shadow-xs">
+                <i class="fa-solid fa-clock text-blue-600 mr-1"></i>2 hours
               </span>
             </div>
-            <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
-              <span class="font-semibold text-sky-700 uppercase tracking-wider text-[11px]">Deep Cleaning</span>
-              <span class="inline-flex items-center gap-1 font-bold text-amber-500">
-                <i class="fa-solid fa-star"></i> 4.86 (2.4k)
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+                4.86 <i class="fa-solid fa-star text-[9px]"></i>
               </span>
+              <span class="text-[11px] text-slate-400 font-semibold">(2,400 reviews)</span>
+              <span class="ml-auto text-[10px] font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">ASSURED</span>
             </div>
-            <h3 class="text-lg font-bold text-slate-900 leading-snug group-hover:text-sky-700 transition-colors">
+            <h3 class="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">
               Kitchen &amp; Bathroom Deep Steam Clean
             </h3>
-            <p class="mt-2 text-xs text-slate-600 line-clamp-2 leading-relaxed">
-              Steam cleaning of surfaces, tile degreasing, chimney and hob scrubbing with certified eco-friendly solutions.
+            <p class="text-xs text-slate-500 mt-1 line-clamp-2">
+              Steam cleaning, grease removal from hob &amp; tiles, and descaling with eco solutions.
             </p>
           </div>
-          <div class="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
             <div>
-              <span class="block text-[11px] text-slate-400">Fixed upfront price</span>
-              <span class="text-xl font-extrabold text-slate-900">₹899</span>
+              <span class="text-[10px] text-slate-400 block font-medium">Standard Fixed Price</span>
+              <span class="text-lg font-black text-slate-900">₹899</span>
             </div>
-            <button type="button" onclick="openBookingModal('Kitchen & Bathroom Deep Steam Clean', 899, '2 hours')" class="inline-flex items-center gap-1.5 rounded-xl bg-sky-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-sky-700 transition-colors">
-              <span>Book Slot</span>
-              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            <button type="button" onclick="event.stopPropagation(); openBookingModal('Kitchen & Bathroom Deep Clean', 899, '2 hours')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3.5 py-1.5 text-xs font-bold shadow-xs transition-colors">
+              Book Slot
             </button>
           </div>
-        </article>
+        </div>
 
         <!-- Service 5: Men's / Women's At-Home Grooming -->
-        <article class="service-card group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-md" data-category="salon" data-keywords="salon grooming haircut beauty at-home">
+        <div onclick="selectItem('grooming', 'salon', 'At-Home Grooming & Salon')" class="catalog-card cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition-all duration-200 hover:border-blue-400 hover:shadow-md bg-white" data-category="salon" data-id="grooming">
           <div>
-            <div class="relative aspect-[16/10] overflow-hidden rounded-xl bg-slate-100 mb-4">
-              <img src="{% static 'images/cat-salon.jpg' %}" alt="At-Home Grooming & Salon" class="size-full object-cover transition-transform duration-300 group-hover:scale-105" />
-              <span class="absolute top-2.5 right-2.5 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-slate-800 shadow-xs">
-                <i class="fa-solid fa-clock text-sky-600 mr-1"></i>40 mins
+            <div class="relative aspect-[16/10] overflow-hidden rounded-lg bg-slate-100 mb-3">
+              <img src="{% static 'images/cat-salon.jpg' %}" alt="Salon and Grooming" class="size-full object-cover transition-transform duration-300 group-hover:scale-105">
+              <span class="absolute top-2 right-2 rounded bg-white/95 px-2 py-0.5 text-[11px] font-bold text-slate-800 shadow-xs">
+                <i class="fa-solid fa-clock text-blue-600 mr-1"></i>40 mins
               </span>
             </div>
-            <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
-              <span class="font-semibold text-sky-700 uppercase tracking-wider text-[11px]">Salon &amp; Spa</span>
-              <span class="inline-flex items-center gap-1 font-bold text-amber-500">
-                <i class="fa-solid fa-star"></i> 4.92 (3.8k)
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+                4.93 <i class="fa-solid fa-star text-[9px]"></i>
               </span>
+              <span class="text-[11px] text-slate-400 font-semibold">(3,800 reviews)</span>
+              <span class="ml-auto text-[10px] font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">ASSURED</span>
             </div>
-            <h3 class="text-lg font-bold text-slate-900 leading-snug group-hover:text-sky-700 transition-colors">
+            <h3 class="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">
               Men's &amp; Women's At-Home Grooming
             </h3>
-            <p class="mt-2 text-xs text-slate-600 line-clamp-2 leading-relaxed">
-              Haircut, styling, or facial in the comfort of your home. 100% sealed, single-use hygiene kits used every time.
+            <p class="text-xs text-slate-500 mt-1 line-clamp-2">
+              Haircut, styling, or facial using 100% sealed single-use hygiene kits.
             </p>
           </div>
-          <div class="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
             <div>
-              <span class="block text-[11px] text-slate-400">Fixed upfront price</span>
-              <span class="text-xl font-extrabold text-slate-900">₹349</span>
+              <span class="text-[10px] text-slate-400 block font-medium">Standard Fixed Price</span>
+              <span class="text-lg font-black text-slate-900">₹349</span>
             </div>
-            <button type="button" onclick="openBookingModal('At-Home Grooming & Salon', 349, '40 mins')" class="inline-flex items-center gap-1.5 rounded-xl bg-sky-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-sky-700 transition-colors">
-              <span>Book Slot</span>
-              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            <button type="button" onclick="event.stopPropagation(); openBookingModal('At-Home Grooming & Salon', 349, '40 mins')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3.5 py-1.5 text-xs font-bold shadow-xs transition-colors">
+              Book Slot
             </button>
           </div>
-        </article>
+        </div>
 
       </div>
     </section>
 
-    <!-- 5. TRENDING HOME & HARDWARE ESSENTIALS -->
-    <section id="productsCatalogSection" class="scroll-mt-24 pt-4">
-      <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+    <!-- ===================================================================== -->
+    <!-- 7. E-COMMERCE PRODUCTS CATALOG (FLIPKART/AMAZON STYLE CARDS)          -->
+    <!-- ===================================================================== -->
+    <section id="productsCatalogSection" class="scroll-mt-24 bg-white rounded-xl p-5 sm:p-6 border border-slate-200/90 shadow-xs">
+      <div class="flex flex-wrap items-end justify-between gap-3 mb-5 border-b border-slate-100 pb-4">
         <div>
-          <span class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-100 rounded-full px-3 py-0.5 mb-1.5">
-            <i class="fa-solid fa-truck-fast"></i> Doorstep Delivery
-          </span>
-          <h2 class="text-2xl font-bold tracking-tight text-slate-900">Trending Home &amp; Hardware Essentials</h2>
-          <p class="text-sm text-slate-500">Genuine products delivered by local delivery partners &bull; 1-click add to cart</p>
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Genuine Home &amp; Hardware Store</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Click any product to view details &amp; discover similar category products</p>
         </div>
         <div class="flex items-center gap-2">
-          <span class="text-xs text-slate-400" id="productsCounter">4 essentials available</span>
+          <span class="rounded bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700" id="productsCounter">4 Products</span>
         </div>
       </div>
 
       <!-- Products Grid -->
-      <div id="productsGrid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div id="productsGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
         <!-- Product 1: Silicone Sealant -->
-        <article class="product-card group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-md" data-category="bath-kitchen" data-keywords="sealant waterproof silicone bathroom kitchen sink tiles">
+        <div onclick="selectItem('sealant', 'bath-kitchen', 'Silicone Waterproof Gap Sealant (280ml)')" class="catalog-card cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition-all duration-200 hover:border-emerald-500 hover:shadow-md bg-white" data-category="bath-kitchen" data-id="sealant">
           <div>
-            <div class="relative aspect-square overflow-hidden rounded-xl bg-slate-50 mb-3.5">
-              <img src="{% static 'images/cat-sealant.jpg' %}" alt="Silicone Waterproof Gap Sealant" class="size-full object-cover transition-transform duration-300 group-hover:scale-105" />
-              <span class="absolute top-2 left-2 rounded-md bg-emerald-600 px-2 py-0.5 text-[10px] font-extrabold text-white uppercase tracking-wider">
-                33% OFF
+            <div class="relative aspect-square overflow-hidden rounded-lg bg-slate-50 mb-3 flex items-center justify-center p-2">
+              <img src="{% static 'images/cat-sealant.jpg' %}" alt="Silicone Sealant" class="max-h-full object-contain transition-transform duration-300 group-hover:scale-105">
+              <span class="absolute top-2 left-2 rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] font-extrabold text-white">
+                33% off
               </span>
             </div>
-            <span class="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">Kitchen &amp; Bath Care</span>
-            <h3 class="text-sm font-bold text-slate-900 leading-snug group-hover:text-emerald-700 transition-colors mt-1">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+                4.8 <i class="fa-solid fa-star text-[9px]"></i>
+              </span>
+              <span class="text-[11px] text-slate-400 font-medium">(1,920)</span>
+              <span class="ml-auto text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">IN STOCK</span>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2">
               Silicone Waterproof Gap Sealant (280ml)
             </h3>
-            <p class="mt-1 text-[11px] text-slate-500 line-clamp-2">
-              Waterproof silicone sealant to seal sink edges, tiles, and bathroom joints against leaks.
-            </p>
+            <p class="text-[11px] text-slate-500 mt-1 line-clamp-1">Kitchen sink &amp; bathroom tile joint sealant</p>
           </div>
-          <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
             <div>
               <div class="flex items-baseline gap-1.5">
-                <span class="text-base font-extrabold text-slate-900">₹215</span>
+                <span class="text-lg font-black text-slate-900">₹215</span>
                 <span class="text-xs text-slate-400 line-through">₹320</span>
               </div>
+              <span class="text-[10px] text-emerald-600 font-bold block">Save ₹105</span>
             </div>
-            <button type="button" onclick="addToCart('prod_1', 'Silicone Waterproof Gap Sealant (280ml)', 215, '{% static 'images/cat-sealant.jpg' %}')" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-colors">
-              <i class="fa-solid fa-plus text-[10px]"></i>
-              <span>Add</span>
+            <button type="button" onclick="event.stopPropagation(); addToCart('sealant', 'Silicone Waterproof Gap Sealant (280ml)', 215, '{% static 'images/cat-sealant.jpg' %}')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3 py-1.5 text-xs font-bold shadow-xs transition-colors flex items-center gap-1">
+              <i class="fa-solid fa-plus text-[10px]"></i> Add
             </button>
           </div>
-        </article>
+        </div>
 
         <!-- Product 2: 8-Piece Plumber Tool Kit -->
-        <article class="product-card group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-md" data-category="hardware" data-keywords="tool toolkit plier wrench hammer screwdriver hardware">
+        <div onclick="selectItem('toolkit', 'hardware', '8-Piece Master Handyman Tool Kit')" class="catalog-card cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition-all duration-200 hover:border-emerald-500 hover:shadow-md bg-white" data-category="hardware" data-id="toolkit">
           <div>
-            <div class="relative aspect-square overflow-hidden rounded-xl bg-slate-50 mb-3.5">
-              <img src="{% static 'images/prod-toolkit.jpg' %}" alt="8-Piece Plumber Tool Kit" class="size-full object-cover transition-transform duration-300 group-hover:scale-105" />
-              <span class="absolute top-2 left-2 rounded-md bg-emerald-600 px-2 py-0.5 text-[10px] font-extrabold text-white uppercase tracking-wider">
-                30% OFF
+            <div class="relative aspect-square overflow-hidden rounded-lg bg-slate-50 mb-3 flex items-center justify-center p-2">
+              <img src="{% static 'images/prod-toolkit.jpg' %}" alt="8-Piece Tool Kit" class="max-h-full object-contain transition-transform duration-300 group-hover:scale-105">
+              <span class="absolute top-2 left-2 rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] font-extrabold text-white">
+                30% off
               </span>
             </div>
-            <span class="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">Hardware &amp; Tools</span>
-            <h3 class="text-sm font-bold text-slate-900 leading-snug group-hover:text-emerald-700 transition-colors mt-1">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+                4.9 <i class="fa-solid fa-star text-[9px]"></i>
+              </span>
+              <span class="text-[11px] text-slate-400 font-medium">(3,450)</span>
+              <span class="ml-auto text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">IN STOCK</span>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2">
               8-Piece Plumber &amp; Handyman Tool Kit
             </h3>
-            <p class="mt-1 text-[11px] text-slate-500 line-clamp-2">
-              Durable everyday tools including adjustable wrench, pliers, claw hammer, and precision drivers.
-            </p>
+            <p class="text-[11px] text-slate-500 mt-1 line-clamp-1">Adjustable wrench, pliers, hammer &amp; drivers</p>
           </div>
-          <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
             <div>
               <div class="flex items-baseline gap-1.5">
-                <span class="text-base font-extrabold text-slate-900">₹899</span>
+                <span class="text-lg font-black text-slate-900">₹899</span>
                 <span class="text-xs text-slate-400 line-through">₹1,299</span>
               </div>
+              <span class="text-[10px] text-emerald-600 font-bold block">Save ₹400</span>
             </div>
-            <button type="button" onclick="addToCart('prod_2', '8-Piece Plumber Tool Kit', 899, '{% static 'images/prod-toolkit.jpg' %}')" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-colors">
-              <i class="fa-solid fa-plus text-[10px]"></i>
-              <span>Add</span>
+            <button type="button" onclick="event.stopPropagation(); addToCart('toolkit', '8-Piece Master Handyman Tool Kit', 899, '{% static 'images/prod-toolkit.jpg' %}')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3 py-1.5 text-xs font-bold shadow-xs transition-colors flex items-center gap-1">
+              <i class="fa-solid fa-plus text-[10px]"></i> Add
             </button>
           </div>
-        </article>
+        </div>
 
         <!-- Product 3: 12W Inverter Emergency LED Bulb -->
-        <article class="product-card group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-md" data-category="hardware" data-keywords="led bulb light emergency inverter rechargeable hardware">
+        <div onclick="selectItem('led-bulb', 'hardware', '12W Inverter Emergency Rechargeable LED Bulb')" class="catalog-card cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition-all duration-200 hover:border-emerald-500 hover:shadow-md bg-white" data-category="hardware" data-id="led-bulb">
           <div>
-            <div class="relative aspect-square overflow-hidden rounded-xl bg-slate-50 mb-3.5 flex items-center justify-center p-6 bg-gradient-to-br from-amber-50 to-orange-50">
+            <div class="relative aspect-square overflow-hidden rounded-lg bg-amber-50/60 mb-3 flex items-center justify-center p-4">
               <i class="fa-regular fa-lightbulb text-6xl text-amber-500 transition-transform duration-300 group-hover:scale-110"></i>
-              <span class="absolute top-2 left-2 rounded-md bg-emerald-600 px-2 py-0.5 text-[10px] font-extrabold text-white uppercase tracking-wider">
-                30% OFF
+              <span class="absolute top-2 left-2 rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] font-extrabold text-white">
+                30% off
               </span>
             </div>
-            <span class="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">Electrical Hardware</span>
-            <h3 class="text-sm font-bold text-slate-900 leading-snug group-hover:text-emerald-700 transition-colors mt-1">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+                4.7 <i class="fa-solid fa-star text-[9px]"></i>
+              </span>
+              <span class="text-[11px] text-slate-400 font-medium">(840)</span>
+              <span class="ml-auto text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">IN STOCK</span>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2">
               12W Inverter Rechargeable Emergency LED Bulb
             </h3>
-            <p class="mt-1 text-[11px] text-slate-500 line-clamp-2">
-              Automatically switches on during power cuts. 4-hour backup runtime with daylight-white brightness.
-            </p>
+            <p class="text-[11px] text-slate-500 mt-1 line-clamp-1">Turns on automatically during power cuts</p>
           </div>
-          <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
             <div>
               <div class="flex items-baseline gap-1.5">
-                <span class="text-base font-extrabold text-slate-900">₹349</span>
+                <span class="text-lg font-black text-slate-900">₹349</span>
                 <span class="text-xs text-slate-400 line-through">₹499</span>
               </div>
+              <span class="text-[10px] text-emerald-600 font-bold block">Save ₹150</span>
             </div>
-            <button type="button" onclick="addToCart('prod_3', '12W Inverter Emergency LED Bulb', 349, '')" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-colors">
-              <i class="fa-solid fa-plus text-[10px]"></i>
-              <span>Add</span>
+            <button type="button" onclick="event.stopPropagation(); addToCart('led-bulb', '12W Inverter Emergency LED Bulb', 349, '')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3 py-1.5 text-xs font-bold shadow-xs transition-colors flex items-center gap-1">
+              <i class="fa-solid fa-plus text-[10px]"></i> Add
             </button>
           </div>
-        </article>
+        </div>
 
         <!-- Product 4: Heavy-Duty Eco Drain Opener Gel -->
-        <article class="product-card group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-md" data-category="bath-kitchen" data-keywords="drain opener gel unclog plumbing pipe bathroom cleaner">
+        <div onclick="selectItem('drain-gel', 'bath-kitchen', 'Heavy-Duty Eco Drain Opener Gel (1L)')" class="catalog-card cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition-all duration-200 hover:border-emerald-500 hover:shadow-md bg-white" data-category="bath-kitchen" data-id="drain-gel">
           <div>
-            <div class="relative aspect-square overflow-hidden rounded-xl bg-slate-50 mb-3.5 flex items-center justify-center p-6 bg-gradient-to-br from-cyan-50 to-blue-50">
+            <div class="relative aspect-square overflow-hidden rounded-lg bg-sky-50/60 mb-3 flex items-center justify-center p-4">
               <i class="fa-solid fa-droplet text-6xl text-sky-500 transition-transform duration-300 group-hover:scale-110"></i>
-              <span class="absolute top-2 left-2 rounded-md bg-emerald-600 px-2 py-0.5 text-[10px] font-extrabold text-white uppercase tracking-wider">
-                24% OFF
+              <span class="absolute top-2 left-2 rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] font-extrabold text-white">
+                24% off
               </span>
             </div>
-            <span class="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">Kitchen &amp; Bath Care</span>
-            <h3 class="text-sm font-bold text-slate-900 leading-snug group-hover:text-emerald-700 transition-colors mt-1">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+                4.8 <i class="fa-solid fa-star text-[9px]"></i>
+              </span>
+              <span class="text-[11px] text-slate-400 font-medium">(2,110)</span>
+              <span class="ml-auto text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">IN STOCK</span>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2">
               Heavy-Duty Eco Drain Opener Gel (1L)
             </h3>
-            <p class="mt-1 text-[11px] text-slate-500 line-clamp-2">
-              Breaks down hair and grease clogs in sinks and shower drains safely without harming PVC pipes.
-            </p>
+            <p class="text-[11px] text-slate-500 mt-1 line-clamp-1">Dissolves hair and kitchen grease blockages</p>
           </div>
-          <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
             <div>
               <div class="flex items-baseline gap-1.5">
-                <span class="text-base font-extrabold text-slate-900">₹189</span>
+                <span class="text-lg font-black text-slate-900">₹189</span>
                 <span class="text-xs text-slate-400 line-through">₹250</span>
               </div>
+              <span class="text-[10px] text-emerald-600 font-bold block">Save ₹61</span>
             </div>
-            <button type="button" onclick="addToCart('prod_4', 'Heavy-Duty Eco Drain Opener Gel (1L)', 189, '')" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-colors">
-              <i class="fa-solid fa-plus text-[10px]"></i>
-              <span>Add</span>
+            <button type="button" onclick="event.stopPropagation(); addToCart('drain-gel', 'Heavy-Duty Eco Drain Opener Gel (1L)', 189, '')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3 py-1.5 text-xs font-bold shadow-xs transition-colors flex items-center gap-1">
+              <i class="fa-solid fa-plus text-[10px]"></i> Add
             </button>
           </div>
-        </article>
+        </div>
 
       </div>
     </section>
 
-    <!-- 6. DOORSTEP LOGISTICS & 6-DIGIT OTP SECURITY -->
-    <section class="grid overflow-hidden rounded-3xl bg-amber-50 md:grid-cols-2 border border-amber-200/80 shadow-xs">
-      <div class="flex flex-col justify-center gap-4 p-8 sm:p-10 lg:p-12">
-        <div class="size-11 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-700">
-          <i class="fa-solid fa-truck-fast text-xl"></i>
+    <!-- 8. DOORSTEP LOGISTICS & 6-DIGIT OTP VERIFICATION -->
+    <section class="grid overflow-hidden rounded-2xl bg-white border border-slate-200/90 shadow-xs md:grid-cols-2">
+      <div class="p-6 sm:p-10 flex flex-col justify-center space-y-4">
+        <div class="inline-flex items-center gap-2 rounded-md bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800 border border-amber-200 w-fit">
+          <i class="fa-solid fa-truck-fast text-amber-600"></i> Express Local Logistics
         </div>
-        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
           Delivered Directly to Your Doorstep
         </h2>
-        <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
-          Every physical order and service booking is verified with your personal <strong>6-digit OTP</strong>. Our delivery partners and service providers confirm the handover right at your door before closing the job.
+        <p class="text-slate-600 text-sm leading-relaxed">
+          Every physical package and completed home service is confirmed with your <strong>personal 6-digit OTP</strong>. Our local riders and technicians verify handover on-the-spot so you never have to worry about misdeliveries.
         </p>
-        <div class="pt-2">
-          <button type="button" onclick="setMode('products'); scrollToCatalog();" class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-slate-800 transition-colors">
-            <span>Shop All Essentials</span>
-            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        <div class="pt-2 flex items-center gap-3">
+          <button type="button" onclick="setMode('products'); scrollToCatalog();" class="rounded-lg bg-[#2874f0] px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors">
+            Shop Genuine Essentials
           </button>
+          <span class="text-xs text-slate-500 font-medium">Free delivery over ₹499</span>
         </div>
       </div>
-      <div class="relative min-h-[280px]">
-        <img
-          src="{% static 'images/delivery-rider.jpg' %}"
-          alt="A delivery partner holding a sealed package at a doorstep"
-          class="size-full object-cover"
-        />
+      <div class="relative min-h-[260px] bg-slate-100">
+        <img src="{% static 'images/delivery-rider.jpg' %}" alt="Delivery Partner" class="size-full object-cover">
       </div>
     </section>
 
-    <!-- 7. WHY CUSTOMERS FEEL COMFORTABLE WITH SINDHIGA -->
-    <section class="scroll-mt-24 py-4">
-      <div class="mb-6 text-center sm:text-left">
-        <h2 class="text-2xl font-bold tracking-tight text-slate-900">Why Customers Feel Comfortable with Sindhiga</h2>
-        <p class="text-sm text-slate-500 mt-1">Four core principles that protect every home booking and product delivery</p>
-      </div>
-
-      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
-          <span class="mb-4 flex size-11 items-center justify-center rounded-xl bg-sky-100 text-sky-700">
-            <i class="fa-solid fa-receipt text-lg"></i>
-          </span>
-          <h3 class="font-bold text-slate-900 leading-snug">Upfront Fixed Prices</h3>
-          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-            What you see is what you pay. No hidden visit charges, surprising rate cards, or unexpected bill additions.
-          </p>
-        </div>
-
-        <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
-          <span class="mb-4 flex size-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
-            <i class="fa-solid fa-user-check text-lg"></i>
-          </span>
-          <h3 class="font-bold text-slate-900 leading-snug">100% Verified Technicians</h3>
-          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-            Government ID, background verification, and skills check completed before any provider is dispatched.
-          </p>
-        </div>
-
-        <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
-          <span class="mb-4 flex size-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
-            <i class="fa-solid fa-lock text-lg"></i>
-          </span>
-          <h3 class="font-bold text-slate-900 leading-snug">6-Digit OTP Security</h3>
-          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-            A secure one-time code generated in your app confirms every product delivery and finished home job.
-          </p>
-        </div>
-
-        <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
-          <span class="mb-4 flex size-11 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
-            <i class="fa-solid fa-rotate-left text-lg"></i>
-          </span>
-          <h3 class="font-bold text-slate-900 leading-snug">7-Day Free Re-Work</h3>
-          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-            If the repair or installation does not hold up, we send a technician back to your home at zero additional charge.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 8. LIVE OPERATIONAL COUNTERS (GSAP SCROLLTRIGGER ANIMATED) -->
-    <section class="rounded-3xl bg-gradient-to-r from-sky-700 to-cyan-600 p-8 text-white md:p-12 shadow-lg shadow-sky-900/10">
-      <div class="grid gap-8 text-center md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/20">
-        <div class="pt-4 md:pt-0">
-          <p class="text-4xl md:text-5xl font-black tracking-tight">
+    <!-- 9. STATS COUNTER SECTION (GSAP SCROLLTRIGGER) -->
+    <section class="rounded-2xl bg-[#131921] p-6 sm:p-10 text-white shadow-md">
+      <div class="grid gap-6 text-center md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-700">
+        <div class="pt-3 md:pt-0">
+          <p class="text-3xl sm:text-4xl font-black text-amber-400">
             <span data-count="12400">0</span>+
           </p>
-          <p class="mt-2 text-xs sm:text-sm font-medium text-sky-100 uppercase tracking-wider">Jobs &amp; Bookings Completed</p>
+          <p class="mt-1 text-xs text-slate-300 font-semibold uppercase tracking-wider">Home Bookings Finished</p>
         </div>
-        <div class="pt-6 md:pt-0">
-          <p class="text-4xl md:text-5xl font-black tracking-tight">
+        <div class="pt-5 md:pt-0">
+          <p class="text-3xl sm:text-4xl font-black text-amber-400">
             <span data-count="850">0</span>+
           </p>
-          <p class="mt-2 text-xs sm:text-sm font-medium text-sky-100 uppercase tracking-wider">Verified Technicians &amp; Riders</p>
+          <p class="mt-1 text-xs text-slate-300 font-semibold uppercase tracking-wider">Certified Technicians &amp; Riders</p>
         </div>
-        <div class="pt-6 md:pt-0">
-          <p class="text-4xl md:text-5xl font-black tracking-tight">
+        <div class="pt-5 md:pt-0">
+          <p class="text-3xl sm:text-4xl font-black text-amber-400">
             <span data-count="30000">0</span>+
           </p>
-          <p class="mt-2 text-xs sm:text-sm font-medium text-sky-100 uppercase tracking-wider">Essentials Orders Delivered</p>
+          <p class="mt-1 text-xs text-slate-300 font-semibold uppercase tracking-wider">Orders Delivered Securely</p>
         </div>
       </div>
     </section>
 
-    <!-- 9. AUTHENTIC CUSTOMER REVIEWS -->
-    <section class="scroll-mt-24 py-4">
-      <div class="mb-6">
-        <h2 class="text-2xl font-bold tracking-tight text-slate-900">Authentic Customer Reviews</h2>
-        <p class="text-sm text-slate-500 mt-0.5">Real verified households in Bengaluru sharing their experience</p>
+    <!-- 10. AUTHENTIC CUSTOMER REVIEWS -->
+    <section class="bg-white rounded-xl p-5 sm:p-6 border border-slate-200/90 shadow-xs">
+      <div class="mb-5 border-b border-slate-100 pb-3">
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Customer Ratings &amp; Reviews</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Real feedback from verified households in Bengaluru</p>
       </div>
 
-      <div class="grid gap-6 md:grid-cols-3">
-        <figure class="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+      <div class="grid gap-4 md:grid-cols-3">
+        <div class="rounded-lg border border-slate-200 p-4 bg-slate-50/50 flex flex-col justify-between">
           <div>
-            <div class="flex gap-1 text-amber-400 text-sm mb-3">
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
+            <div class="flex items-center gap-1.5 mb-2">
+              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                5 <i class="fa-solid fa-star text-[8px]"></i>
+              </span>
+              <span class="text-xs font-bold text-slate-800">Split AC Servicing</span>
             </div>
-            <blockquote class="text-sm text-slate-700 leading-relaxed">
-              &ldquo;Two split ACs were serviced within the morning slot window. The technician explained every step and left no mess on the floor.&rdquo;
-            </blockquote>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              &ldquo;The technician arrived in uniform on time, put plastic covers to avoid water leakage on walls, and the cooling is back to 100%.&rdquo;
+            </p>
           </div>
-          <figcaption class="flex items-center justify-between border-t border-slate-100 pt-3 text-xs">
-            <div>
-              <span class="block font-bold text-slate-900">Anita R.</span>
-              <span class="text-slate-400">HSR Layout, Bengaluru</span>
-            </div>
-            <span class="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[11px]">
-              <i class="fa-solid fa-circle-check text-xs"></i> Verified Job
-            </span>
-          </figcaption>
-        </figure>
+          <div class="mt-3 pt-2 border-t border-slate-200/60 text-[11px] text-slate-500 flex justify-between">
+            <span class="font-bold text-slate-800">Anita R. &bull; HSR Layout</span>
+            <span class="text-emerald-700 font-semibold"><i class="fa-solid fa-circle-check"></i> Verified Job</span>
+          </div>
+        </div>
 
-        <figure class="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+        <div class="rounded-lg border border-slate-200 p-4 bg-slate-50/50 flex flex-col justify-between">
           <div>
-            <div class="flex gap-1 text-amber-400 text-sm mb-3">
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
+            <div class="flex items-center gap-1.5 mb-2">
+              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                5 <i class="fa-solid fa-star text-[8px]"></i>
+              </span>
+              <span class="text-xs font-bold text-slate-800">Switchboard &amp; MCB Repair</span>
             </div>
-            <blockquote class="text-sm text-slate-700 leading-relaxed">
-              &ldquo;The switchboard repair was quoted upfront, with no surprise charges at the end. Arrived in 25 minutes after booking.&rdquo;
-            </blockquote>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              &ldquo;Fixed the main MCB tripping problem in 20 minutes. Upfront quoted rate with no hidden charges at all.&rdquo;
+            </p>
           </div>
-          <figcaption class="flex items-center justify-between border-t border-slate-100 pt-3 text-xs">
-            <div>
-              <span class="block font-bold text-slate-900">Vikram S.</span>
-              <span class="text-slate-400">Indiranagar, Bengaluru</span>
-            </div>
-            <span class="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[11px]">
-              <i class="fa-solid fa-circle-check text-xs"></i> Verified Job
-            </span>
-          </figcaption>
-        </figure>
+          <div class="mt-3 pt-2 border-t border-slate-200/60 text-[11px] text-slate-500 flex justify-between">
+            <span class="font-bold text-slate-800">Vikram S. &bull; Indiranagar</span>
+            <span class="text-emerald-700 font-semibold"><i class="fa-solid fa-circle-check"></i> Verified Job</span>
+          </div>
+        </div>
 
-        <figure class="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+        <div class="rounded-lg border border-slate-200 p-4 bg-slate-50/50 flex flex-col justify-between">
           <div>
-            <div class="flex gap-1 text-amber-400 text-sm mb-3">
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
+            <div class="flex items-center gap-1.5 mb-2">
+              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                5 <i class="fa-solid fa-star text-[8px]"></i>
+              </span>
+              <span class="text-xs font-bold text-slate-800">Sealant &amp; Tool Kit</span>
             </div>
-            <blockquote class="text-sm text-slate-700 leading-relaxed">
-              &ldquo;Ordered sealant and a tool kit together. The rider was polite and the OTP handover took less than 10 seconds.&rdquo;
-            </blockquote>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              &ldquo;Ordered silicone sealant and the handyman tool set together. Fast delivery, rider confirmed with OTP at the door.&rdquo;
+            </p>
           </div>
-          <figcaption class="flex items-center justify-between border-t border-slate-100 pt-3 text-xs">
-            <div>
-              <span class="block font-bold text-slate-900">Meera D.</span>
-              <span class="text-slate-400">Koramangala, Bengaluru</span>
-            </div>
-            <span class="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[11px]">
-              <i class="fa-solid fa-circle-check text-xs"></i> Verified Order
-            </span>
-          </figcaption>
-        </figure>
+          <div class="mt-3 pt-2 border-t border-slate-200/60 text-[11px] text-slate-500 flex justify-between">
+            <span class="font-bold text-slate-800">Meera D. &bull; Koramangala</span>
+            <span class="text-emerald-700 font-semibold"><i class="fa-solid fa-circle-check"></i> Verified Order</span>
+          </div>
+        </div>
       </div>
     </section>
 
   </main>
 
   <!-- ===================================================================== -->
-  <!-- 10. REASSURING FOOTER                                                 -->
+  <!-- 11. AMAZON/FLIPKART STYLE FOOTER                                      -->
   <!-- ===================================================================== -->
-  <footer class="mt-16 border-t border-slate-200 bg-white">
+  <footer class="mt-12 bg-[#131921] text-slate-300 text-xs">
+    <!-- Back to Top Bar -->
+    <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" class="block bg-[#232f3e] py-3 text-center text-xs font-semibold text-white hover:bg-slate-700 transition-colors">
+      Back to top <i class="fa-solid fa-arrow-up text-[10px] ml-1"></i>
+    </a>
+
     <div class="mx-auto max-w-7xl px-4 sm:px-6 py-12">
       <div class="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
         <div>
           <div class="flex items-center gap-2 mb-3">
-            <span class="flex size-8 items-center justify-center rounded-lg bg-sky-600 text-white">
-              <i class="fa-solid fa-toolbox text-sm"></i>
+            <span class="flex size-7 items-center justify-center rounded bg-yellow-400 text-slate-900 font-black">
+              <i class="fa-solid fa-boxes-packing text-xs"></i>
             </span>
-            <span class="text-base font-extrabold text-slate-900">Sindhiga Enterprises</span>
+            <span class="text-base font-bold text-white">Sindhiga Enterprises</span>
           </div>
-          <p class="text-xs text-slate-500 leading-relaxed">
-            Your single destination for certified doorstep home repairs, certified technicians, and genuine everyday home maintenance essentials.
+          <p class="text-slate-400 leading-relaxed mb-3">
+            India's dedicated dual platform for certified home services and genuine hardware repair essentials.
           </p>
-          <div class="mt-4 flex gap-3 text-slate-400">
-            <a href="#" class="hover:text-sky-600 transition-colors"><i class="fa-brands fa-facebook-f text-sm"></i></a>
-            <a href="#" class="hover:text-sky-600 transition-colors"><i class="fa-brands fa-twitter text-sm"></i></a>
-            <a href="#" class="hover:text-sky-600 transition-colors"><i class="fa-brands fa-instagram text-sm"></i></a>
-            <a href="#" class="hover:text-sky-600 transition-colors"><i class="fa-brands fa-linkedin-in text-sm"></i></a>
+          <div class="flex gap-3 text-slate-400">
+            <i class="fa-brands fa-facebook-f text-sm hover:text-white cursor-pointer"></i>
+            <i class="fa-brands fa-twitter text-sm hover:text-white cursor-pointer"></i>
+            <i class="fa-brands fa-instagram text-sm hover:text-white cursor-pointer"></i>
           </div>
         </div>
 
         <div>
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 mb-3.5">Home Services</h3>
-          <ul class="space-y-2 text-xs text-slate-600">
-            <li><button type="button" onclick="filterByCategory('ac', 'services')" class="hover:text-sky-600">AC Servicing &amp; Repair</button></li>
-            <li><button type="button" onclick="filterByCategory('electrician', 'services')" class="hover:text-sky-600">Electricians</button></li>
-            <li><button type="button" onclick="filterByCategory('plumber', 'services')" class="hover:text-sky-600">Plumbing &amp; Leak Repair</button></li>
-            <li><button type="button" onclick="filterByCategory('cleaning', 'services')" class="hover:text-sky-600">Deep Home Cleaning</button></li>
-            <li><button type="button" onclick="filterByCategory('salon', 'services')" class="hover:text-sky-600">At-Home Salon &amp; Grooming</button></li>
+          <h3 class="font-bold text-white text-sm mb-3">Home Services</h3>
+          <ul class="space-y-2 text-slate-400">
+            <li><button type="button" onclick="filterByCategory('ac', 'services')" class="hover:underline">AC Servicing &amp; Gas Check</button></li>
+            <li><button type="button" onclick="filterByCategory('electrician', 'services')" class="hover:underline">Switchboard &amp; MCB Repair</button></li>
+            <li><button type="button" onclick="filterByCategory('plumber', 'services')" class="hover:underline">Tap, Pipe &amp; Flush Tank Fix</button></li>
+            <li><button type="button" onclick="filterByCategory('cleaning', 'services')" class="hover:underline">Deep Steam Kitchen Cleaning</button></li>
+            <li><button type="button" onclick="filterByCategory('salon', 'services')" class="hover:underline">At-Home Salon &amp; Spa</button></li>
           </ul>
         </div>
 
         <div>
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 mb-3.5">E-Commerce Store</h3>
-          <ul class="space-y-2 text-xs text-slate-600">
-            <li><button type="button" onclick="filterByCategory('bath-kitchen', 'products')" class="hover:text-sky-600">Waterproof Sealants</button></li>
-            <li><button type="button" onclick="filterByCategory('hardware', 'products')" class="hover:text-sky-600">Handyman Tool Kits</button></li>
-            <li><button type="button" onclick="filterByCategory('hardware', 'products')" class="hover:text-sky-600">Emergency Inverter Bulbs</button></li>
-            <li><button type="button" onclick="filterByCategory('bath-kitchen', 'products')" class="hover:text-sky-600">Eco Drain Uncloggers</button></li>
+          <h3 class="font-bold text-white text-sm mb-3">Online Essentials</h3>
+          <ul class="space-y-2 text-slate-400">
+            <li><button type="button" onclick="filterByCategory('bath-kitchen', 'products')" class="hover:underline">Waterproof Silicone Sealants</button></li>
+            <li><button type="button" onclick="filterByCategory('hardware', 'products')" class="hover:underline">Handyman Tool Kits</button></li>
+            <li><button type="button" onclick="filterByCategory('hardware', 'products')" class="hover:underline">Emergency LED Inverter Bulbs</button></li>
+            <li><button type="button" onclick="filterByCategory('bath-kitchen', 'products')" class="hover:underline">Eco Drain Cleaner Gels</button></li>
           </ul>
         </div>
 
         <div>
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 mb-3.5">Partner With Us</h3>
-          <ul class="space-y-2 text-xs text-slate-600">
-            <li><a href="{% url 'super_admin_login' %}" class="hover:text-sky-600">Service Provider Portal</a></li>
-            <li><a href="{% url 'super_admin_login' %}" class="hover:text-sky-600">Delivery Partner Portal</a></li>
-            <li><a href="{% url 'super_admin_dashboard' %}" class="hover:text-sky-600">Admin Dashboard</a></li>
-            <li><button type="button" onclick="showToast('Customer support desk is live 24/7.')" class="hover:text-sky-600">24/7 Help Desk</button></li>
+          <h3 class="font-bold text-white text-sm mb-3">Make Money With Us</h3>
+          <ul class="space-y-2 text-slate-400">
+            <li><a href="{% url 'register_vendor' %}" class="hover:underline">Join as Service Provider</a></li>
+            <li><a href="{% url 'register_vendor' %}" class="hover:underline">Join as Delivery Partner</a></li>
+            <li><a href="{% url 'super_admin_login' %}" class="hover:underline">Admin Portal Access</a></li>
+            <li><span class="text-amber-400 font-semibold">24/7 Helpline: 1800-SINDHIGA</span></li>
           </ul>
         </div>
       </div>
 
-      <div class="mt-10 border-t border-slate-100 pt-6 flex flex-wrap items-center justify-between text-xs text-slate-400">
-        <p>&copy; 2026 Sindhiga Enterprises. All rights reserved.</p>
-        <div class="flex gap-4">
-          <a href="#" class="hover:underline">Privacy Policy</a>
-          <a href="#" class="hover:underline">Terms of Service</a>
-          <a href="#" class="hover:underline">Safety Standards</a>
-        </div>
+      <div class="mt-10 border-t border-slate-700 pt-6 text-center text-slate-500 text-xs">
+        &copy; 2026 Sindhiga Enterprises Private Limited. All rights reserved.
       </div>
     </div>
   </footer>
 
   <!-- ===================================================================== -->
-  <!-- SLIDE-OVER CART DRAWER                                                -->
+  <!-- SLIDE-OVER CART DRAWER (AMAZON/FLIPKART STYLE)                        -->
   <!-- ===================================================================== -->
-  <div id="cartBackdrop" onclick="toggleCartDrawer(false)" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs transition-opacity"></div>
+  <div id="cartBackdrop" onclick="toggleCartDrawer(false)" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity"></div>
   <aside id="cartDrawer" class="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between">
     <div>
-      <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+      <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4 bg-[#131921] text-white">
         <div class="flex items-center gap-2">
-          <i class="fa-solid fa-cart-shopping text-sky-600 text-sm"></i>
-          <h3 class="text-base font-bold text-slate-900">Your Shopping Cart</h3>
-          <span id="drawerCartCountPill" class="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-bold text-sky-800">0</span>
+          <i class="fa-solid fa-cart-shopping text-amber-400 text-base"></i>
+          <h3 class="text-base font-bold">Shopping Cart</h3>
+          <span id="drawerCartCountPill" class="rounded-full bg-orange-600 px-2 py-0.5 text-xs font-bold text-white">0</span>
         </div>
-        <button type="button" onclick="toggleCartDrawer(false)" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+        <button type="button" onclick="toggleCartDrawer(false)" class="rounded-lg p-1.5 text-slate-300 hover:text-white transition-colors">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
 
       <!-- Items List -->
       <div id="cartItemsList" class="custom-scrollbar max-h-[60vh] overflow-y-auto p-5 divide-y divide-slate-100">
-        <!-- Rendered dynamically via JS -->
+        <!-- Rendered dynamically -->
       </div>
     </div>
 
-    <!-- Bill Summary & Checkout -->
+    <!-- Bill Summary & Checkout Button -->
     <div class="border-t border-slate-200 bg-slate-50 p-5 space-y-3">
-      <div class="flex items-center justify-between text-sm text-slate-600">
+      <div class="flex items-center justify-between text-xs text-slate-600">
         <span>Delivery partner fee</span>
-        <span class="font-semibold text-emerald-600">FREE</span>
+        <span class="font-bold text-emerald-600">FREE</span>
       </div>
-      <div class="flex items-center justify-between text-base font-bold text-slate-900">
+      <div class="flex items-center justify-between text-base font-black text-slate-900">
         <span>Subtotal</span>
-        <span id="cartSubtotal">₹0</span>
+        <span id="cartSubtotal" class="text-xl text-slate-950 font-black">₹0</span>
       </div>
-      <button type="button" onclick="proceedToCheckout()" class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-md hover:bg-emerald-700 transition-colors">
-        <i class="fa-solid fa-shield-halved text-xs"></i>
-        <span>Proceed to Doorstep Delivery</span>
+      <button type="button" onclick="proceedToCheckout()" class="w-full rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] py-3 text-sm font-extrabold text-slate-950 shadow-md transition-colors">
+        Proceed to Checkout
       </button>
-      <p class="text-center text-[11px] text-slate-400">
-        <i class="fa-solid fa-lock mr-1"></i>Verified 6-digit OTP required upon delivery handover
+      <p class="text-center text-[11px] text-slate-500">
+        <i class="fa-solid fa-lock text-emerald-600 mr-1"></i>Secure 6-digit OTP verification upon delivery
       </p>
     </div>
   </aside>
 
   <!-- ===================================================================== -->
-  <!-- MODAL: SERVICE TIME-SLOT BOOKING                                      -->
+  <!-- MODAL: TIME-SLOT BOOKING MODAL                                        -->
   <!-- ===================================================================== -->
-  <div id="bookingModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-    <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+  <div id="bookingModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+    <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <div>
-          <span class="text-[11px] font-bold text-sky-700 uppercase">Service Slot Booking</span>
+          <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider">Doorstep Service Booking</span>
           <h3 id="modalServiceTitle" class="text-lg font-bold text-slate-900">Service Title</h3>
         </div>
-        <button type="button" onclick="closeBookingModal()" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+        <button type="button" onclick="closeBookingModal()" class="rounded-lg p-1 text-slate-400 hover:bg-slate-100">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
 
-      <div class="space-y-4">
+      <div class="space-y-3.5">
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1.5">Select Service Date</label>
-          <input type="date" id="serviceBookingDate" class="w-full rounded-xl border border-slate-300 p-2.5 text-sm text-slate-800 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500" />
+          <label class="block text-xs font-bold text-slate-700 mb-1">Select Service Date</label>
+          <input type="date" id="serviceBookingDate" class="w-full rounded-lg border border-slate-300 p-2 text-sm text-slate-800 outline-none focus:border-blue-500" />
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1.5">Select Preferred Time Slot</label>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Select Preferred Arrival Slot</label>
           <div class="grid grid-cols-2 gap-2 text-xs font-semibold">
-            <button type="button" onclick="selectSlot(this, '09:00 AM - 11:00 AM (Morning)')" class="slot-pill rounded-xl border border-sky-600 bg-sky-50 text-sky-800 p-2.5 text-center">
+            <button type="button" onclick="selectSlot(this, '09:00 AM - 11:00 AM (Morning)')" class="slot-pill rounded-lg border border-blue-600 bg-blue-50 text-blue-800 p-2.5 text-center">
               09:00 AM - 11:00 AM<br><span class="text-[10px] text-slate-500 font-normal">Morning Slot</span>
             </button>
-            <button type="button" onclick="selectSlot(this, '11:00 AM - 01:00 PM (Midday)')" class="slot-pill rounded-xl border border-slate-200 bg-white text-slate-700 p-2.5 text-center hover:border-slate-300">
+            <button type="button" onclick="selectSlot(this, '11:00 AM - 01:00 PM (Midday)')" class="slot-pill rounded-lg border border-slate-200 bg-white text-slate-700 p-2.5 text-center hover:border-slate-300">
               11:00 AM - 01:00 PM<br><span class="text-[10px] text-slate-500 font-normal">Midday Slot</span>
             </button>
-            <button type="button" onclick="selectSlot(this, '02:00 PM - 04:00 PM (Afternoon)')" class="slot-pill rounded-xl border border-slate-200 bg-white text-slate-700 p-2.5 text-center hover:border-slate-300">
+            <button type="button" onclick="selectSlot(this, '02:00 PM - 04:00 PM (Afternoon)')" class="slot-pill rounded-lg border border-slate-200 bg-white text-slate-700 p-2.5 text-center hover:border-slate-300">
               02:00 PM - 04:00 PM<br><span class="text-[10px] text-slate-500 font-normal">Afternoon Slot</span>
             </button>
-            <button type="button" onclick="selectSlot(this, '04:00 PM - 06:00 PM (Evening)')" class="slot-pill rounded-xl border border-slate-200 bg-white text-slate-700 p-2.5 text-center hover:border-slate-300">
+            <button type="button" onclick="selectSlot(this, '04:00 PM - 06:00 PM (Evening)')" class="slot-pill rounded-lg border border-slate-200 bg-white text-slate-700 p-2.5 text-center hover:border-slate-300">
               04:00 PM - 06:00 PM<br><span class="text-[10px] text-slate-500 font-normal">Evening Slot</span>
             </button>
           </div>
         </div>
 
-        <div class="rounded-xl bg-slate-50 p-3 border border-slate-200 flex items-center justify-between text-xs">
+        <div class="rounded-lg bg-slate-50 p-3 border border-slate-200 flex items-center justify-between text-xs">
           <div>
-            <span class="block text-slate-400">Total payable at completion:</span>
+            <span class="block text-slate-400">Fixed price (Pay after service):</span>
             <span id="modalServicePrice" class="text-base font-extrabold text-slate-900">₹0</span>
           </div>
-          <span class="text-emerald-700 font-bold bg-emerald-100 px-2.5 py-1 rounded-full text-[11px]">
-            <i class="fa-solid fa-shield mr-1"></i>7-Day Guarantee
+          <span class="text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-md text-[11px]">
+            <i class="fa-solid fa-shield mr-1"></i>7-Day Free Re-work
           </span>
         </div>
       </div>
 
-      <div class="flex items-center gap-3 pt-2">
-        <button type="button" onclick="confirmServiceBooking()" class="flex-1 rounded-xl bg-sky-600 py-3 text-xs font-bold text-white shadow-xs hover:bg-sky-700 transition-colors">
+      <div class="flex items-center gap-2 pt-2">
+        <button type="button" onclick="confirmServiceBooking()" class="flex-1 rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] py-2.5 text-xs font-bold text-slate-950 shadow-sm transition-colors">
           Confirm Service Booking
         </button>
-        <button type="button" onclick="closeBookingModal()" class="rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+        <button type="button" onclick="closeBookingModal()" class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">
           Cancel
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ===================================================================== -->
-  <!-- FLOATING TOAST NOTIFICATION                                           -->
-  <!-- ===================================================================== -->
-  <div id="toastNotification" class="fixed bottom-6 right-6 z-50 hidden items-center gap-3 rounded-2xl bg-slate-900 px-4 py-3 text-xs font-semibold text-white shadow-xl transition-all">
+  <!-- FLOATING TOAST -->
+  <div id="toastNotification" class="fixed bottom-6 right-6 z-50 hidden items-center gap-2.5 rounded-xl bg-slate-900 px-4 py-3 text-xs font-bold text-white shadow-2xl transition-all">
     <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
     <span id="toastMessage">Action completed</span>
   </div>
 
   <!-- ===================================================================== -->
-  <!-- LIGHTWEIGHT VANILLA JAVASCRIPT & GSAP SCRIPT                          -->
+  <!-- JAVASCRIPT LOGIC & SIMILAR PRODUCTS ENGINE                            -->
   <!-- ===================================================================== -->
   <script>
-    // State
+    // Master Catalog Data
+    const CATALOG_DATA = {
+      'ac-service': {
+        id: 'ac-service',
+        type: 'service',
+        category: 'ac',
+        title: 'Split AC Complete Servicing',
+        price: 499,
+        duration: '45 mins',
+        img: '{% static "images/cat-ac.jpg" %}',
+        rating: 4.88,
+        reviews: '4,200',
+        similarIds: ['switchboard', 'deep-clean', 'led-bulb', 'toolkit']
+      },
+      'switchboard': {
+        id: 'switchboard',
+        type: 'service',
+        category: 'electrician',
+        title: 'Switchboard, Socket & MCB Repair',
+        price: 149,
+        duration: '30 mins',
+        img: '{% static "images/cat-electrician.jpg" %}',
+        rating: 4.85,
+        reviews: '3,100',
+        similarIds: ['led-bulb', 'toolkit', 'ac-service', 'tap-pipe']
+      },
+      'tap-pipe': {
+        id: 'tap-pipe',
+        type: 'service',
+        category: 'plumber',
+        title: 'Tap, Pipe & Flush Tank Repair',
+        price: 199,
+        duration: '45 mins',
+        img: '{% static "images/cat-plumber.jpg" %}',
+        rating: 4.91,
+        reviews: '5,800',
+        similarIds: ['sealant', 'drain-gel', 'toolkit', 'deep-clean']
+      },
+      'deep-clean': {
+        id: 'deep-clean',
+        type: 'service',
+        category: 'cleaning',
+        title: 'Kitchen & Bathroom Deep Clean',
+        price: 899,
+        duration: '2 hours',
+        img: '{% static "images/cat-cleaning.jpg" %}',
+        rating: 4.86,
+        reviews: '2,400',
+        similarIds: ['sealant', 'drain-gel', 'tap-pipe', 'grooming']
+      },
+      'grooming': {
+        id: 'grooming',
+        type: 'service',
+        category: 'salon',
+        title: 'At-Home Grooming & Salon',
+        price: 349,
+        duration: '40 mins',
+        img: '{% static "images/cat-salon.jpg" %}',
+        rating: 4.93,
+        reviews: '3,800',
+        similarIds: ['deep-clean', 'ac-service', 'sealant', 'toolkit']
+      },
+      'sealant': {
+        id: 'sealant',
+        type: 'product',
+        category: 'bath-kitchen',
+        title: 'Silicone Waterproof Gap Sealant (280ml)',
+        price: 215,
+        mrp: 320,
+        img: '{% static "images/cat-sealant.jpg" %}',
+        rating: 4.8,
+        reviews: '1,920',
+        similarIds: ['drain-gel', 'tap-pipe', 'toolkit', 'deep-clean']
+      },
+      'toolkit': {
+        id: 'toolkit',
+        type: 'product',
+        category: 'hardware',
+        title: '8-Piece Master Handyman Tool Kit',
+        price: 899,
+        mrp: 1299,
+        img: '{% static "images/prod-toolkit.jpg" %}',
+        rating: 4.9,
+        reviews: '3,450',
+        similarIds: ['led-bulb', 'switchboard', 'sealant', 'tap-pipe']
+      },
+      'led-bulb': {
+        id: 'led-bulb',
+        type: 'product',
+        category: 'hardware',
+        title: '12W Inverter Rechargeable Emergency LED Bulb',
+        price: 349,
+        mrp: 499,
+        img: '',
+        icon: 'fa-regular fa-lightbulb text-amber-500',
+        rating: 4.7,
+        reviews: '840',
+        similarIds: ['switchboard', 'toolkit', 'ac-service', 'sealant']
+      },
+      'drain-gel': {
+        id: 'drain-gel',
+        type: 'product',
+        category: 'bath-kitchen',
+        title: 'Heavy-Duty Eco Drain Opener Gel (1L)',
+        price: 189,
+        mrp: 250,
+        img: '',
+        icon: 'fa-solid fa-droplet text-sky-500',
+        rating: 4.8,
+        reviews: '2,110',
+        similarIds: ['sealant', 'tap-pipe', 'deep-clean', 'toolkit']
+      }
+    };
+
     let currentMode = 'services';
     let currentCart = {};
     let selectedSlot = '09:00 AM - 11:00 AM (Morning)';
-    let activeBookingData = null;
 
-    // Set Default Booking Date (Tomorrow)
     window.addEventListener('DOMContentLoaded', () => {
+      // Set Default Booking Date (Tomorrow)
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       const dateInput = document.getElementById('serviceBookingDate');
@@ -1021,7 +1131,7 @@
         dateInput.min = new Date().toISOString().split('T')[0];
       }
 
-      // Initialize GSAP ScrollTrigger Counter Animation
+      // GSAP Counter Animation
       if (typeof gsap !== 'undefined') {
         gsap.registerPlugin(ScrollTrigger);
         document.querySelectorAll('[data-count]').forEach((el) => {
@@ -1044,105 +1154,142 @@
       }
     });
 
-    // Dual-Mode Toggle
+    // CRITICAL FEATURE: CARD CLICK -> HIGHLIGHT & SHOW SIMILAR CATEGORY PRODUCTS
+    function selectItem(itemId, categoryId, itemTitle) {
+      // 1. Remove highlight from all cards, set on clicked card
+      document.querySelectorAll('.catalog-card').forEach(c => c.classList.remove('card-active'));
+      const activeCard = document.querySelector(`[data-id="${itemId}"]`);
+      if (activeCard) activeCard.classList.add('card-active');
+
+      const selected = CATALOG_DATA[itemId];
+      if (!selected) return;
+
+      const section = document.getElementById('similarItemsSection');
+      const subtitle = document.getElementById('similarSectionSubtitle');
+      const grid = document.getElementById('similarItemsGrid');
+
+      subtitle.innerHTML = `Showing similar &amp; complementary essentials based on your selection: <strong class="text-blue-900">${itemTitle}</strong>`;
+
+      // 2. Fetch similar items
+      const similarItems = (selected.similarIds || []).map(id => CATALOG_DATA[id]).filter(Boolean);
+
+      grid.innerHTML = similarItems.map(item => {
+        if (item.type === 'service') {
+          return `
+            <div class="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs flex flex-col justify-between hover:shadow-md transition-all">
+              <div>
+                <div class="aspect-video rounded-lg overflow-hidden bg-slate-100 mb-2.5">
+                  <img src="${item.img}" class="size-full object-cover">
+                </div>
+                <div class="flex items-center gap-1.5 mb-1">
+                  <span class="bg-[#388e3c] text-white text-[10px] font-bold px-1.5 py-0.2 rounded">${item.rating} ★</span>
+                  <span class="text-[10px] text-slate-400">(${item.reviews})</span>
+                  <span class="ml-auto text-[9px] font-bold text-blue-700 bg-blue-50 px-1 rounded">SERVICE</span>
+                </div>
+                <h4 class="text-xs font-bold text-slate-900 line-clamp-1">${item.title}</h4>
+                <p class="text-[11px] text-slate-500 mt-0.5">${item.duration}</p>
+              </div>
+              <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-sm font-extrabold text-slate-900">₹${item.price}</span>
+                <button type="button" onclick="openBookingModal('${item.title}', ${item.price}, '${item.duration}')" class="rounded bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-2.5 py-1 text-[11px] font-bold shadow-xs">
+                  Book Slot
+                </button>
+              </div>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs flex flex-col justify-between hover:shadow-md transition-all">
+              <div>
+                <div class="aspect-square rounded-lg overflow-hidden bg-slate-50 mb-2.5 flex items-center justify-center p-2">
+                  ${item.img ? `<img src="${item.img}" class="max-h-full object-contain">` : `<i class="${item.icon} text-4xl"></i>`}
+                </div>
+                <div class="flex items-center gap-1.5 mb-1">
+                  <span class="bg-[#388e3c] text-white text-[10px] font-bold px-1.5 py-0.2 rounded">${item.rating} ★</span>
+                  <span class="text-[10px] text-slate-400">(${item.reviews})</span>
+                  <span class="ml-auto text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1 rounded">STORE</span>
+                </div>
+                <h4 class="text-xs font-bold text-slate-900 line-clamp-1">${item.title}</h4>
+              </div>
+              <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <div>
+                  <span class="text-sm font-extrabold text-slate-900">₹${item.price}</span>
+                  ${item.mrp ? `<span class="text-[10px] text-slate-400 line-through ml-1">₹${item.mrp}</span>` : ''}
+                </div>
+                <button type="button" onclick="addToCart('${item.id}', '${item.title}', ${item.price}, '${item.img || ''}')" class="rounded bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-2.5 py-1 text-[11px] font-bold shadow-xs flex items-center gap-1">
+                  <i class="fa-solid fa-plus text-[9px]"></i> Add
+                </button>
+              </div>
+            </div>
+          `;
+        }
+      }).join('');
+
+      // Reveal section & smooth scroll
+      section.classList.remove('hidden');
+      section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function closeSimilarSection() {
+      document.getElementById('similarItemsSection').classList.add('hidden');
+      document.querySelectorAll('.catalog-card').forEach(c => c.classList.remove('card-active'));
+    }
+
+    // Category / Mode Selection
     function setMode(mode) {
       currentMode = mode;
       const btnServ = document.getElementById('btnModeServices');
       const btnProd = document.getElementById('btnModeProducts');
-      const heroServ = document.getElementById('heroTabServices');
-      const heroProd = document.getElementById('heroTabProducts');
 
       if (mode === 'services') {
-        btnServ.className = "inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-200 bg-white text-sky-800 shadow-xs";
-        btnProd.className = "inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-200 text-slate-600 hover:text-slate-900";
-        heroServ.className = "rounded-full px-3 py-1 text-sky-800 bg-white shadow-xs transition-all";
-        heroProd.className = "rounded-full px-3 py-1 text-slate-500 hover:text-slate-800 transition-all";
-        
-        document.getElementById('servicesCatalogSection').classList.remove('opacity-50');
-        document.getElementById('productsCatalogSection').classList.add('opacity-75');
+        btnServ.className = "rounded-full px-3 py-1 font-bold text-slate-900 bg-[#febd69] shadow-xs transition-all";
+        btnProd.className = "rounded-full px-3 py-1 font-bold text-slate-300 hover:text-white transition-all";
       } else {
-        btnProd.className = "inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-200 bg-white text-emerald-800 shadow-xs";
-        btnServ.className = "inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-200 text-slate-600 hover:text-slate-900";
-        heroProd.className = "rounded-full px-3 py-1 text-emerald-800 bg-white shadow-xs transition-all";
-        heroServ.className = "rounded-full px-3 py-1 text-slate-500 hover:text-slate-800 transition-all";
-
-        document.getElementById('productsCatalogSection').classList.remove('opacity-75');
-        document.getElementById('servicesCatalogSection').classList.add('opacity-50');
+        btnProd.className = "rounded-full px-3 py-1 font-bold text-slate-900 bg-[#febd69] shadow-xs transition-all";
+        btnServ.className = "rounded-full px-3 py-1 font-bold text-slate-300 hover:text-white transition-all";
       }
     }
 
-    // Search and Filter
-    function handleSearch(query) {
-      const q = query.trim().toLowerCase();
-      let matchedServices = 0;
-      let matchedProducts = 0;
-
-      document.querySelectorAll('.service-card').forEach(card => {
-        const text = (card.innerText + " " + (card.dataset.keywords || '')).toLowerCase();
-        if (!q || text.includes(q)) {
-          card.classList.remove('hidden');
-          matchedServices++;
-        } else {
-          card.classList.add('hidden');
-        }
-      });
-
-      document.querySelectorAll('.product-card').forEach(card => {
-        const text = (card.innerText + " " + (card.dataset.keywords || '')).toLowerCase();
-        if (!q || text.includes(q)) {
-          card.classList.remove('hidden');
-          matchedProducts++;
-        } else {
-          card.classList.add('hidden');
-        }
-      });
-
-      document.getElementById('servicesCounter').textContent = `${matchedServices} services available`;
-      document.getElementById('productsCounter').textContent = `${matchedProducts} essentials available`;
-    }
-
-    function setSearchQuery(term, mode) {
-      const input = document.getElementById('heroSearchInput');
-      input.value = term;
-      setMode(mode);
-      handleSearch(term);
-      scrollToCatalog();
+    function handleCategorySelect(cat) {
+      if (cat === 'all') {
+        filterByCategory('all');
+      } else if (cat === 'services' || cat === 'products') {
+        setMode(cat);
+        scrollToCatalog();
+      } else {
+        filterByCategory(cat);
+      }
     }
 
     function filterByCategory(catId, mode) {
       if (mode) setMode(mode);
-      const clearBtn = document.getElementById('btnClearCategory');
-
       if (catId === 'all') {
-        clearBtn.classList.add('hidden');
-        document.querySelectorAll('.service-card, .product-card').forEach(c => c.classList.remove('hidden'));
+        document.querySelectorAll('.catalog-card').forEach(c => c.classList.remove('hidden'));
         return;
       }
-
-      clearBtn.classList.remove('hidden');
-      document.querySelectorAll('.service-card').forEach(card => {
-        if (card.dataset.category === catId) card.classList.remove('hidden');
-        else card.classList.add('hidden');
+      document.querySelectorAll('.catalog-card').forEach(c => {
+        if (c.dataset.category === catId) c.classList.remove('hidden');
+        else c.classList.add('hidden');
       });
-
-      document.querySelectorAll('.product-card').forEach(card => {
-        if (card.dataset.category === catId) card.classList.remove('hidden');
-        else card.classList.add('hidden');
-      });
-
       scrollToCatalog();
+    }
+
+    function handleSearch(query) {
+      const q = query.trim().toLowerCase();
+      document.querySelectorAll('.catalog-card').forEach(card => {
+        const text = card.innerText.toLowerCase();
+        if (!q || text.includes(q)) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
     }
 
     function scrollToCatalog() {
       const targetId = currentMode === 'services' ? 'servicesCatalogSection' : 'productsCatalogSection';
       const el = document.getElementById(targetId);
       if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function focusSearchInput() {
-      const input = document.getElementById('heroSearchInput');
-      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      input.focus();
     }
 
     // Cart System
@@ -1153,13 +1300,7 @@
         currentCart[id] = { id, title, price, img, qty: 1 };
       }
       updateCartUI();
-      showToast(`${title} added to cart`);
-
-      // Gentle badge scale animation
-      const badge = document.getElementById('navCartBadge');
-      if (typeof gsap !== 'undefined') {
-        gsap.fromTo(badge, { scale: 0.5 }, { scale: 1, duration: 0.3, ease: 'back.out(2)' });
-      }
+      showToast(`${title} added to cart!`);
     }
 
     function changeCartQty(id, delta) {
@@ -1180,11 +1321,10 @@
       const totalCount = items.reduce((sum, item) => sum + item.qty, 0);
       const totalAmount = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
-      // Badges
       if (totalCount > 0) {
         badge.textContent = totalCount;
         badge.classList.remove('hidden');
-        drawerBadge.textContent = `${totalCount} item${totalCount > 1 ? 's' : ''}`;
+        drawerBadge.textContent = totalCount;
       } else {
         badge.classList.add('hidden');
         drawerBadge.textContent = '0';
@@ -1192,13 +1332,12 @@
 
       subtotalEl.textContent = `₹${totalAmount.toLocaleString('en-IN')}`;
 
-      // Render items
       if (items.length === 0) {
         itemsList.innerHTML = `
           <div class="py-12 text-center text-slate-400">
             <i class="fa-solid fa-basket-shopping text-4xl mb-3 text-slate-300"></i>
             <p class="text-sm font-semibold text-slate-700">Your cart is empty</p>
-            <p class="text-xs text-slate-400 mt-1">Add items from the store to enjoy doorstep delivery</p>
+            <p class="text-xs text-slate-400 mt-1">Shop essentials to enjoy free delivery</p>
           </div>
         `;
         return;
@@ -1240,16 +1379,15 @@
     function proceedToCheckout() {
       const items = Object.values(currentCart);
       if (items.length === 0) {
-        showToast('Please add items to cart before checking out.', 'error');
+        showToast('Cart is empty', 'error');
         return;
       }
-      showToast('Order recorded! A delivery partner is assigned upon login.', 'success');
+      showToast('Proceeding to delivery! Partner assigned upon confirmation.', 'success');
       toggleCartDrawer(false);
     }
 
     // Service Booking Modal
     function openBookingModal(title, price, duration) {
-      activeBookingData = { title, price, duration };
       document.getElementById('modalServiceTitle').textContent = title;
       document.getElementById('modalServicePrice').textContent = `₹${price}`;
       document.getElementById('bookingModal').classList.remove('hidden');
@@ -1257,28 +1395,27 @@
 
     function closeBookingModal() {
       document.getElementById('bookingModal').classList.add('hidden');
-      activeBookingData = null;
     }
 
     function selectSlot(btn, slotName) {
       selectedSlot = slotName;
       document.querySelectorAll('.slot-pill').forEach(b => {
-        b.className = "slot-pill rounded-xl border border-slate-200 bg-white text-slate-700 p-2.5 text-center hover:border-slate-300";
+        b.className = "slot-pill rounded-lg border border-slate-200 bg-white text-slate-700 p-2.5 text-center hover:border-slate-300";
       });
-      btn.className = "slot-pill rounded-xl border border-sky-600 bg-sky-50 text-sky-800 p-2.5 text-center font-bold";
+      btn.className = "slot-pill rounded-lg border border-blue-600 bg-blue-50 text-blue-800 p-2.5 text-center font-bold";
     }
 
     function confirmServiceBooking() {
       const date = document.getElementById('serviceBookingDate').value;
       if (!date) {
-        showToast('Please select a service date', 'error');
+        showToast('Please select a date', 'error');
         return;
       }
       closeBookingModal();
-      showToast(`Booking Confirmed for ${date} (${selectedSlot})! Technician will verify with OTP upon arrival.`, 'success');
+      showToast(`Booking Confirmed for ${date} (${selectedSlot})! Technician verifies with OTP.`, 'success');
     }
 
-    // Toast Notification
+    // Toast
     let toastTimeout = null;
     function showToast(msg, type = 'success') {
       const toast = document.getElementById('toastNotification');
