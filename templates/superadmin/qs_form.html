@@ -1,0 +1,2064 @@
+{% extends 'superadmin/base.html' %}
+{% block title %}{% if mode == 'create' %}Create Quick Service{% else %}Edit Quick Service: {{ qs.title }}{% endif %} - Super Admin{% endblock %}
+{% block header_title %}{% if mode == 'create' %}Create Quick Service Listing{% else %}Edit Quick Service{% endif %}{% endblock %}
+
+{% block header_actions %}
+<div style="display:flex; align-items:center; gap:10px;">
+  {% if mode == 'edit' and qs.category_id %}
+  <a href="/services/browse?category={{ qs.category_id }}" target="_blank" class="btn btn-outline btn-sm">
+    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+    <span>Customer View</span>
+  </a>
+  {% endif %}
+  <a href="{% url 'super_admin_quick_services' %}" class="btn btn-outline btn-sm">
+    <i class="fa-solid fa-arrow-left"></i>
+    <span>Back to Catalog</span>
+  </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<style>
+  /* Modern Guided Stepper Layout */
+  .qs-edit-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    align-items: start;
+    margin-bottom: 40px;
+  }
+  @media(max-width: 1080px) {
+    .qs-edit-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Visual Stepper Banner */
+  .qs-stepper-banner {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  @media(max-width: 768px) {
+    .qs-stepper-banner {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .qs-step-pill {
+    background: #fff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+  }
+  .qs-step-pill.active {
+    border-color: #0f8a7c;
+    background: #f0fdfa;
+    box-shadow: 0 4px 12px rgba(15, 138, 124, 0.08);
+  }
+  .qs-step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .qs-step-pill.active .qs-step-num {
+    background: #0f8a7c;
+    color: #fff;
+  }
+  .qs-step-info {
+    display: flex;
+    flex-direction: column;
+  }
+  .qs-step-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+  }
+  .qs-step-desc {
+    font-size: 11px;
+    color: #64748b;
+  }
+
+  /* Form Cards */
+  .qs-form-card {
+    background: var(--bg-surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    position: relative;
+  }
+  .qs-form-card-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .qs-form-card-sub {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  .form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  @media(max-width: 640px) {
+    .form-row-2 {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .form-field {
+    margin-bottom: 16px;
+  }
+  .form-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 6px;
+  }
+  .form-field .field-hint {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 13.5px;
+    color: var(--text-main);
+    background: var(--bg-main);
+    outline: none;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: #0f8a7c;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(15, 138, 124, 0.15);
+  }
+
+  /* Interactive Experience Selection Cards (Browsing Parity) */
+  .exp-choice-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  @media(max-width: 640px) {
+    .exp-choice-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .exp-card {
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    user-select: none;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .exp-card:hover {
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  .exp-card.active {
+    border-color: #0f8a7c;
+    background: #f0fdfa;
+    box-shadow: 0 0 0 2px rgba(15, 138, 124, 0.2);
+  }
+  .exp-card.women-card.active {
+    border-color: #ec4899;
+    background: #fdf2f8;
+    box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.2);
+  }
+  .exp-card.men-card.active {
+    border-color: #0284c7;
+    background: #f0f9ff;
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+  }
+  .exp-card.home-mode.active {
+    border-color: #059669;
+    background: #ecfdf5;
+    box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+  }
+  .exp-card.parlour-mode.active {
+    border-color: #8b5cf6;
+    background: #f5f3ff;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+  }
+
+  .exp-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .exp-card.women-card.active .exp-icon-box { background: #fce7f3; }
+  .exp-card.men-card.active .exp-icon-box { background: #e0f2fe; }
+  .exp-card.home-mode.active .exp-icon-box { background: #d1fae5; }
+  .exp-card.parlour-mode.active .exp-icon-box { background: #ede9fe; }
+
+  .exp-card-body {
+    flex: 1;
+  }
+  .exp-card-title {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .exp-card-desc {
+    font-size: 11.5px;
+    color: #64748b;
+    line-height: 1.35;
+  }
+  .exp-check-tag {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: 1.5px solid #cbd5e1;
+    background: #f8fafc;
+    color: #64748b;
+    transition: all 0.2s;
+  }
+  .exp-card.active .exp-check-tag {
+    border: none;
+    font-weight: 900;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  .exp-card.women-card.active .exp-check-tag { background: #ec4899; color: #fff; }
+  .exp-card.men-card.active .exp-check-tag { background: #0284c7; color: #fff; }
+  .exp-card.home-mode.active .exp-check-tag { background: #059669; color: #fff; }
+  .exp-card.parlour-mode.active .exp-check-tag { background: #8b5cf6; color: #fff; }
+
+  /* Subcategory Clickable Chips */
+  .subcat-chips-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .admin-subcat-chip {
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+  }
+  .admin-subcat-chip:hover {
+    border-color: #0f8a7c;
+    background: #f0fdfa;
+    color: #0f8a7c;
+    transform: translateY(-1px);
+  }
+  .admin-subcat-chip.active {
+    background: #0f8a7c;
+    border-color: #0f8a7c;
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(15, 138, 124, 0.25);
+  }
+  .admin-subcat-chip.active i {
+    color: #ffffff !important;
+  }
+
+  /* Quick Suggestion Chips */
+  .quick-chips-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .quick-chip-btn {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .quick-chip-btn:hover {
+    background: #e2e8f0;
+    border-color: #94a3b8;
+    color: #0f172a;
+  }
+  .quick-chip-btn.active {
+    background: #0f8a7c;
+    border-color: #0f8a7c;
+    color: #fff;
+  }
+
+  /* Preset Image Grid */
+  .preset-img-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .preset-img-item {
+    aspect-ratio: 16/10;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    position: relative;
+    background: #e2e8f0;
+    transition: all 0.2s;
+  }
+  .preset-img-item:hover {
+    transform: scale(1.02);
+  }
+  .preset-img-item.selected {
+    border-color: #0f8a7c;
+    box-shadow: 0 0 0 2px rgba(15, 138, 124, 0.3);
+  }
+  .preset-img-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .preset-img-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 6px;
+    text-align: center;
+  }
+
+  /* Status Radios */
+  .status-pill-select {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .status-radio-label {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    background: var(--bg-main);
+    transition: all 0.2s;
+  }
+  .status-radio-label input { display: none; }
+  .status-radio-label.active-pill { color: #10b981; }
+  .status-radio-label.active-pill.checked {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: #10b981;
+  }
+  .status-radio-label.paused-pill { color: #f59e0b; }
+  .status-radio-label.paused-pill.checked {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: #f59e0b;
+  }
+  .status-radio-label.draft-pill { color: #64748b; }
+  .status-radio-label.draft-pill.checked {
+    background: rgba(100, 116, 139, 0.12);
+    border-color: #64748b;
+  }
+
+  /* Packages Table Editor */
+  .pkg-table-wrap {
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .pkg-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .pkg-table th {
+    background: #f8fafc;
+    padding: 11px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .pkg-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .pkg-table tr:last-child td { border-bottom: none; }
+
+  /* Inclusions / Exclusions chip builder */
+  .chip-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .chip-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+  }
+  .chip-item input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    outline: none;
+    color: var(--text-main);
+  }
+  .chip-del-btn {
+    border: none;
+    background: transparent;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 4px;
+  }
+
+  /* Sticky Footer Actions */
+  .qs-sticky-footer {
+    position: sticky;
+    bottom: 20px;
+    z-index: 10;
+    background: var(--bg-surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.12);
+  }
+</style>
+
+<!-- Guided Stepper Visual Banner -->
+<div class="qs-stepper-banner">
+  <div class="qs-step-pill active" id="stepIndicator1">
+    <div class="qs-step-num">1</div>
+    <div class="qs-step-info">
+      <span class="qs-step-title">Category &amp; Trade</span>
+      <span class="qs-step-desc">Experience &amp; Audience</span>
+    </div>
+  </div>
+  <div class="qs-step-pill" id="stepIndicator2">
+    <div class="qs-step-num">2</div>
+    <div class="qs-step-info">
+      <span class="qs-step-title">Subcategory</span>
+      <span class="qs-step-desc">Specific service type</span>
+    </div>
+  </div>
+  <div class="qs-step-pill" id="stepIndicator3">
+    <div class="qs-step-num">3</div>
+    <div class="qs-step-info">
+      <span class="qs-step-title">Product &amp; Brands</span>
+      <span class="qs-step-desc">Title, brand, duration</span>
+    </div>
+  </div>
+  <div class="qs-step-pill" id="stepIndicator4">
+    <div class="qs-step-num">4</div>
+    <div class="qs-step-info">
+      <span class="qs-step-title">Packages &amp; Pricing</span>
+      <span class="qs-step-desc">Tiers &amp; GST calculation</span>
+    </div>
+  </div>
+</div>
+
+<form method="POST" enctype="multipart/form-data" id="qsEditForm">
+  {% csrf_token %}
+  <input type="hidden" name="packages_json" id="hiddenPackagesJson">
+  <input type="hidden" name="inclusions_json" id="hiddenInclusionsJson">
+  <input type="hidden" name="exclusions_json" id="hiddenExclusionsJson">
+
+  <div class="qs-edit-layout">
+    
+    <!-- ════════════════════════════════════════════════════════════════════════ -->
+    <!-- LEFT MAIN COLUMN: GUIDED CREATION WIZARD                                -->
+    <!-- ════════════════════════════════════════════════════════════════════════ -->
+    <div class="qs-main-col">
+      
+      <!-- ──────────────────────────────────────────────────────────────────── -->
+      <!-- CARD 1: STEP 1 - CATEGORY & EXPERIENCE (BROWSING PARITY)             -->
+      <!-- ──────────────────────────────────────────────────────────────────── -->
+      <div class="qs-form-card" id="cardStep1">
+        <div class="qs-form-card-title">
+          <span style="background:#0f8a7c; color:#fff; font-size:12px; font-weight:800; padding:2px 8px; border-radius:6px;">STEP 1</span>
+          <span>Select Service Category &amp; Experience</span>
+        </div>
+        <div class="qs-form-card-sub">Choose what service domain you want to list (matches customer browsing flow)</div>
+
+        <!-- Category Dropdown & Quick Badges -->
+        <div class="form-field">
+          <label>Parent Category <span style="color:#ef4444;">*</span></label>
+          <select name="category" id="qsCategorySelect" class="form-select" required onchange="onCategorySelectChange(this.value)">
+            <option value="">-- Choose Category --</option>
+            {% for cat in categories %}
+              <option value="{{ cat.id }}" data-name="{{ cat.name }}" {% if qs.category_id == cat.id %}selected{% endif %}>
+                {{ cat.name }}
+              </option>
+            {% endfor %}
+          </select>
+
+          <!-- Quick Category Badges for 1-click select -->
+          <div class="quick-chips-row" style="margin-top:10px;">
+            {% for cat in categories %}
+              <button type="button" class="quick-chip-btn cat-chip-btn" data-cat-id="{{ cat.id }}" onclick="clickCategoryBadge('{{ cat.id }}')">
+                <span>{{ cat.name }}</span>
+              </button>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- EXPERIENCE SECTION (REVEALED PROMINENTLY FOR BEAUTY) -->
+        <div id="experienceSection" style="display:none; margin-top:20px; padding:18px; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px;">
+          
+          <!-- Experience Choice 1: Target Audience (Who is this for?) -->
+          <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:12.5px; font-weight:800; color:#0f172a; margin-bottom:8px;">
+              <i class="fa-solid fa-venus-mars" style="color:#0f8a7c;"></i> Who is this Beauty Service for? <span style="color:#ef4444;">*</span>
+            </label>
+            <div class="exp-choice-grid">
+              <!-- Women Card -->
+              <div class="exp-card women-card {% if qs.gender == 'women' or not qs.gender %}active{% endif %}" onclick="setAdminGender('women', this)">
+                <div class="exp-icon-box">👩</div>
+                <div class="exp-card-body">
+                  <div class="exp-card-title">
+                    <span>Women's Salon &amp; Spa</span>
+                    <span class="exp-check-tag">✓ SELECTED</span>
+                  </div>
+                  <div class="exp-card-desc">Facials, Waxing, Pedicure, Hair Spa &amp; Styling</div>
+                </div>
+              </div>
+
+              <!-- Men Card -->
+              <div class="exp-card men-card {% if qs.gender == 'men' %}active{% endif %}" onclick="setAdminGender('men', this)">
+                <div class="exp-icon-box">👨</div>
+                <div class="exp-card-body">
+                  <div class="exp-card-title">
+                    <span>Men's Salon &amp; Grooming</span>
+                    <span class="exp-check-tag">✓ SELECTED</span>
+                  </div>
+                  <div class="exp-card-desc">Haircut, Beard Trim, Head Massage, Face Care &amp; De-Tan</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Unisex Pill for general/all -->
+            <div style="display:flex; justify-content:flex-end;">
+              <label style="font-size:11.5px; color:#64748b; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                <input type="radio" name="gender" value="all" id="radioGenderAll" {% if qs.gender == 'all' %}checked{% endif %} onchange="onAdminGenderRadioChange('all')" style="accent-color:#0f8a7c;">
+                <span>Or Unisex / Open to All</span>
+              </label>
+            </div>
+            <input type="hidden" name="gender" id="hiddenAdminGender" value="{{ qs.gender|default:'women' }}">
+          </div>
+
+          <!-- Experience Choice 2: Delivery Mode (How is it delivered?) -->
+          <div>
+            <label style="display:block; font-size:12.5px; font-weight:800; color:#0f172a; margin-bottom:8px;">
+              <i class="fa-solid fa-truck-ramp-box" style="color:#0f8a7c;"></i> How will the customer receive this service? <span style="color:#ef4444;">*</span>
+            </label>
+            <div class="exp-choice-grid">
+              <!-- Salon at Home Card -->
+              <div class="exp-card home-mode {% if qs.delivery_mode == 'home' or not qs.delivery_mode %}active{% endif %}" onclick="setAdminDeliveryMode('home', this)">
+                <div class="exp-icon-box">🏠</div>
+                <div class="exp-card-body">
+                  <div class="exp-card-title">
+                    <span>1. Salon at Home</span>
+                    <span class="exp-check-tag">✓ SELECTED</span>
+                  </div>
+                  <div class="exp-card-desc">Doorstep beautician visit with 100% sealed mono-pack guarantee</div>
+                </div>
+              </div>
+
+              <!-- Premium Parlour Visit Card -->
+              <div class="exp-card parlour-mode {% if qs.delivery_mode == 'parlour' %}active{% endif %}" onclick="setAdminDeliveryMode('parlour', this)">
+                <div class="exp-icon-box">👑</div>
+                <div class="exp-card-body">
+                  <div class="exp-card-title">
+                    <span>2. Premium Parlour Visit</span>
+                    <span class="exp-check-tag">✓ SELECTED</span>
+                  </div>
+                  <div class="exp-card-desc">Customer visits luxury verified salon / parlour studio branch</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Both Modes Pill -->
+            <div style="display:flex; justify-content:flex-end;">
+              <label style="font-size:11.5px; color:#64748b; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                <input type="radio" name="delivery_mode" value="both" id="radioModeBoth" {% if qs.delivery_mode == 'both' %}checked{% endif %} onchange="onAdminModeRadioChange('both')" style="accent-color:#0f8a7c;">
+                <span>Available for both Doorstep and Parlour visit</span>
+              </label>
+            </div>
+            <input type="hidden" name="delivery_mode" id="hiddenAdminDeliveryMode" value="{{ qs.delivery_mode|default:'home' }}">
+          </div>
+
+          <!-- Real-Time Selection Confirmation Banner -->
+          <div id="saSelectedExpSummary" style="margin-top:16px; padding:12px 16px; background:#f0fdfa; border:2px solid #0f8a7c; border-radius:12px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="background:#0f8a7c; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px; text-transform:uppercase;">Active Experience</span>
+              <strong id="saSummaryAudienceText" style="font-size:13.5px; color:#0f172a;">👩 Women's Salon &amp; Spa</strong>
+              <span style="color:#cbd5e1;">•</span>
+              <strong id="saSummaryModeText" style="font-size:13.5px; color:#0f172a;">🏠 1. Salon at Home</strong>
+            </div>
+            <div style="font-size:11.5px; color:#047857; font-weight:700; display:flex; align-items:center; gap:5px;">
+              <i class="fa-solid fa-circle-check" style="color:#059669;"></i>
+              <span>Filtering Step 2 Subcategories</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ──────────────────────────────────────────────────────────────────── -->
+      <!-- CARD 2: STEP 2 - SUBCATEGORY SELECTION                               -->
+      <!-- ──────────────────────────────────────────────────────────────────── -->
+      <div class="qs-form-card" id="cardStep2">
+        <div class="qs-form-card-title" style="justify-content:space-between;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="background:#0f8a7c; color:#fff; font-size:12px; font-weight:800; padding:2px 8px; border-radius:6px;">STEP 2</span>
+            <span>Choose Specific Subcategory</span>
+          </div>
+          <span id="subcatCountBadge" style="font-size:11.5px; font-weight:700; color:#0f8a7c; background:#ecfdf5; border:1px solid #a7f3d0; padding:3px 10px; border-radius:12px;"></span>
+        </div>
+        <div class="qs-form-card-sub">Click a trade subcategory chip below to automatically load recommended titles, brands &amp; presets</div>
+
+        <!-- Dynamic Subcategory Chips Container -->
+        <div id="subcatChipsContainer" class="subcat-chips-grid">
+          <!-- Dynamically populated via JavaScript based on Category & Gender -->
+        </div>
+
+        <!-- Hidden Fallback Select (Kept 100% in sync for standard form POST) -->
+        <div style="margin-top:14px; padding-top:12px; border-top:1px dashed var(--border); display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:11.5px; color:var(--text-muted);">Dropdown sync:</span>
+          <select name="subcategory" id="qsSubcategorySelect" class="form-select" style="max-width:320px; padding:6px 10px; font-size:12px;" onchange="onSubcategoryDropdownChange(this.value)">
+            <option value="">-- Choose Subcategory --</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ──────────────────────────────────────────────────────────────────── -->
+      <!-- CARD 3: STEP 3 - SERVICE TITLE, BRAND SPECIFICATIONS & HYGIENE       -->
+      <!-- ──────────────────────────────────────────────────────────────────── -->
+      <div class="qs-form-card" id="cardStep3">
+        <div class="qs-form-card-title">
+          <span style="background:#0f8a7c; color:#fff; font-size:12px; font-weight:800; padding:2px 8px; border-radius:6px;">STEP 3</span>
+          <span>Service Details &amp; Product Specifications</span>
+        </div>
+        <div class="qs-form-card-sub">Specify the exact service title, genuine brand used, duration, and safety guarantees</div>
+
+        <!-- 1. Service Title Input -->
+        <div class="form-field">
+          <label>Service Title <span style="color:#ef4444;">*</span></label>
+          <input type="text" name="title" class="form-input" value="{{ qs.title|default:'' }}" placeholder="e.g. O3+ Bridal Glow Luxury Facial" required id="qsTitleInput" style="font-size:15px; font-weight:700; padding:12px 14px;">
+          
+          <!-- Dynamic 1-Click Title Suggestion Chips -->
+          <div style="margin-top:8px;">
+            <span style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">
+              <i class="fa-solid fa-wand-magic-sparkles" style="color:#0f8a7c;"></i> 1-Click Smart Title Suggestions:
+            </span>
+            <div class="quick-chips-row" id="titleSuggestionsContainer">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Brand & Duration Row -->
+        <div class="form-row-2">
+          <!-- Brand / Product Line -->
+          <div class="form-field">
+            <label>Brand / Product Line Used</label>
+            <input type="text" name="brand_name" id="saBrandName" class="form-input" value="{{ qs.brand_name|default:'' }}" placeholder="e.g. O3+, L'Oréal, Kérastase, VLCC" oninput="updateLivePreview()">
+            <div class="quick-chips-row" id="brandChipsContainer">
+              <button type="button" class="quick-chip-btn" onclick="setAdminBrand('O3+ Professional')">O3+</button>
+              <button type="button" class="quick-chip-btn" onclick="setAdminBrand(&quot;L'Oréal Paris&quot;)">L'Oréal</button>
+              <button type="button" class="quick-chip-btn" onclick="setAdminBrand('Kérastase Paris')">Kérastase</button>
+              <button type="button" class="quick-chip-btn" onclick="setAdminBrand('VLCC Natural')">VLCC</button>
+              <button type="button" class="quick-chip-btn" onclick="setAdminBrand('Lotus Herbals')">Lotus</button>
+              <button type="button" class="quick-chip-btn" onclick="setAdminBrand('Philips')">Philips</button>
+              <button type="button" class="quick-chip-btn" onclick="setAdminBrand('Havells')">Havells</button>
+            </div>
+          </div>
+
+          <!-- Duration -->
+          <div class="form-field">
+            <label>Standard Service Duration</label>
+            <input type="text" name="duration" id="saDuration" class="form-input" value="{{ qs.duration|default:'45 mins' }}" placeholder="e.g. 45 mins" oninput="updateLivePreview()">
+            <div class="quick-chips-row">
+              <button type="button" class="quick-chip-btn" onclick="setAdminDuration('30 mins')">30m</button>
+              <button type="button" class="quick-chip-btn active" onclick="setAdminDuration('45 mins')">45m</button>
+              <button type="button" class="quick-chip-btn" onclick="setAdminDuration('60 mins')">60m</button>
+              <button type="button" class="quick-chip-btn" onclick="setAdminDuration('75 mins')">75m</button>
+              <button type="button" class="quick-chip-btn" onclick="setAdminDuration('90 mins')">90m</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Dynamic Hygiene Guarantee or Parlour Name Box -->
+        <div id="fulfillmentSpecificsBox" style="margin-bottom:16px; padding:14px; background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:12px;">
+          <!-- Mono Pack Guarantee (Active for Salon at Home) -->
+          <div id="monoPackWrap" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+            <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:800; color:#166534; cursor:pointer;">
+              <input type="checkbox" name="is_mono_pack" id="saIsMonoPack" value="1" {% if qs.is_mono_pack or mode == 'create' %}checked{% endif %} onchange="updateLivePreview()" style="width:18px; height:18px; accent-color:#059669;">
+              <span>✓ 100% Sealed Single-Dose Mono-Pack Hygiene Guarantee</span>
+            </label>
+            <span style="font-size:11px; color:#15803d; background:#dcfce7; padding:2px 8px; border-radius:8px;">Unsealed in front of customer</span>
+          </div>
+
+          <!-- Parlour Studio Name (Active for Premium Parlour) -->
+          <div id="parlourNameWrap" style="margin-top:10px; padding-top:10px; border-top:1px dashed #86efac;">
+            <label style="display:block; font-size:12px; font-weight:700; color:#166534; margin-bottom:4px;">
+              <i class="fa-solid fa-crown" style="color:#8b5cf6;"></i> Salon / Parlour Studio Branch Name
+            </label>
+            <input type="text" name="parlour_name" id="saParlourName" class="form-input" value="{{ qs.parlour_name|default:'' }}" placeholder="e.g. Lakmé Luxe Salon, Lalpur or Enrich Salon & Academy" style="background:#fff;" oninput="updateLivePreview()">
+            <div class="quick-chips-row" style="margin-top:6px;">
+              <button type="button" class="quick-chip-btn" onclick="setAdminParlour('Lakmé Luxe Salon')">Lakmé Luxe</button>
+              <button type="button" class="quick-chip-btn" onclick="setAdminParlour('Enrich Salon & Academy')">Enrich</button>
+              <button type="button" class="quick-chip-btn" onclick="setAdminParlour('Truefitt & Hill')">Truefitt & Hill</button>
+              <button type="button" class="quick-chip-btn" onclick="setAdminParlour('Bounce Salon & Spa')">Bounce</button>
+              <button type="button" class="quick-chip-btn" onclick="setAdminParlour('BBlunt Studio')">BBlunt</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Listing Status -->
+        <div class="form-field">
+          <label>Listing Operational Status <span style="color:#ef4444;">*</span></label>
+          <div class="status-pill-select">
+            <label class="status-radio-label active-pill {% if qs.status == 'active' or not qs.status %}checked{% endif %}">
+              <input type="radio" name="status" value="active" {% if qs.status == 'active' or not qs.status %}checked{% endif %} onchange="updateStatusPills()">
+              <i class="fa-solid fa-circle-check"></i> Active (Live on App)
+            </label>
+            <label class="status-radio-label paused-pill {% if qs.status == 'paused' %}checked{% endif %}">
+              <input type="radio" name="status" value="paused" {% if qs.status == 'paused' %}checked{% endif %} onchange="updateStatusPills()">
+              <i class="fa-solid fa-circle-pause"></i> Paused
+            </label>
+            <label class="status-radio-label draft-pill {% if qs.status == 'draft' %}checked{% endif %}">
+              <input type="radio" name="status" value="draft" {% if qs.status == 'draft' %}checked{% endif %} onchange="updateStatusPills()">
+              <i class="fa-solid fa-file-pen"></i> Draft (Staged)
+            </label>
+          </div>
+        </div>
+
+        <!-- 5. Description -->
+        <div class="form-field" style="margin-bottom:0;">
+          <label>Description &amp; Procedure Scope</label>
+          <textarea name="description" id="saDescriptionInput" class="form-textarea" rows="3" placeholder="Describe the diagnostic procedures, technical specs, and parts guarantee...">{{ qs.description|default:'' }}</textarea>
+        </div>
+      </div>
+
+      <!-- ──────────────────────────────────────────────────────────────────── -->
+      <!-- CARD 4: STEP 4 - PACKAGE TIERS & PRICING BREAKDOWN                   -->
+      <!-- ──────────────────────────────────────────────────────────────────── -->
+      <div class="qs-form-card" id="cardStep4">
+        <div class="qs-form-card-title" style="justify-content:space-between;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="background:#0f8a7c; color:#fff; font-size:12px; font-weight:800; padding:2px 8px; border-radius:6px;">STEP 4</span>
+            <span>Package Tiers &amp; Pricing Breakdown</span>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="addPackageRow()">
+            <i class="fa-solid fa-plus"></i> Add Package Tier
+          </button>
+        </div>
+        <div class="qs-form-card-sub">
+          Single-price catalog system: customer price is auto-computed with platform markup ({{ global_settings.get_qs_commission_percent|default:10 }}%) + CGST ({{ global_settings.get_qs_cgst_percent|default:9 }}%) + SGST ({{ global_settings.get_qs_sgst_percent|default:9 }}%).
+        </div>
+
+        <div class="pkg-table-wrap">
+          <table class="pkg-table" id="packagesTable">
+            <thead>
+              <tr>
+                <th style="width:24%;">Package Name</th>
+                <th style="width:16%;">Duration</th>
+                <th style="width:18%;">Base Payout (₹)</th>
+                <th style="width:20%;">Customer Price (₹)</th>
+                <th style="width:18%;">Tier Specific Scope (Unique to this Tier)</th>
+                <th style="width:6%; text-align:center;"></th>
+              </tr>
+            </thead>
+            <tbody id="packageRowsBody">
+              <!-- Dynamically rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border:1px dashed var(--border); border-radius:10px; padding:12px 16px;">
+          <div>
+            <span style="font-size:12px; color:var(--text-muted); display:block; font-weight:700;">Starting Base / Display Price</span>
+            <span style="font-size:11px; color:var(--text-light);">Lowest tier price automatically displayed on card badges</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <strong style="font-size:22px; color:#059669;" id="summaryStartingPrice">₹{{ qs.base_price|default:199|floatformat:"0" }}</strong>
+            <input type="hidden" name="base_price" id="hiddenBasePrice" value="{{ qs.base_price|default:199 }}">
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 5: INCLUSIONS (SERVICE-LEVEL QUALITY & WARRANTY CHECKLIST) -->
+      <div class="qs-form-card">
+        <div class="qs-form-card-title" style="justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <i class="fa-solid fa-circle-check" style="color:#059669;"></i>
+            <span>Included in Service (Quality &amp; Warranty Checklist)</span>
+          </div>
+          <span style="background:#e0f2fe; color:#0284c7; font-size:11px; font-weight:800; padding:3px 10px; border-radius:12px; border:1px solid #bae6fd;">
+            🌐 Universal (Card &amp; Modal Checklist)
+          </span>
+        </div>
+        <div class="qs-form-card-sub">Verified trust &amp; workmanship guarantees displayed to customers across all packages of this service</div>
+
+        <!-- Explainer Callout Box -->
+        <div style="margin-bottom:16px; padding:12px 16px; background:#f0f9ff; border:1.5px solid #bae6fd; border-radius:10px; font-size:12px; color:#0369a1; line-height:1.5;">
+          <div style="font-weight:800; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+            <i class="fa-solid fa-circle-info" style="color:#0284c7;"></i>
+            <span>How this displays to customers:</span>
+          </div>
+          <div>
+            These checklist points appear directly on the <strong>Customer Listing Card</strong> and inside the <strong>Service Detail &amp; Booking Modal</strong> under <em>"What's included in this service"</em>. They apply to <strong>ALL package tiers</strong> as platform quality &amp; safety assurances.
+          </div>
+          <div style="margin-top:8px; padding-top:6px; border-top:1px dashed #7dd3fc; font-size:11.5px; color:#0284c7;">
+            👉 <strong>Looking to set package-specific differences?</strong> Use the <strong>"Tier Specific Scope"</strong> column in the <strong>Package Tiers table (STEP 4)</strong> above (e.g. <em>Basic: Face only</em> vs <em>Premium: Full Body + De-Tan Pack</em>).
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span style="font-size:12px; font-weight:700; color:#1e293b;">Checklist Points:</span>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="addInclusionItem()">
+            <i class="fa-solid fa-plus"></i> Add Item
+          </button>
+        </div>
+
+        <div class="chip-list" id="inclusionsList">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- CARD 6: EXCLUSIONS -->
+      <div class="qs-form-card">
+        <div class="qs-form-card-title" style="justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <i class="fa-solid fa-circle-xmark" style="color:#ef4444;"></i>
+            <span>Not Included in Service (Exclusions)</span>
+          </div>
+          <span style="background:#fef2f2; color:#dc2626; font-size:11px; font-weight:800; padding:3px 10px; border-radius:12px; border:1px solid #fecaca;">
+            ⚠️ Universal Out-of-Scope (Card &amp; Modal)
+          </span>
+        </div>
+        <div class="qs-form-card-sub">Clarify out-of-scope work displayed to customers to prevent misunderstandings</div>
+
+        <div style="margin-bottom:14px; padding:10px 14px; background:#fff1f2; border:1px solid #fecdd3; border-radius:10px; font-size:11.5px; color:#9f1239; line-height:1.45;">
+          These items are shown on the booking modal with red <strong>✕</strong> marks to clarify that spare parts, heavy civil demolition, or structural modifications are excluded across all tiers.
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span style="font-size:12px; font-weight:700; color:#1e293b;">Exclusion Points:</span>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="addExclusionItem()">
+            <i class="fa-solid fa-plus"></i> Add Item
+          </button>
+        </div>
+
+        <div class="chip-list" id="exclusionsList">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- ════════════════════════════════════════════════════════════════════════ -->
+    <!-- RIGHT SIDEBAR COLUMN: COVER PHOTO & VENDOR / TERRITORY                  -->
+    <!-- ════════════════════════════════════════════════════════════════════════ -->
+    <div class="qs-side-col">
+
+      <!-- CARD 7: MEDIA & SMART PRESET PHOTOS -->
+      <div class="qs-form-card">
+        <div class="qs-form-card-title">
+          <i class="fa-solid fa-image" style="color:#6366f1;"></i>
+          <span>Service Cover Media</span>
+        </div>
+        <div class="qs-form-card-sub">Featured photo displayed on cards across landing and customer dashboards</div>
+
+        <div style="width:100%; height:170px; background:#f1f5f9; border-radius:10px; overflow:hidden; margin-bottom:14px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; position:relative;">
+          {% if qs.image %}
+            <img src="{{ qs.image.url }}" alt="{{ qs.title }}" id="coverPreviewImg" style="width:100%; height:100%; object-fit:cover;">
+          {% elif qs.image_url %}
+            <img src="{{ qs.image_url }}" alt="{{ qs.title }}" id="coverPreviewImg" style="width:100%; height:100%; object-fit:cover;">
+          {% else %}
+            <div id="coverPlaceholder" style="text-align:center; color:var(--text-light);">
+              <i class="fa-solid fa-camera" style="font-size:28px; margin-bottom:6px; display:block;"></i>
+              <span style="font-size:12px;">No photo uploaded</span>
+            </div>
+            <img src="" id="coverPreviewImg" style="display:none; width:100%; height:100%; object-fit:cover;">
+          {% endif %}
+        </div>
+
+        <!-- 1-Click Curated Presets for Chosen Subcategory -->
+        <div style="margin-bottom:14px;">
+          <span style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:6px;">
+            <i class="fa-solid fa-sparkles" style="color:#0f8a7c;"></i> 1-Click Curated Image Presets:
+          </span>
+          <div class="preset-img-grid" id="presetImagesContainer">
+            <!-- Dynamically populated via JS -->
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Upload New Custom Photo</label>
+          <input type="file" name="image" class="form-input" accept="image/*" onchange="previewSelectedImage(this)">
+          <div class="field-hint">JPG, PNG, or WebP. Recommended 800x500px.</div>
+        </div>
+
+        <div class="form-field" style="margin-bottom:0;">
+          <label>Or Preset Image URL</label>
+          <input type="url" name="image_url" id="qsImageUrlInput" class="form-input" value="{{ qs.image_url|default:'' }}" placeholder="https://images.unsplash.com/..." oninput="previewPresetUrl(this.value)">
+        </div>
+      </div>
+
+      <!-- CARD 8: VENDOR & LOCATION ASSIGNMENT -->
+      <div class="qs-form-card">
+        <div class="qs-form-card-title">
+          <i class="fa-solid fa-user-gear" style="color:#0ea5e9;"></i>
+          <span>Vendor &amp; Territory</span>
+        </div>
+        <div class="qs-form-card-sub">Assign service provider and specify delivery radius</div>
+
+        <!-- Vendor -->
+        <div class="form-field">
+          <label>Assigned Vendor <span style="color:#ef4444;">*</span></label>
+          <select name="vendor" id="qsVendorSelect" class="form-select" required onchange="onVendorChange(this.value)">
+            <option value="">-- Select Vendor --</option>
+            {% for v in vendors %}
+              <option value="{{ v.id }}" {% if qs.vendor_id == v.id %}selected{% endif %}>
+                {{ v.username }} ({{ v.vendor_profile.company_name|default:v.get_full_name|default:v.email }})
+              </option>
+            {% endfor %}
+          </select>
+          <!-- Vendor live details badge -->
+          <div id="vendorLiveBadge" style="display:none; margin-top:10px; padding:10px 14px; background:#f0f9ff; border:1px solid #bae6fd; border-radius:10px; font-size:12px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+              <div style="font-weight:700; color:#0369a1; display:flex; align-items:center; gap:6px;">
+                <i class="fa-solid fa-circle-check" style="color:#0284c7;"></i>
+                <span id="vBadgeName"></span>
+              </div>
+              <span id="vBadgeCategory" style="background:#e0f2fe; color:#0284c7; padding:2px 8px; border-radius:12px; font-weight:700; font-size:11px;"></span>
+            </div>
+            <div style="color:#475569; font-size:11.5px; line-height:1.4;" id="vBadgeDetails"></div>
+          </div>
+        </div>
+
+        <!-- Master City / Location -->
+        <div class="form-field">
+          <label>Master Operational City</label>
+          <select name="location" id="qsLocationSelect" class="form-select" onchange="onLocationChange(this)">
+            <option value="">-- Optional Master Location --</option>
+            {% for loc in locations %}
+              <option value="{{ loc.id }}" data-city="{{ loc.city }}" data-state="{{ loc.state }}" {% if qs.location_id == loc.id %}selected{% endif %}>{{ loc.city }}, {{ loc.state }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Locality Text -->
+        <div class="form-field">
+          <label>Locality / Coverage Area</label>
+          <input type="text" name="locality" id="qsLocalityInput" class="form-input" value="{{ qs.locality|default:'' }}" placeholder="e.g. Lalpur, Ranchi or Indiranagar, Bengaluru">
+          <div class="field-hint">Used for display badges &amp; geo-targeting</div>
+        </div>
+
+        <!-- Service Radius -->
+        <div class="form-field">
+          <label>Delivery Radius (km)</label>
+          <input type="number" step="0.5" name="service_radius_km" id="qsRadiusInput" class="form-input" value="{{ qs.service_radius_km|default:10.0 }}" min="1" max="100">
+          <div class="field-hint">Range within which this service is available</div>
+        </div>
+
+        <!-- Coordinates -->
+        <div class="form-row-2" style="margin-bottom:0;">
+          <div class="form-field" style="margin-bottom:0;">
+            <label style="font-size:12px;">Latitude</label>
+            <input type="number" step="0.000001" name="latitude" id="qsLatitudeInput" class="form-input" value="{{ qs.latitude|default:'' }}" placeholder="23.3697">
+          </div>
+          <div class="form-field" style="margin-bottom:0;">
+            <label style="font-size:12px;">Longitude</label>
+            <input type="number" step="0.000001" name="longitude" id="qsLongitudeInput" class="form-input" value="{{ qs.longitude|default:'' }}" placeholder="85.3346">
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 9: PLATFORM FINANCIAL RULES -->
+      <div class="qs-form-card" style="background:#f8fafc; border-color:#e2e8f0;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <div style="font-size:13px; font-weight:800; color:var(--text-main);">
+            <i class="fa-solid fa-calculator" style="color:var(--accent);"></i> Financial Levers
+          </div>
+          <a href="/super-admin/settings/" target="_blank" style="font-size:11.5px; font-weight:700; color:var(--accent); text-decoration:none;">
+            Edit Levers &rarr;
+          </a>
+        </div>
+        <div style="font-size:12px; color:var(--text-muted); line-height:1.5;">
+          Current markup: <strong>{{ global_settings.get_qs_commission_percent|default:10 }}%</strong> Commission + <strong>{{ global_settings.get_qs_cgst_percent|default:9 }}%</strong> CGST + <strong>{{ global_settings.get_qs_sgst_percent|default:9 }}%</strong> SGST.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- STICKY ACTION BAR -->
+  <div class="qs-sticky-footer">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span class="badge {% if qs.status == 'active' or not qs.status %}active{% elif qs.status == 'paused' %}warn{% else %}inactive{% endif %}" id="footerStatusBadge">
+        {{ qs.get_status_display|default:"Active" }}
+      </span>
+      <span style="font-size:13px; color:var(--text-muted);">
+        {% if mode == 'edit' %}Editing Service #QS-{{ qs.id|stringformat:"04d" }}{% else %}New Service Draft{% endif %}
+      </span>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:10px;">
+      <a href="{% url 'super_admin_quick_services' %}" class="btn btn-outline">Cancel</a>
+      <button type="submit" class="btn btn-primary" style="padding:10px 26px; font-weight:800; background:#0f8a7c; border-color:#0f8a7c;">
+        <i class="fa-solid fa-check"></i> Save Service Listing
+      </button>
+    </div>
+  </div>
+
+</form>
+
+<script>
+  // Global financial multipliers
+  const COMM_PCT = parseFloat("{{ global_settings.get_qs_commission_percent|default:10.0 }}");
+  const CGST_PCT = parseFloat("{{ global_settings.get_qs_cgst_percent|default:9.0 }}");
+  const SGST_PCT = parseFloat("{{ global_settings.get_qs_sgst_percent|default:9.0 }}");
+  const FLAT_FEE = parseFloat("{{ global_settings.get_qs_flat_fee|default:0.0 }}");
+  const TAX_MODE = "{{ global_settings.get_qs_tax_mode|default:'commission_only' }}";
+
+  function calcCustomerPrice(base) {
+    base = parseFloat(base) || 0;
+    const comm = (base * (COMM_PCT / 100)) + FLAT_FEE;
+    const taxable = (TAX_MODE === 'commission_only') ? comm : (base + comm);
+    const tax = taxable * ((CGST_PCT + SGST_PCT) / 100);
+    return Math.round(base + comm + tax);
+  }
+
+  // Pre-load data from Django
+  let currentPackages = {{ packages_json|default:"[]"|safe }};
+  let currentInclusions = {{ inclusions_json|default:"[]"|safe }};
+  let currentExclusions = {{ exclusions_json|default:"[]"|safe }};
+
+  if (!currentPackages || currentPackages.length === 0) {
+    const defaultBase = parseFloat("{{ qs.base_price|default:199 }}") || 199;
+    currentPackages = [
+      { name: "Standard Service", duration: "45 mins", price: calcCustomerPrice(defaultBase), vendor_payout: defaultBase, desc: "Standard complete procedure & inspection" }
+    ];
+  }
+
+  if (!currentInclusions || currentInclusions.length === 0) {
+    currentInclusions = [
+      "Complete diagnostic inspection of fittings & components",
+      "Execution by certified, background-checked professional",
+      "Post-service sanitization & debris cleanup",
+      "30 days Sugu protection warranty on workmanship"
+    ];
+  }
+
+  if (!currentExclusions || currentExclusions.length === 0) {
+    currentExclusions = [
+      "Major civil masonry, pipe embedding or wall tearing excluded",
+      "Spare parts / extra hardware charged separately"
+    ];
+  }
+
+  // Subcategories mapping from DB with active filter & gender
+  const subcatsMap = {
+    {% for cat in categories %}
+    '{{ cat.id }}': [
+      {% for sub in cat.subcategories.all %}
+      {% if sub.status == 'active' %}
+      { id: '{{ sub.id }}', name: '{{ sub.name|escapejs }}', gender: '{{ sub.gender|default:"all" }}' },
+      {% endif %}
+      {% endfor %}
+    ],
+    {% endfor %}
+  };
+
+  // Domain Knowledge Dictionary for 1-Click Suggestions & Curated Presets
+  const SUBCAT_DATA = {
+    'Facials & Cleanup': {
+      titles: [
+        'O3+ Bridal Glow Luxury Facial',
+        'VLCC Gold Radiance Facial',
+        'Sara Herbal Fruit Cleanup',
+        'Diamond Micro-Dermabrasion Glow Facial',
+        'Anti-Tan Brightening Cleanse'
+      ],
+      brands: ["O3+ Professional", "VLCC Natural", "Lotus Herbals", "Cheryl's", "Kaya Skin Clinic"],
+      durations: ['45 mins', '60 mins', '75 mins', '90 mins'],
+      defaultDesc: 'Multi-step skin rejuvenation with cleansing, ultrasonic scrub, blackhead extraction, acupressure massage and sealed mono-pack peel-off mask.',
+      image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80',
+      presets: [
+        { label: 'O3+ Facial', url: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80' },
+        { label: 'Gold Radiance', url: 'https://images.unsplash.com/photo-1512290900672-1f02e64f71a0?auto=format&fit=crop&w=800&q=80' },
+        { label: 'Skin Cleanup', url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80' }
+      ]
+    },
+    'Waxing & Hair Removal': {
+      titles: [
+        'Chocolate Roll-On Full Waxing (Arms + Legs + Underarms)',
+        'RICA Brazilian & Bikini Waxing',
+        'Honey Herbal Full Body Wax',
+        'Full Arms & Underarms Waxing'
+      ],
+      brands: ['RICA Italy', 'Chocolate Liposoluble', 'Sara Beauty', 'Honey Herbal'],
+      durations: ['30 mins', '45 mins', '60 mins'],
+      defaultDesc: 'Pain-minimized roll-on waxing cartridge with pre-wax sanitize wipes and soothing post-wax aloe cooling gel.',
+      image: 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&w=800&q=80',
+      presets: [
+        { label: 'Roll-on Wax', url: 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&w=800&q=80' },
+        { label: 'Body Spa Wax', url: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=800&q=80' }
+      ]
+    },
+    'Pedicure & Manicure': {
+      titles: [
+        'Luxury Express Pedicure & Manicure Combo',
+        'Anti-Tan Crystal Spa Pedicure',
+        'Cuticle Care & Nail Buffing Manicure',
+        'Aroma Foot Spa with Reflexology'
+      ],
+      brands: ['OPI Professional', 'VLCC Pediglow', 'Sara Aroma', 'Lotus Herbals'],
+      durations: ['45 mins', '60 mins', '75 mins'],
+      defaultDesc: 'Aroma foot soak in warm jet tub, dead skin scrub, cuticle grooming, callus buffing, relaxing foot massage and mirror polish.',
+      image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=800&q=80',
+      presets: [
+        { label: 'Foot Spa', url: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=800&q=80' },
+        { label: 'Nail Groom', url: 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80' }
+      ]
+    },
+    'Hair Spa & Styling': {
+      titles: [
+        "L'Oréal Keratin Hair Spa & Blowout",
+        'Kérastase Deep Moisture Hair Revival',
+        'Hair Botox & Anti-Frizz Therapy',
+        'Matrix Scalp Purifying & Conditioning'
+      ],
+      brands: ["L'Oréal Paris", 'Kérastase Paris', 'Matrix Biolage', 'Schwarzkopf Professional', 'Streax'],
+      durations: ['45 mins', '60 mins', '75 mins'],
+      defaultDesc: 'Intensive keratin cream application, gentle scalp acupressure massage, micro-mist infrared steam, deep rinse and smooth blowout finish.',
+      image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=800&q=80',
+      presets: [
+        { label: 'Hair Spa', url: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=800&q=80' },
+        { label: 'Salon Blowout', url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80' }
+      ]
+    },
+    'Haircut & Beard Grooming': {
+      titles: [
+        'Executive Haircut & Beard Sculpting',
+        'Fade Haircut + Hot Towel Beard Shave',
+        "Gentlemen's Complete Grooming Combo",
+        'Beard Shaping & Line-up with Argan Oil'
+      ],
+      brands: ['Philips', 'Beardo', 'The Man Company', 'Wahl Professional', 'Ustraa'],
+      durations: ['30 mins', '45 mins', '60 mins'],
+      defaultDesc: 'Face-shape customized haircut, hot towel steaming, precision beard trim & line-up, and nourishing argan oil massage.',
+      image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80',
+      presets: [
+        { label: 'Executive Cut', url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80' },
+        { label: 'Beard Trim', url: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=800&q=80' },
+        { label: 'Barber Groom', url: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=800&q=80' }
+      ]
+    },
+    'Head Massage & Hair Spa': {
+      titles: [
+        "L'Oréal Anti-Dandruff & Hair Spa for Men",
+        'Hot Ayurvedic Oil Relaxing Head Massage (30m)',
+        'Cool Menthol De-Stress Head Massage',
+        'Keratin Strengthening Hair Spa'
+      ],
+      brands: ["L'Oréal Professionnel Homme", 'Biotique Bio Bhringraj', 'Kérastase Genesis Homme', 'Forest Essentials'],
+      durations: ['30 mins', '45 mins', '60 mins'],
+      defaultDesc: 'Deep scalp acupressure massage using warm natural oils or nourishing cream, hot towel steam and refreshing rinse.',
+      image: 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&fit=crop&w=800&q=80',
+      presets: [
+        { label: 'Head Massage', url: 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&fit=crop&w=800&q=80' },
+        { label: 'Hair Spa Men', url: 'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=800&q=80' }
+      ]
+    },
+    'Face Care & De-Tan': {
+      titles: [
+        'O3+ Men De-Tan & Charcoal Cleanup',
+        'Instant Glow & Anti-Pollution Facial',
+        'Oil-Control & Blackhead Clearing Cleanse',
+        'Gold Radiance Face Polish for Men'
+      ],
+      brands: ['O3+ Men Professional', 'VLCC Men Active', 'The Man Company', 'Bombay Shaving Co'],
+      durations: ['30 mins', '45 mins', '60 mins'],
+      defaultDesc: 'Active charcoal mask to absorb pollution impurities, deep pores extraction, cooling ice roller and SPF shield application.',
+      image: 'https://images.unsplash.com/photo-1512290900672-1f02e64f71a0?auto=format&fit=crop&w=800&q=80',
+      presets: [
+        { label: 'Charcoal De-Tan', url: 'https://images.unsplash.com/photo-1512290900672-1f02e64f71a0?auto=format&fit=crop&w=800&q=80' },
+        { label: 'Men Facial', url: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80' }
+      ]
+    },
+    'Body Massage & Therapy': {
+      titles: [
+        'Swedish Relaxing Full Body Massage (60m)',
+        'Deep Tissue Muscle Pain Relief Massage',
+        'Ayurvedic Potli Stress Relief Therapy',
+        'Shoulder & Back Acupressure Therapy (30m)'
+      ],
+      brands: ['Kama Ayurveda', 'Forest Essentials', 'Biotique Aromatherapy', 'Sugu Pure Extracts'],
+      durations: ['45 mins', '60 mins', '75 mins', '90 mins'],
+      defaultDesc: 'Certified therapist using warm therapeutic aroma oils to release muscle tension, increase circulation, and induce deep relaxation.',
+      image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80',
+      presets: [
+        { label: 'Body Massage', url: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80' },
+        { label: 'Spa Therapy', url: 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&fit=crop&w=800&q=80' }
+      ]
+    }
+  };
+
+  // State Variables
+  let currentGender = "{{ qs.gender|default:'women' }}";
+  let currentDeliveryMode = "{{ qs.delivery_mode|default:'home' }}";
+  let activeSubcatId = "{{ qs.subcategory_id|default:'' }}";
+
+  // Function to determine if active category is Beauty
+  function isBeautyCategory(catId) {
+    const catSelect = document.getElementById('qsCategorySelect');
+    if (!catSelect) return false;
+    const opt = catSelect.querySelector(`option[value="${catId}"]`);
+    if (!opt) return false;
+    const name = (opt.getAttribute('data-name') || opt.text).toLowerCase();
+    return name.includes('beauty') || name.includes('salon') || name.includes('spa') || String(catId) === '37';
+  }
+
+  // Visual updater for Experience & Mode Cards
+  function updateExpCardsVisuals() {
+    const womenCard = document.querySelector('.exp-card.women-card');
+    const menCard = document.querySelector('.exp-card.men-card');
+    const radioAll = document.getElementById('radioGenderAll');
+
+    if (womenCard) {
+      const isWomen = (currentGender === 'women');
+      womenCard.classList.toggle('active', isWomen);
+      const tag = womenCard.querySelector('.exp-check-tag');
+      if (tag) tag.innerHTML = isWomen ? '<i class="fa-solid fa-circle-check"></i> SELECTED' : '<i class="fa-regular fa-circle"></i> Select';
+    }
+    if (menCard) {
+      const isMen = (currentGender === 'men');
+      menCard.classList.toggle('active', isMen);
+      const tag = menCard.querySelector('.exp-check-tag');
+      if (tag) tag.innerHTML = isMen ? '<i class="fa-solid fa-circle-check"></i> SELECTED' : '<i class="fa-regular fa-circle"></i> Select';
+    }
+    if (radioAll) radioAll.checked = (currentGender === 'all');
+
+    const homeCard = document.querySelector('.exp-card.home-mode');
+    const parlourCard = document.querySelector('.exp-card.parlour-mode');
+    const radioBoth = document.getElementById('radioModeBoth');
+
+    if (homeCard) {
+      const isHome = (currentDeliveryMode === 'home');
+      homeCard.classList.toggle('active', isHome);
+      const tag = homeCard.querySelector('.exp-check-tag');
+      if (tag) tag.innerHTML = isHome ? '<i class="fa-solid fa-circle-check"></i> SELECTED' : '<i class="fa-regular fa-circle"></i> Select';
+    }
+    if (parlourCard) {
+      const isParlour = (currentDeliveryMode === 'parlour');
+      parlourCard.classList.toggle('active', isParlour);
+      const tag = parlourCard.querySelector('.exp-check-tag');
+      if (tag) tag.innerHTML = isParlour ? '<i class="fa-solid fa-circle-check"></i> SELECTED' : '<i class="fa-regular fa-circle"></i> Select';
+    }
+    if (radioBoth) radioBoth.checked = (currentDeliveryMode === 'both');
+
+    // Update Live Summary Text
+    const audSummary = document.getElementById('saSummaryAudienceText');
+    const modeSummary = document.getElementById('saSummaryModeText');
+    if (audSummary) {
+      if (currentGender === 'women') audSummary.innerHTML = "👩 Women's Salon &amp; Spa";
+      else if (currentGender === 'men') audSummary.innerHTML = "👨 Men's Salon &amp; Grooming";
+      else audSummary.innerHTML = "✨ Unisex / All Services";
+    }
+    if (modeSummary) {
+      if (currentDeliveryMode === 'home') modeSummary.innerHTML = "🏠 1. Salon at Home";
+      else if (currentDeliveryMode === 'parlour') modeSummary.innerHTML = "👑 2. Premium Parlour Visit";
+      else modeSummary.innerHTML = "🔄 Both Doorstep &amp; Parlour";
+    }
+  }
+
+  // Handle Category Select Change
+  function onCategorySelectChange(catId) {
+    document.querySelectorAll('.cat-chip-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-cat-id') === String(catId));
+    });
+
+    const isBeauty = isBeautyCategory(catId);
+    const expSec = document.getElementById('experienceSection');
+    const specificsBox = document.getElementById('fulfillmentSpecificsBox');
+
+    if (expSec) {
+      expSec.style.display = isBeauty ? 'block' : 'none';
+    }
+    if (specificsBox) {
+      specificsBox.style.display = isBeauty ? 'block' : 'none';
+    }
+
+    const hiddenG = document.getElementById('hiddenAdminGender');
+    const hiddenM = document.getElementById('hiddenAdminDeliveryMode');
+
+    if (isBeauty) {
+      if (!currentGender || currentGender === 'all') {
+        currentGender = 'women';
+        if (hiddenG) hiddenG.value = 'women';
+      }
+      if (!currentDeliveryMode) {
+        currentDeliveryMode = 'home';
+        if (hiddenM) hiddenM.value = 'home';
+      }
+      updateExpCardsVisuals();
+      updateFulfillmentVisuals(currentDeliveryMode);
+    } else {
+      currentGender = 'all';
+      currentDeliveryMode = 'both';
+      if (hiddenG) hiddenG.value = 'all';
+      if (hiddenM) hiddenM.value = 'both';
+    }
+
+    renderSubcategoryChips(catId);
+  }
+
+  function clickCategoryBadge(catId) {
+    const select = document.getElementById('qsCategorySelect');
+    if (select) {
+      select.value = catId;
+      onCategorySelectChange(catId);
+    }
+  }
+
+  // Gender Selection
+  function setAdminGender(gender, cardEl) {
+    currentGender = gender;
+    document.getElementById('hiddenAdminGender').value = gender;
+    updateExpCardsVisuals();
+
+    // Re-filter subcategories for current category
+    const catId = document.getElementById('qsCategorySelect').value;
+    renderSubcategoryChips(catId);
+  }
+
+  function onAdminGenderRadioChange(val) {
+    if (val === 'all') {
+      currentGender = 'all';
+      document.getElementById('hiddenAdminGender').value = 'all';
+      updateExpCardsVisuals();
+      const catId = document.getElementById('qsCategorySelect').value;
+      renderSubcategoryChips(catId);
+    }
+  }
+
+  // Delivery Mode Selection
+  function setAdminDeliveryMode(mode, cardEl) {
+    currentDeliveryMode = mode;
+    document.getElementById('hiddenAdminDeliveryMode').value = mode;
+    updateExpCardsVisuals();
+    updateFulfillmentVisuals(mode);
+  }
+
+  function onAdminModeRadioChange(val) {
+    if (val === 'both') {
+      currentDeliveryMode = 'both';
+      document.getElementById('hiddenAdminDeliveryMode').value = 'both';
+      updateExpCardsVisuals();
+      updateFulfillmentVisuals('both');
+    }
+  }
+
+  function updateFulfillmentVisuals(mode) {
+    const monoWrap = document.getElementById('monoPackWrap');
+    const parlourWrap = document.getElementById('parlourNameWrap');
+    if (mode === 'parlour') {
+      if (monoWrap) monoWrap.style.opacity = '0.5';
+      if (parlourWrap) parlourWrap.style.display = 'block';
+    } else if (mode === 'home') {
+      if (monoWrap) monoWrap.style.opacity = '1';
+      if (parlourWrap) parlourWrap.style.display = 'none';
+    } else {
+      if (monoWrap) monoWrap.style.opacity = '1';
+      if (parlourWrap) parlourWrap.style.display = 'block';
+    }
+  }
+
+  // Render Subcategory Chips
+  function renderSubcategoryChips(catId) {
+    const container = document.getElementById('subcatChipsContainer');
+    const select = document.getElementById('qsSubcategorySelect');
+    const countBadge = document.getElementById('subcatCountBadge');
+    if (!container || !select) return;
+
+    container.innerHTML = '';
+    select.innerHTML = '<option value="">-- Choose Subcategory --</option>';
+
+    if (!catId) {
+      container.innerHTML = '<span style="font-size:12.5px; color:#94a3b8;"><i class="fa-solid fa-arrow-up"></i> Please choose a category above first.</span>';
+      if (countBadge) countBadge.textContent = '0 available';
+      return;
+    }
+
+    const allSubs = subcatsMap[catId] || [];
+    const isBeauty = isBeautyCategory(catId);
+
+    // Filter by gender if Beauty
+    let filtered = allSubs;
+    if (isBeauty && currentGender && currentGender !== 'all') {
+      filtered = allSubs.filter(s => !s.gender || s.gender === 'all' || s.gender === currentGender);
+    }
+
+    if (countBadge) {
+      countBadge.textContent = `${filtered.length} subcategories`;
+    }
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<span style="font-size:12.5px; color:#f59e0b;"><i class="fa-solid fa-circle-info"></i> No specific subcategories found for this selection.</span>';
+      return;
+    }
+
+    // Auto-select first if none selected or if activeSubcatId not in filtered
+    let targetSubId = activeSubcatId;
+    if (!targetSubId || !filtered.some(s => String(s.id) === String(targetSubId))) {
+      targetSubId = filtered[0].id;
+      activeSubcatId = targetSubId;
+    }
+
+    filtered.forEach(sub => {
+      const isSel = String(sub.id) === String(targetSubId);
+
+      // Add to select dropdown
+      const opt = document.createElement('option');
+      opt.value = sub.id;
+      opt.textContent = sub.name;
+      if (isSel) opt.selected = true;
+      select.appendChild(opt);
+
+      // Add clickable chip
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = `admin-subcat-chip ${isSel ? 'active' : ''}`;
+      chip.setAttribute('data-id', sub.id);
+      chip.setAttribute('data-name', sub.name);
+      chip.innerHTML = `
+        <i class="fa-solid ${isSel ? 'fa-circle-check' : 'fa-tag'}"></i>
+        <span>${escapeHtml(sub.name)}</span>
+      `;
+      chip.onclick = () => selectSubcategory(sub.id, sub.name);
+      container.appendChild(chip);
+    });
+
+    // Populate suggestions for selected subcategory
+    const selSub = filtered.find(s => String(s.id) === String(targetSubId));
+    if (selSub) {
+      applySubcategoryData(selSub.name);
+    }
+  }
+
+  // Handle Subcategory Click
+  function selectSubcategory(subId, subName) {
+    activeSubcatId = subId;
+    const select = document.getElementById('qsSubcategorySelect');
+    if (select) select.value = subId;
+
+    document.querySelectorAll('#subcatChipsContainer .admin-subcat-chip').forEach(btn => {
+      const isMatch = btn.getAttribute('data-id') === String(subId);
+      btn.classList.toggle('active', isMatch);
+      const icon = btn.querySelector('i');
+      if (icon) icon.className = `fa-solid ${isMatch ? 'fa-circle-check' : 'fa-tag'}`;
+    });
+
+    applySubcategoryData(subName);
+  }
+
+  function onSubcategoryDropdownChange(subId) {
+    if (!subId) return;
+    const select = document.getElementById('qsSubcategorySelect');
+    const opt = select.querySelector(`option[value="${subId}"]`);
+    const subName = opt ? opt.text : '';
+    selectSubcategory(subId, subName);
+  }
+
+  // Apply Domain Knowledge & Suggestions for Chosen Subcategory
+  function applySubcategoryData(subName) {
+    const data = SUBCAT_DATA[subName];
+    const titleContainer = document.getElementById('titleSuggestionsContainer');
+    const presetsContainer = document.getElementById('presetImagesContainer');
+    const titleInput = document.getElementById('qsTitleInput');
+    const descInput = document.getElementById('saDescriptionInput');
+
+    if (data) {
+      // 1. Populate Title Suggestions
+      if (titleContainer && data.titles) {
+        titleContainer.innerHTML = data.titles.map(t => `
+          <button type="button" class="quick-chip-btn" onclick="setAdminTitle('${t.replace(/'/g, "\'")}')">
+            <span>${t}</span>
+          </button>
+        `).join('');
+      }
+
+      // Auto-set title if empty or default placeholder
+      if (titleInput && (!titleInput.value || titleInput.value.includes('AC PCB') || titleInput.value === 'Switchboard Repair')) {
+        titleInput.value = data.titles[0];
+      }
+
+      // Auto-set description if empty
+      if (descInput && (!descInput.value || descInput.value.includes('diagnostic procedures'))) {
+        descInput.value = data.defaultDesc;
+      }
+
+      // 2. Populate Image Presets
+      if (presetsContainer && data.presets) {
+        presetsContainer.innerHTML = data.presets.map((p, idx) => `
+          <div class="preset-img-item ${idx === 0 ? 'selected' : ''}" onclick="selectAdminPresetImage(this, '${p.url}')">
+            <img src="${p.url}" alt="${p.label}">
+            <div class="preset-img-label">${p.label}</div>
+          </div>
+        `).join('');
+
+        // Apply primary preset if no custom image
+        const imgInput = document.getElementById('qsImageUrlInput');
+        const imgPreview = document.getElementById('coverPreviewImg');
+        const imgPh = document.getElementById('coverPlaceholder');
+        if (imgInput && (!imgInput.value || imgInput.value.includes('unsplash'))) {
+          imgInput.value = data.presets[0].url;
+          if (imgPreview) {
+            imgPreview.src = data.presets[0].url;
+            imgPreview.style.display = 'block';
+          }
+          if (imgPh) imgPh.style.display = 'none';
+        }
+      }
+
+    } else {
+      // Generic fallback suggestions based on category
+      if (titleContainer) {
+        titleContainer.innerHTML = `
+          <button type="button" class="quick-chip-btn" onclick="setAdminTitle('Professional ${subName}')">Professional ${subName}</button>
+          <button type="button" class="quick-chip-btn" onclick="setAdminTitle('Complete ${subName} &amp; Inspection')">Complete ${subName}</button>
+          <button type="button" class="quick-chip-btn" onclick="setAdminTitle('Express ${subName}')">Express ${subName}</button>
+        `;
+      }
+    }
+  }
+
+  function setAdminTitle(title) {
+    const input = document.getElementById('qsTitleInput');
+    if (input) input.value = title;
+  }
+
+  function setAdminBrand(brand) {
+    const input = document.getElementById('saBrandName');
+    if (input) input.value = brand;
+  }
+
+  function setAdminDuration(dur) {
+    const input = document.getElementById('saDuration');
+    if (input) input.value = dur;
+    document.querySelectorAll('#cardStep3 .quick-chip-btn').forEach(b => {
+      if (b.textContent === dur || b.textContent.includes(dur.replace(' mins', 'm'))) {
+        b.classList.add('active');
+      }
+    });
+  }
+
+  function setAdminParlour(name) {
+    const input = document.getElementById('saParlourName');
+    if (input) input.value = name;
+  }
+
+  function selectAdminPresetImage(itemEl, url) {
+    document.querySelectorAll('.preset-img-item').forEach(i => i.classList.remove('selected'));
+    if (itemEl) itemEl.classList.add('selected');
+
+    const input = document.getElementById('qsImageUrlInput');
+    if (input) input.value = url;
+
+    const img = document.getElementById('coverPreviewImg');
+    const ph = document.getElementById('coverPlaceholder');
+    if (img) {
+      img.src = url;
+      img.style.display = 'block';
+    }
+    if (ph) ph.style.display = 'none';
+  }
+
+  function updateLivePreview() {
+    // Keep internal consistency
+    updateSummaryStartingPrice();
+  }
+
+  // Render Packages Table
+  function renderPackageRows() {
+    const tbody = document.getElementById('packageRowsBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    currentPackages.forEach((pkg, idx) => {
+      const tr = document.createElement('tr');
+      const payoutVal = pkg.vendor_payout !== undefined ? pkg.vendor_payout : (pkg.price || 199);
+      const custPrice = calcCustomerPrice(payoutVal);
+      const durVal = pkg.duration || '45 mins';
+
+      tr.innerHTML = `
+        <td>
+          <input type="text" name="package_name[]" class="form-input" style="padding:6px 10px; font-size:13px;" value="${escapeHtml(pkg.name || '')}" placeholder="Tier Name" required oninput="currentPackages[${idx}].name=this.value;">
+        </td>
+        <td>
+          <input type="text" name="package_duration[]" class="form-input" style="padding:6px 10px; font-size:12px;" value="${escapeHtml(durVal)}" oninput="currentPackages[${idx}].duration = this.value;" placeholder="45 mins">
+        </td>
+        <td>
+          <div style="display:flex; align-items:center; gap:4px;">
+            <span style="font-size:13px; color:var(--text-muted); font-weight:700;">₹</span>
+            <input type="number" step="1" name="package_price[]" class="form-input" style="padding:6px 10px; font-size:13px; font-weight:700;" value="${payoutVal}" placeholder="199" required oninput="handlePkgPriceChange(${idx}, this.value)">
+          </div>
+        </td>
+        <td>
+          <strong style="color:#059669; font-size:15px;" id="custPriceDisplay_${idx}">₹${custPrice}</strong>
+          <span style="font-size:11px; color:var(--text-muted); display:block;">(+₹${custPrice - payoutVal} cut & GST)</span>
+        </td>
+        <td>
+          <input type="text" name="package_desc[]" class="form-input" style="padding:6px 10px; font-size:12px;" value="${escapeHtml(pkg.desc || '')}" placeholder="e.g. Face only or Full Body pack..." oninput="currentPackages[${idx}].desc=this.value;">
+        </td>
+        <td style="text-align:center;">
+          ${currentPackages.length > 1 ? `<button type="button" class="chip-del-btn" title="Remove Tier" onclick="removePackageRow(${idx})"><i class="fa-solid fa-trash"></i></button>` : ''}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    updateSummaryStartingPrice();
+  }
+
+  function handlePkgPriceChange(idx, val) {
+    const payout = parseFloat(val) || 0;
+    currentPackages[idx].vendor_payout = payout;
+    const cust = calcCustomerPrice(payout);
+    currentPackages[idx].price = cust;
+
+    const custEl = document.getElementById(`custPriceDisplay_${idx}`);
+    if (custEl) {
+      custEl.innerHTML = `₹${cust}`;
+      if (custEl.nextElementSibling) {
+        custEl.nextElementSibling.textContent = `(+₹${cust - payout} cut & GST)`;
+      }
+    }
+    updateSummaryStartingPrice();
+  }
+
+  function addPackageRow() {
+    const tierIdx = currentPackages.length + 1;
+    const names = ["Basic", "Standard", "Complete", "Premium"];
+    const tName = names[tierIdx - 1] || `Tier ${tierIdx}`;
+    const pVal = 199 * tierIdx;
+
+    currentPackages.push({
+      name: tName,
+      duration: "45 mins",
+      vendor_payout: pVal,
+      price: calcCustomerPrice(pVal),
+      desc: "Additional features & comprehensive repair"
+    });
+    renderPackageRows();
+  }
+
+  function removePackageRow(idx) {
+    if (currentPackages.length > 1) {
+      currentPackages.splice(idx, 1);
+      renderPackageRows();
+    }
+  }
+
+  function updateSummaryStartingPrice() {
+    let minCustPrice = 999999;
+    currentPackages.forEach(p => {
+      const cust = calcCustomerPrice(p.vendor_payout || p.price || 0);
+      if (cust < minCustPrice) minCustPrice = cust;
+    });
+    if (minCustPrice === 999999) minCustPrice = 199;
+    const summaryEl = document.getElementById('summaryStartingPrice');
+    const hiddenBase = document.getElementById('hiddenBasePrice');
+    if (summaryEl) summaryEl.textContent = `₹${minCustPrice}`;
+    if (hiddenBase) hiddenBase.value = minCustPrice;
+  }
+
+  // Render Inclusions
+  function renderInclusions() {
+    const container = document.getElementById('inclusionsList');
+    if (!container) return;
+    container.innerHTML = '';
+    currentInclusions.forEach((text, idx) => {
+      const div = document.createElement('div');
+      div.className = 'chip-item';
+      div.innerHTML = `
+        <i class="fa-solid fa-check" style="color:#059669; font-size:12px;"></i>
+        <input type="text" name="inclusions[]" value="${escapeHtml(text)}" placeholder="Inclusion detail..." oninput="currentInclusions[${idx}]=this.value">
+        <button type="button" class="chip-del-btn" onclick="removeInclusion(${idx})"><i class="fa-solid fa-xmark"></i></button>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function addInclusionItem() {
+    currentInclusions.push("");
+    renderInclusions();
+    const inputs = document.querySelectorAll('#inclusionsList input');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  }
+
+  function removeInclusion(idx) {
+    currentInclusions.splice(idx, 1);
+    renderInclusions();
+  }
+
+  // Render Exclusions
+  function renderExclusions() {
+    const container = document.getElementById('exclusionsList');
+    if (!container) return;
+    container.innerHTML = '';
+    currentExclusions.forEach((text, idx) => {
+      const div = document.createElement('div');
+      div.className = 'chip-item';
+      div.innerHTML = `
+        <i class="fa-solid fa-xmark" style="color:#ef4444; font-size:12px;"></i>
+        <input type="text" name="exclusions[]" value="${escapeHtml(text)}" placeholder="Exclusion item..." oninput="currentExclusions[${idx}]=this.value">
+        <button type="button" class="chip-del-btn" onclick="removeExclusion(${idx})"><i class="fa-solid fa-xmark"></i></button>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function addExclusionItem() {
+    currentExclusions.push("");
+    renderExclusions();
+    const inputs = document.querySelectorAll('#exclusionsList input');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  }
+
+  function removeExclusion(idx) {
+    currentExclusions.splice(idx, 1);
+    renderExclusions();
+  }
+
+  // Status Radios Visual Updater
+  function updateStatusPills() {
+    const selected = document.querySelector('input[name="status"]:checked');
+    document.querySelectorAll('.status-radio-label').forEach(lbl => lbl.classList.remove('checked'));
+    if (selected) {
+      selected.closest('.status-radio-label').classList.add('checked');
+      const badge = document.getElementById('footerStatusBadge');
+      if (badge) {
+        badge.className = 'badge ' + (selected.value === 'active' ? 'active' : (selected.value === 'paused' ? 'warn' : 'inactive'));
+        badge.textContent = selected.value.charAt(0).toUpperCase() + selected.value.slice(1);
+      }
+    }
+  }
+
+  // Image Preview Helpers
+  function previewSelectedImage(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = document.getElementById('coverPreviewImg');
+        const ph = document.getElementById('coverPlaceholder');
+        if (img) {
+          img.src = e.target.result;
+          img.style.display = 'block';
+        }
+        if (ph) ph.style.display = 'none';
+        document.querySelectorAll('.preset-img-item').forEach(i => i.classList.remove('selected'));
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function previewPresetUrl(url) {
+    const img = document.getElementById('coverPreviewImg');
+    const ph = document.getElementById('coverPlaceholder');
+    if (url && url.startsWith('http')) {
+      if (img) {
+        img.src = url;
+        img.style.display = 'block';
+      }
+      if (ph) ph.style.display = 'none';
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // Vendors metadata dictionary for instant auto-fill
+  const vendorsMap = {{ vendors_json|default:"{}"|safe }};
+
+  const cityCoordsMap = {
+    'ranchi': [23.3697, 85.3346],
+    'lalpur': [23.3697, 85.3346],
+    'namkum': [23.3396, 85.3789],
+    'harmu': [23.3550, 85.3050],
+    'morabadi': [23.3850, 85.3250],
+    'doranda': [23.3340, 85.3218],
+    'jamshedpur': [22.8046, 86.2029],
+    'dhanbad': [23.7957, 86.4304],
+    'bokaro': [23.6693, 86.1511],
+    'mumbai': [19.0760, 72.8777],
+    'pune': [18.5204, 73.8567],
+    'delhi': [28.6139, 77.2090],
+    'new delhi': [28.6139, 77.2090],
+    'bengaluru': [12.9716, 77.5946],
+    'bangalore': [12.9716, 77.5946],
+    'ahmedabad': [23.0225, 72.5714],
+    'kolkata': [22.5726, 88.3639],
+    'hyderabad': [17.3850, 78.4867],
+    'chennai': [13.0827, 80.2707],
+    'mysuru': [12.2958, 76.6394],
+  };
+
+  function highlightField(el) {
+    if (!el) return;
+    el.style.transition = 'background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease';
+    el.style.backgroundColor = '#ecfdf5';
+    el.style.borderColor = '#10b981';
+    el.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.2)';
+    setTimeout(() => {
+      el.style.backgroundColor = '';
+      el.style.borderColor = '';
+      el.style.boxShadow = '';
+    }, 1400);
+  }
+
+  function updateVendorBadge(v) {
+    const badge = document.getElementById('vendorLiveBadge');
+    if (!badge) return;
+    if (!v) {
+      badge.style.display = 'none';
+      return;
+    }
+    const nameEl = document.getElementById('vBadgeName');
+    const catEl = document.getElementById('vBadgeCategory');
+    const detailsEl = document.getElementById('vBadgeDetails');
+
+    if (nameEl) nameEl.textContent = v.company_name ? `${v.company_name} (${v.name || v.username})` : (v.name || v.username);
+    if (catEl) {
+      catEl.textContent = v.category || 'General';
+      catEl.style.display = v.category ? 'inline-block' : 'none';
+    }
+    if (detailsEl) {
+      const parts = [];
+      if (v.locality) parts.push(`<i class="fa-solid fa-location-dot" style="color:#0284c7;"></i> ${escapeHtml(v.locality)}`);
+      if (v.mobile) parts.push(`<i class="fa-solid fa-phone" style="color:#0284c7;"></i> ${escapeHtml(v.mobile)}`);
+      if (v.latitude && v.longitude) parts.push(`📍 GPS: ${parseFloat(v.latitude).toFixed(4)}, ${parseFloat(v.longitude).toFixed(4)}`);
+      detailsEl.innerHTML = parts.join(' &nbsp;•&nbsp; ');
+    }
+    badge.style.display = 'block';
+  }
+
+  function onVendorChange(vendorId) {
+    if (!vendorId) {
+      updateVendorBadge(null);
+      return;
+    }
+    const v = vendorsMap[vendorId];
+    if (!v) return;
+
+    // 1. Auto-select Master Operational City
+    const locSelect = document.getElementById('qsLocationSelect');
+    if (locSelect) {
+      if (v.location_id) {
+        locSelect.value = String(v.location_id);
+        highlightField(locSelect);
+      } else if (v.city) {
+        for (let i = 0; i < locSelect.options.length; i++) {
+          const optCity = locSelect.options[i].getAttribute('data-city') || '';
+          const optText = locSelect.options[i].text.toLowerCase();
+          if ((optCity && optCity.toLowerCase() === v.city.toLowerCase()) || optText.includes(v.city.toLowerCase())) {
+            locSelect.selectedIndex = i;
+            highlightField(locSelect);
+            break;
+          }
+        }
+      }
+    }
+
+    // 2. Auto-fill Locality / Coverage Area
+    const localityInput = document.getElementById('qsLocalityInput');
+    if (localityInput && v.locality) {
+      localityInput.value = v.locality;
+      highlightField(localityInput);
+    }
+
+    // 3. Auto-fill Coordinates
+    const latInput = document.getElementById('qsLatitudeInput');
+    const lonInput = document.getElementById('qsLongitudeInput');
+    if (latInput && v.latitude !== null && v.latitude !== undefined) {
+      latInput.value = parseFloat(v.latitude).toFixed(6);
+      highlightField(latInput);
+    }
+    if (lonInput && v.longitude !== null && v.longitude !== undefined) {
+      lonInput.value = parseFloat(v.longitude).toFixed(6);
+      highlightField(lonInput);
+    }
+
+    // 4. Auto-fill Delivery Radius
+    const radiusInput = document.getElementById('qsRadiusInput');
+    if (radiusInput && (!radiusInput.value || radiusInput.value === '10' || radiusInput.value === '10.0')) {
+      radiusInput.value = (v.service_radius_km || 10.0).toFixed(1);
+    }
+
+    // 5. Auto-select Category if not selected
+    const catSelect = document.getElementById('qsCategorySelect');
+    if (catSelect && v.category_id && (!catSelect.value || catSelect.value === '')) {
+      catSelect.value = String(v.category_id);
+      onCategorySelectChange(catSelect.value);
+      highlightField(catSelect);
+    }
+
+    // 6. Update Vendor Badge
+    updateVendorBadge(v);
+  }
+
+  function onLocationChange(selectEl) {
+    const selectedOpt = selectEl.options[selectEl.selectedIndex];
+    if (!selectedOpt || !selectedOpt.value) return;
+    const city = (selectedOpt.getAttribute('data-city') || selectedOpt.text.split(',')[0] || '').trim().toLowerCase();
+
+    const localityInput = document.getElementById('qsLocalityInput');
+    if (localityInput && (!localityInput.value || localityInput.value.includes('Ranchi'))) {
+      localityInput.value = selectedOpt.text.trim();
+      highlightField(localityInput);
+    }
+
+    for (const [k, coords] of Object.entries(cityCoordsMap)) {
+      if (city.includes(k) || k.includes(city)) {
+        const latInput = document.getElementById('qsLatitudeInput');
+        const lonInput = document.getElementById('qsLongitudeInput');
+        if (latInput) { latInput.value = coords[0].toFixed(6); highlightField(latInput); }
+        if (lonInput) { lonInput.value = coords[1].toFixed(6); highlightField(lonInput); }
+        break;
+      }
+    }
+  }
+
+  // DOMContentLoaded Initializer
+  document.addEventListener('DOMContentLoaded', () => {
+    renderPackageRows();
+    renderInclusions();
+    renderExclusions();
+    updateStatusPills();
+
+    // 1. Initialize Category
+    const catSelect = document.getElementById('qsCategorySelect');
+    if (catSelect && catSelect.value) {
+      onCategorySelectChange(catSelect.value);
+    } else if (catSelect && catSelect.options.length > 1) {
+      // Find Beauty or default first category
+      let chosenVal = catSelect.options[1].value;
+      for (let i = 0; i < catSelect.options.length; i++) {
+        if (catSelect.options[i].text.toLowerCase().includes('beauty')) {
+          chosenVal = catSelect.options[i].value;
+          break;
+        }
+      }
+      catSelect.value = chosenVal;
+      onCategorySelectChange(chosenVal);
+    }
+
+    // 2. Initialize Delivery Mode Visuals
+    updateFulfillmentVisuals(currentDeliveryMode);
+
+    // 3. Show Initial Vendor Badge
+    const vendorSelect = document.getElementById('qsVendorSelect');
+    if (vendorSelect && vendorSelect.value) {
+      const v = vendorsMap[vendorSelect.value];
+      if (v) updateVendorBadge(v);
+    }
+
+    // 4. Form Submit Listener
+    const form = document.getElementById('qsEditForm');
+    if (form) {
+      form.addEventListener('submit', () => {
+        document.getElementById('hiddenPackagesJson').value = JSON.stringify(currentPackages);
+        document.getElementById('hiddenInclusionsJson').value = JSON.stringify(currentInclusions.filter(x => x && x.trim()));
+        document.getElementById('hiddenExclusionsJson').value = JSON.stringify(currentExclusions.filter(x => x && x.trim()));
+      });
+    }
+  });
+</script>
+{% endblock %}

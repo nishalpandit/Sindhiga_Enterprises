@@ -1,0 +1,599 @@
+from django.urls import re_path, path
+from . import views
+from . import Api_views
+from . import super_admin_views
+from . import beauty_views
+from . import sindhiga_ecommerce_views as ecom_api
+from . import sindhiga_delivery_views as delivery_api
+from . import sindhiga_provider_views as provider_api
+from . import sindhiga_services_views as services_api
+from . import sindhiga_admin_views as admin_api
+
+urlpatterns = [
+    path('', views.home_view, name='home'),
+    path('services/browse', views.public_browse_services, name='public_browse_services'),
+    path('login/', views.user_login_view, name='login'),
+    path('login', views.user_login_view, name='login_no_slash'),
+    path('accounts/login/', views.user_login_view, name='accounts_login_slash'),
+    path('accounts/login', views.user_login_view, name='accounts_login'),
+    path('accounts/logout/', views.user_logout_view, name='accounts_logout_slash'),
+    path('accounts/logout', views.user_logout_view, name='accounts_logout'),
+    path('register/user/', views.register_user_view, name='register_user'),
+    path('register/vendor/', views.register_vendor_view, name='register_vendor'),
+    path('logout/', views.user_logout_view, name='logout'),
+    path('dashboard.html', views.admin_dashboard, name='dashboard_html_direct'),
+    path('dashboard', views.admin_dashboard, name='dashboard_direct'),
+    path('admin-dashboard.html', views.admin_dashboard, name='admin_dashboard_html'),
+    path('admin-dashboard', views.admin_dashboard, name='admin_dashboard'),
+    path('admin-dashboard/dashboard.html', views.admin_dashboard, name='admin_dashboard_sub_html'),
+    path('admin-dashboard/dashboard', views.admin_dashboard, name='admin_dashboard_sub'),
+    path('vendor/', views.vendor_dashboard, name='vendor_home_slash'),
+    path('vendor', views.vendor_dashboard, name='vendor_home'),
+    path('vendor/dashboard', views.vendor_dashboard, name='vendor_dashboard'),
+    path('user/dashboard', views.user_dashboard, name='user_dashboard'),
+    path('admin-dashboard/create-company-vendor/', views.create_company_vendor_view, name='create_company_vendor'),
+    path('api/manage-location/', views.manage_location_view, name='manage_location_view'),
+    path('api/categories/', Api_views.get_categories_api, name='get_categories_api'),
+    path('api/categories/<int:category_id>/subcategories/', Api_views.get_subcategories_api, name='get_subcategories_api'),
+    path('api/categories/<int:category_id>/subcategories', Api_views.get_subcategories_api),
+    path('api/locations/', Api_views.get_locations_api, name='get_locations_api'),
+    path('api/states/', Api_views.get_states_api, name='get_states_api'),
+    path('api/cities/', Api_views.get_cities_api, name='get_cities_api'),
+    path('api/vendor-types/', Api_views.get_vendor_types_api, name='get_vendor_types_api'),
+    path('api/detect-location/', views.detect_location_api, name='detect_location_api'),
+    path('api/search-locations/', views.search_locations_api, name='search_locations_api'),
+
+    # Super Admin Dashboard
+    path('super-admin/login/', super_admin_views.super_admin_login_view, name='super_admin_login_slash'),
+    path('super-admin/login', super_admin_views.super_admin_login_view, name='super_admin_login'),
+    path('super-admin/', super_admin_views.super_admin_dashboard, name='super_admin_dashboard_slash'),
+    path('super-admin', super_admin_views.super_admin_dashboard, name='super_admin_dashboard'),
+    
+    # Users CRUD
+    path('super-admin/users/', super_admin_views.super_admin_users, name='super_admin_users'),
+    path('super-admin/users/create/', super_admin_views.super_admin_user_create, name='super_admin_user_create'),
+    path('super-admin/users/<int:user_id>/edit/', super_admin_views.super_admin_user_edit, name='super_admin_user_edit'),
+    path('super-admin/users/<int:user_id>/delete/', super_admin_views.super_admin_user_delete, name='super_admin_user_delete'),
+    path('super-admin/users/<int:user_id>/toggle/', super_admin_views.super_admin_user_toggle, name='super_admin_user_toggle'),
+    
+    # Area Admins Management
+    path('super-admin/area-admins/', super_admin_views.super_admin_area_admins, name='super_admin_area_admins'),
+    path('super-admin/area-admins/create/', super_admin_views.super_admin_area_admin_create, name='super_admin_area_admin_create'),
+    path('super-admin/area-admins/<int:admin_id>/edit/', super_admin_views.super_admin_area_admin_edit, name='super_admin_area_admin_edit'),
+    path('super-admin/area-admins/<int:admin_id>/delete/', super_admin_views.super_admin_area_admin_delete, name='super_admin_area_admin_delete'),
+    path('super-admin/area-admins/<int:admin_id>/toggle/', super_admin_views.super_admin_area_admin_toggle, name='super_admin_area_admin_toggle'),
+
+    # Vendors CRUD
+    path('super-admin/vendors/', super_admin_views.super_admin_vendors, name='super_admin_vendors'),
+    path('super-admin/vendors/create/', super_admin_views.super_admin_vendor_create, name='super_admin_vendor_create'),
+    path('super-admin/vendors/<int:vendor_id>/edit/', super_admin_views.super_admin_vendor_edit, name='super_admin_vendor_edit'),
+    path('super-admin/vendors/<int:vendor_id>/delete/', super_admin_views.super_admin_vendor_delete, name='super_admin_vendor_delete'),
+    
+    # KYC 
+    path('super-admin/kyc/', super_admin_views.super_admin_kyc, name='super_admin_kyc'),
+    path('super-admin/kyc/<int:kyc_id>/approve/', super_admin_views.super_admin_kyc_approve, name='super_admin_kyc_approve'),
+    path('super-admin/kyc/<int:kyc_id>/reject/', super_admin_views.super_admin_kyc_reject, name='super_admin_kyc_reject'),
+    
+    # Payouts & Settlements
+    path('super-admin/payouts/', super_admin_views.super_admin_payouts, name='super_admin_payouts'),
+    path('super-admin/payouts/<int:payout_id>/approve/', super_admin_views.super_admin_payout_approve, name='super_admin_payout_approve'),
+    path('super-admin/payouts/<int:payout_id>/reject/', super_admin_views.super_admin_payout_reject, name='super_admin_payout_reject'),
+    
+    # CMS: Categories + Locations
+    path('super-admin/categories/', super_admin_views.super_admin_categories, name='super_admin_categories'),
+    path('super-admin/locations/', super_admin_views.super_admin_locations, name='super_admin_locations'),
+    path('super-admin/cms/category/create/', super_admin_views.super_admin_category_create, name='super_admin_category_create'),
+    path('super-admin/cms/category/<int:cat_id>/edit/', super_admin_views.super_admin_category_edit, name='super_admin_category_edit'),
+    path('super-admin/cms/category/<int:cat_id>/delete/', super_admin_views.super_admin_category_delete, name='super_admin_category_delete'),
+    path('super-admin/subcategory/create/', super_admin_views.super_admin_subcategory_create, name='super_admin_subcategory_create'),
+    path('super-admin/subcategory/<int:sub_id>/edit/', super_admin_views.super_admin_subcategory_edit, name='super_admin_subcategory_edit'),
+    path('super-admin/subcategory/<int:sub_id>/delete/', super_admin_views.super_admin_subcategory_delete, name='super_admin_subcategory_delete'),
+
+    # States CRUD
+    path('super-admin/cms/state/create/', super_admin_views.super_admin_state_create, name='super_admin_state_create'),
+    path('super-admin/cms/state/<int:state_id>/edit/', super_admin_views.super_admin_state_edit, name='super_admin_state_edit'),
+    path('super-admin/cms/state/<int:state_id>/delete/', super_admin_views.super_admin_state_delete, name='super_admin_state_delete'),
+    
+    # Cities / Locations CRUD
+    path('super-admin/cms/city/create/', super_admin_views.super_admin_location_create, name='super_admin_city_create'),
+    path('super-admin/cms/location/create/', super_admin_views.super_admin_location_create, name='super_admin_location_create'),
+    path('super-admin/cms/location/<int:loc_id>/edit/', super_admin_views.super_admin_location_edit, name='super_admin_location_edit'),
+    path('super-admin/cms/location/<int:loc_id>/delete/', super_admin_views.super_admin_location_delete, name='super_admin_location_delete'),
+    
+    # Jobs CRUD
+    path('super-admin/jobs/', super_admin_views.super_admin_jobs, name='super_admin_jobs'),
+    path('super-admin/jobs/create/', super_admin_views.super_admin_job_create, name='super_admin_job_create'),
+    path('super-admin/jobs/<int:job_id>/edit/', super_admin_views.super_admin_job_edit, name='super_admin_job_edit'),
+    path('super-admin/jobs/<int:job_id>/bids/', super_admin_views.super_admin_job_bids, name='super_admin_job_bids'),
+    path('super-admin/jobs/<int:job_id>/delete/', super_admin_views.super_admin_job_delete, name='super_admin_job_delete'),
+    
+    # Quick Services CRUD
+    path('super-admin/quick-services/', super_admin_views.super_admin_quick_services, name='super_admin_quick_services'),
+    path('super-admin/quick-services/create/', super_admin_views.super_admin_qs_create, name='super_admin_qs_create'),
+    path('super-admin/quick-services/<int:qs_id>/edit/', super_admin_views.super_admin_qs_edit, name='super_admin_qs_edit'),
+    path('super-admin/quick-services/<int:qs_id>/delete/', super_admin_views.super_admin_qs_delete, name='super_admin_qs_delete'),
+    
+    # Bids CRUD
+    path('super-admin/bids/', super_admin_views.super_admin_bids, name='super_admin_bids'),
+    path('super-admin/bids/create/', super_admin_views.super_admin_bid_create, name='super_admin_bid_create'),
+    path('super-admin/bids/<int:bid_id>/edit/', super_admin_views.super_admin_bid_edit, name='super_admin_bid_edit'),
+    path('super-admin/bids/<int:bid_id>/delete/', super_admin_views.super_admin_bid_delete, name='super_admin_bid_delete'),
+    
+    # Bid Management & Pricing Plans (replaces old subscriptions & service packages)
+    path('super-admin/bid-plans/', super_admin_views.super_admin_bid_plans, name='super_admin_bid_plans'),
+    path('super-admin/bid-plans/settings/', super_admin_views.super_admin_bid_settings_update, name='super_admin_bid_settings_update'),
+    path('super-admin/bid-plans/create/', super_admin_views.super_admin_bid_plan_create, name='super_admin_bid_plan_create'),
+    path('super-admin/bid-plans/<int:plan_id>/edit/', super_admin_views.super_admin_bid_plan_edit, name='super_admin_bid_plan_edit'),
+    path('super-admin/bid-plans/<int:plan_id>/delete/', super_admin_views.super_admin_bid_plan_delete, name='super_admin_bid_plan_delete'),
+    path('super-admin/bid-plans/<int:plan_id>/toggle/', super_admin_views.super_admin_bid_plan_toggle, name='super_admin_bid_plan_toggle'),
+    path('super-admin/bid-plans/grant/', super_admin_views.super_admin_manual_bid_grant, name='super_admin_manual_bid_grant'),
+    
+    # Old Subscriptions aliases (redirect to super_admin_bid_plans)
+    path('super-admin/subscriptions/', super_admin_views.super_admin_subscriptions, name='super_admin_subscriptions'),
+    path('super-admin/subscriptions/create/', super_admin_views.super_admin_subscription_create, name='super_admin_subscription_create'),
+    path('super-admin/subscriptions/<int:sub_id>/delete/', super_admin_views.super_admin_subscription_delete, name='super_admin_subscription_delete'),
+    
+    # Messages
+    path('super-admin/messages/', super_admin_views.super_admin_messages, name='super_admin_messages'),
+    path('super-admin/messages/<int:msg_id>/delete/', super_admin_views.super_admin_message_delete, name='super_admin_message_delete'),
+    
+    # Disputes & Complaint Resolution
+    path('super-admin/disputes/', super_admin_views.super_admin_disputes, name='super_admin_disputes'),
+    path('super-admin/disputes/<int:dispute_id>/', super_admin_views.super_admin_dispute_detail, name='super_admin_dispute_detail'),
+    
+    # Global Settings
+    path('super-admin/settings/', super_admin_views.super_admin_settings, name='super_admin_settings'),
+
+    # Landing Page Dynamic CMS
+    path('super-admin/landing/', super_admin_views.super_admin_landing_overview, name='super_admin_landing_overview'),
+    path('super-admin/landing/branding/', super_admin_views.super_admin_landing_branding, name='super_admin_landing_branding'),
+    path('super-admin/landing/hero/', super_admin_views.super_admin_landing_hero, name='super_admin_landing_hero'),
+    
+    # Why Choose Sugu Services CMS
+    path('super-admin/landing/why-choose/', super_admin_views.super_admin_landing_why_choose, name='super_admin_landing_why_choose'),
+    path('super-admin/landing/why-choose/save-section/', super_admin_views.super_admin_landing_why_choose_section_save, name='super_admin_landing_why_choose_section_save'),
+    path('super-admin/landing/why-choose/create/', super_admin_views.super_admin_landing_why_choose_create, name='super_admin_landing_why_choose_create'),
+    path('super-admin/landing/why-choose/<int:item_id>/edit/', super_admin_views.super_admin_landing_why_choose_edit, name='super_admin_landing_why_choose_edit'),
+    path('super-admin/landing/why-choose/<int:item_id>/delete/', super_admin_views.super_admin_landing_why_choose_delete, name='super_admin_landing_why_choose_delete'),
+    path('super-admin/landing/why-choose/<int:item_id>/toggle/', super_admin_views.super_admin_landing_why_choose_toggle, name='super_admin_landing_why_choose_toggle'),
+
+    # Watch How Sugu Transforms Homes (Videos CMS)
+    path('super-admin/landing/transform-videos/', super_admin_views.super_admin_landing_transform_videos, name='super_admin_landing_transform_videos'),
+    path('super-admin/landing/transform-videos/save-section/', super_admin_views.super_admin_landing_transform_section_save, name='super_admin_landing_transform_section_save'),
+    path('super-admin/landing/transform-videos/create/', super_admin_views.super_admin_landing_transform_video_create, name='super_admin_landing_transform_video_create'),
+    path('super-admin/landing/transform-videos/<int:video_id>/edit/', super_admin_views.super_admin_landing_transform_video_edit, name='super_admin_landing_transform_video_edit'),
+    path('super-admin/landing/transform-videos/<int:video_id>/delete/', super_admin_views.super_admin_landing_transform_video_delete, name='super_admin_landing_transform_video_delete'),
+    path('super-admin/landing/transform-videos/<int:video_id>/toggle/', super_admin_views.super_admin_landing_transform_video_toggle, name='super_admin_landing_transform_video_toggle'),
+
+    # Quick Service Cards (Legacy redirect)
+    path('super-admin/landing/quick-services/', super_admin_views.super_admin_landing_quick_services, name='super_admin_landing_quick_services'),
+    path('super-admin/landing/quick-services/create/', super_admin_views.super_admin_landing_quick_service_create, name='super_admin_landing_quick_service_create'),
+    path('super-admin/landing/quick-services/<int:card_id>/edit/', super_admin_views.super_admin_landing_quick_service_edit, name='super_admin_landing_quick_service_edit'),
+    path('super-admin/landing/quick-services/<int:card_id>/delete/', super_admin_views.super_admin_landing_quick_service_delete, name='super_admin_landing_quick_service_delete'),
+    path('super-admin/landing/quick-services/<int:card_id>/toggle/', super_admin_views.super_admin_landing_quick_service_toggle, name='super_admin_landing_quick_service_toggle'),
+
+    # Featured Projects
+    path('super-admin/landing/featured-projects/', super_admin_views.super_admin_landing_featured_projects, name='super_admin_landing_featured_projects'),
+    path('super-admin/landing/featured-projects/create/', super_admin_views.super_admin_landing_featured_project_create, name='super_admin_landing_featured_project_create'),
+    path('super-admin/landing/featured-projects/<int:card_id>/edit/', super_admin_views.super_admin_landing_featured_project_edit, name='super_admin_landing_featured_project_edit'),
+    path('super-admin/landing/featured-projects/<int:card_id>/delete/', super_admin_views.super_admin_landing_featured_project_delete, name='super_admin_landing_featured_project_delete'),
+    path('super-admin/landing/featured-projects/<int:card_id>/toggle/', super_admin_views.super_admin_landing_featured_project_toggle, name='super_admin_landing_featured_project_toggle'),
+
+    # Service Packages alias (redirected to super_admin_bid_plans)
+    path('super-admin/landing/packages/', super_admin_views.super_admin_landing_packages, name='super_admin_landing_packages'),
+    path('super-admin/landing/packages/create/', super_admin_views.super_admin_landing_package_create, name='super_admin_landing_package_create'),
+    path('super-admin/landing/packages/<int:card_id>/edit/', super_admin_views.super_admin_landing_package_edit, name='super_admin_landing_package_edit'),
+    path('super-admin/landing/packages/<int:card_id>/delete/', super_admin_views.super_admin_landing_package_delete, name='super_admin_landing_package_delete'),
+    path('super-admin/landing/packages/<int:card_id>/toggle/', super_admin_views.super_admin_landing_package_toggle, name='super_admin_landing_package_toggle'),
+
+    # Testimonials
+    path('super-admin/landing/testimonials/', super_admin_views.super_admin_landing_testimonials, name='super_admin_landing_testimonials'),
+    path('super-admin/landing/testimonials/create/', super_admin_views.super_admin_landing_testimonial_create, name='super_admin_landing_testimonial_create'),
+    path('super-admin/landing/testimonials/<int:card_id>/edit/', super_admin_views.super_admin_landing_testimonial_edit, name='super_admin_landing_testimonial_edit'),
+    path('super-admin/landing/testimonials/<int:card_id>/delete/', super_admin_views.super_admin_landing_testimonial_delete, name='super_admin_landing_testimonial_delete'),
+    path('super-admin/landing/testimonials/<int:card_id>/toggle/', super_admin_views.super_admin_landing_testimonial_toggle, name='super_admin_landing_testimonial_toggle'),
+
+    # General APIs (from Api_views.py)
+    path('api/add-user/', Api_views.add_user_api, name='add_user_api'),
+    path('api/user-nav-data/', Api_views.user_nav_data_api, name='user_nav_data_api'),
+    path('api/add-category/', Api_views.add_category_api, name='add_category_api'),
+    path('api/update-category/', Api_views.update_category_api, name='update_category_api'),
+    path('api/delete-category/', Api_views.delete_category_api, name='delete_category_api'),
+    path('api/top-professionals/', Api_views.top_professionals_api, name='top_professionals_api'),
+    path('api/top-professionals', Api_views.top_professionals_api),
+    
+    # Address APIs
+    path('api/user/address/add/', Api_views.add_customer_address_api, name='add_customer_address_api'),
+    path('api/user/address/add', Api_views.add_customer_address_api),
+    path('api/user/address/get/', Api_views.get_customer_addresses_api, name='get_customer_addresses_api'),
+    path('api/user/address/get', Api_views.get_customer_addresses_api),
+    path('api/user/address/delete/', Api_views.delete_customer_address_api, name='delete_customer_address_api'),
+    path('api/user/address/delete', Api_views.delete_customer_address_api),
+    path('api/user/address/update/', Api_views.update_customer_address_api, name='update_customer_address_api'),
+    path('api/user/address/update', Api_views.update_customer_address_api),
+
+    # User Profile APIs
+    path('api/user/profile/', Api_views.user_profile_api, name='user_profile_api'),
+    path('api/user/profile', Api_views.user_profile_api),
+    path('api/user/profile/update/', Api_views.user_update_profile_api, name='user_update_profile_api'),
+    path('api/user/profile/update', Api_views.user_update_profile_api),
+
+    # Service Booking API
+    path('api/user/services/book/', Api_views.book_service_api, name='book_service_api'),
+    path('api/user/services/book', Api_views.book_service_api),
+    
+    path('api/user/bookings/', Api_views.user_bookings_api, name='user_bookings_api'),
+    path('api/user/bookings', Api_views.user_bookings_api),
+
+    # Jobs API
+    path('api/user/jobs/', Api_views.get_user_jobs_api, name='get_user_jobs_api'),
+    path('api/user/jobs', Api_views.get_user_jobs_api),
+    
+    # Bids APIs (User Side)
+    path('api/user/jobs/<int:job_id>/bids/', Api_views.get_job_bids_api, name='get_job_bids_api'),
+    path('api/user/jobs/<int:job_id>/bids', Api_views.get_job_bids_api),
+    path('api/user/bids/action/', Api_views.handle_bid_action_api, name='handle_bid_action_api'),
+    path('api/user/bids/action', Api_views.handle_bid_action_api),
+    path('api/user/jobs/<int:job_id>/complete/', Api_views.user_mark_job_complete_api, name='user_mark_job_complete_api'),
+    path('api/user/jobs/<int:job_id>/complete', Api_views.user_mark_job_complete_api),
+
+
+    # Auth APIs for User (Customer) and Vendor (from Api_views.py)
+    path('api/user/signup/', Api_views.user_signup_api, name='user_signup_api'),
+    path('api/user/signup', Api_views.user_signup_api),
+    path('api/user/login/', Api_views.user_login_api, name='user_login_api'),
+    path('api/user/login', Api_views.user_login_api),
+    path('api/vendor/signup/', Api_views.vendor_signup_api, name='vendor_signup_api'),
+    path('api/vendor/signup', Api_views.vendor_signup_api),
+    path('api/vendor/login/', Api_views.vendor_login_api, name='vendor_login_api'),
+    path('api/vendor/login', Api_views.vendor_login_api),
+
+    # Unified & OTP Auth APIs
+    path('api/auth/login/', Api_views.unified_login_api, name='unified_login_api'),
+    path('api/auth/login', Api_views.unified_login_api),
+    path('api/auth/otp-login/', Api_views.unified_otp_login_api, name='unified_otp_login_api'),
+    path('api/auth/otp-login', Api_views.unified_otp_login_api),
+    path('api/auth/check-phone/', Api_views.check_phone_api, name='check_phone_api'),
+    path('api/auth/check-phone', Api_views.check_phone_api),
+    path('api/auth/send-otp/', Api_views.send_otp_api, name='send_otp_api'),
+    path('api/auth/send-otp', Api_views.send_otp_api),
+    path('api/auth/verify-otp/', Api_views.verify_otp_api, name='verify_otp_api'),
+    path('api/auth/verify-otp', Api_views.verify_otp_api),
+    path('api/user/otp-signup/', Api_views.user_otp_signup_api, name='user_otp_signup_api'),
+    path('api/user/otp-signup', Api_views.user_otp_signup_api),
+    path('api/user/otp-login/', Api_views.user_otp_login_api, name='user_otp_login_api'),
+    path('api/user/otp-login', Api_views.user_otp_login_api),
+    path('api/vendor/otp-signup/', Api_views.vendor_otp_signup_api, name='vendor_otp_signup_api'),
+    path('api/vendor/otp-signup', Api_views.vendor_otp_signup_api),
+    path('api/vendor/otp-login/', Api_views.vendor_otp_login_api, name='vendor_otp_login_api'),
+    path('api/vendor/otp-login', Api_views.vendor_otp_login_api),
+
+    # Vendor Profile APIs (Bearer Token Protected)
+    path('api/vendor/profile/', Api_views.vendor_profile_api, name='vendor_profile_api'),
+    path('api/vendor/profile', Api_views.vendor_profile_api),
+    path('api/vendor/profile/edit/', Api_views.vendor_edit_profile_api, name='vendor_edit_profile_api'),
+    path('api/vendor/profile/edit', Api_views.vendor_edit_profile_api),
+    path('api/vendor/profile/update/', Api_views.vendor_edit_profile_api, name='vendor_update_profile_api'),
+    path('api/vendor/profile/update', Api_views.vendor_edit_profile_api),
+    path('api/vendor/toggle-online/', Api_views.vendor_toggle_online_api, name='vendor_toggle_online_api'),
+    path('api/vendor/toggle-online', Api_views.vendor_toggle_online_api),
+    path('api/vendor/schedule/', Api_views.vendor_schedule_api, name='vendor_schedule_api'),
+    path('api/vendor/schedule', Api_views.vendor_schedule_api),
+    path('api/vendor/<int:vendor_id>/available-slots/', Api_views.vendor_available_slots_api, name='vendor_available_slots_api'),
+    path('api/vendor/<int:vendor_id>/available-slots', Api_views.vendor_available_slots_api),
+
+    # Vendor Dashboard & Jobs APIs (Bearer Token Protected)
+    path('api/vendor/dashboard/', Api_views.vendor_dashboard_api, name='vendor_dashboard_api'),
+    path('api/vendor/dashboard', Api_views.vendor_dashboard_api),
+    path('api/vendor/jobs/', Api_views.vendor_jobs_api, name='vendor_jobs_api'),
+    path('api/vendor/jobs', Api_views.vendor_jobs_api),
+    path('api/vendor/services/', Api_views.vendor_services_api, name='vendor_services_api'),
+    path('api/vendor/services', Api_views.vendor_services_api),
+    path('api/vendor/services/<int:service_id>/', Api_views.vendor_services_api, name='vendor_service_detail_api'),
+    path('api/vendor/services/<int:service_id>', Api_views.vendor_services_api),
+    path('api/vendor/quick-services/', Api_views.vendor_services_api, name='vendor_quick_services_api'),
+    path('api/vendor/quick-services', Api_views.vendor_services_api),
+    path('api/vendor/quick-services/create/', Api_views.vendor_services_api, name='vendor_quick_service_create_api'),
+    path('api/vendor/quick-services/create', Api_views.vendor_services_api),
+    path('api/vendor/quick-services/<int:service_id>/', Api_views.vendor_services_api, name='vendor_quick_service_detail_api'),
+    path('api/vendor/quick-services/<int:service_id>', Api_views.vendor_services_api),
+    path('api/vendor/service-suggestions/', Api_views.vendor_service_suggestions_api, name='vendor_service_suggestions_api'),
+    path('api/vendor/service-suggestions', Api_views.vendor_service_suggestions_api),
+    path('api/vendor/bookings/', Api_views.vendor_bookings_api, name='vendor_bookings_api'),
+    path('api/vendor/bookings', Api_views.vendor_bookings_api),
+    path('api/vendor/bookings/<int:booking_id>/status/', Api_views.vendor_booking_status_api, name='vendor_booking_status_api'),
+    path('api/vendor/reviews/', Api_views.vendor_reviews_api, name='vendor_reviews_api'),
+    path('api/vendor/reviews', Api_views.vendor_reviews_api),
+    path('api/user/reviews/submit/', Api_views.user_submit_review_api, name='user_submit_review_api'),
+    path('api/user/reviews/submit', Api_views.user_submit_review_api),
+    path('api/user/reviews/pending/', Api_views.user_pending_reviews_api, name='user_pending_reviews_api'),
+    path('api/user/reviews/pending', Api_views.user_pending_reviews_api),
+    path('api/vendor/send-quotation/', Api_views.vendor_send_quotation_api, name='vendor_send_quotation_api'),
+    path('api/vendor/send-quotation', Api_views.vendor_send_quotation_api),
+    path('api/vendor/bids/', Api_views.vendor_bids_api, name='vendor_bids_api'),
+    path('api/vendor/bids', Api_views.vendor_bids_api),
+    path('api/vendor/bids/<int:bid_id>/', Api_views.vendor_bid_detail_api, name='vendor_bid_detail_api'),
+    path('api/vendor/bids/<int:bid_id>', Api_views.vendor_bid_detail_api),
+
+    # User Job & Service APIs (Bearer Token Protected)
+    path('api/jobs/browse/', Api_views.browse_jobs_api, name='browse_jobs_api'),
+    path('api/jobs/browse', Api_views.browse_jobs_api),
+    path('api/jobs/', Api_views.browse_jobs_api, name='jobs_list_api'),
+    path('api/jobs', Api_views.browse_jobs_api),
+    path('api/user/post-job/', Api_views.user_post_job_api, name='user_post_job_api'),
+    path('api/user/post-job', Api_views.user_post_job_api),
+    path('api/user/jobs/create/', Api_views.user_post_job_api, name='user_jobs_create_api'),
+    path('api/user/jobs/create', Api_views.user_post_job_api),
+    path('api/user/post-quick-service/', Api_views.user_post_quick_service_api, name='user_post_quick_service_api'),
+    path('api/user/post-quick-service', Api_views.user_post_quick_service_api),
+    path('api/user/quick-services/create/', Api_views.user_post_quick_service_api, name='user_quick_services_create_api'),
+    path('api/user/quick-services/create', Api_views.user_post_quick_service_api),
+
+    # Service Listing & Image Data APIs
+    path('api/user/quick-services/', Api_views.services_nearby_api, name='user_browse_quick_services_api'),
+    path('api/user/quick-services', Api_views.services_nearby_api),
+    path('api/services/nearby/', Api_views.services_nearby_api, name='services_nearby_api'),
+    path('api/services/nearby', Api_views.services_nearby_api),
+    path('api/services/', Api_views.services_nearby_api, name='browse_services_api'),
+    path('api/services', Api_views.services_nearby_api),
+    path('api/quick-services/', Api_views.services_nearby_api, name='browse_quick_services_api'),
+    path('api/quick-services', Api_views.services_nearby_api),
+    path('api/services/<int:service_id>/', Api_views.service_detail_api, name='service_detail_api'),
+    path('api/services/<int:service_id>', Api_views.service_detail_api),
+    path('api/vendors/<int:vendor_id>/profile/', Api_views.vendor_public_profile_api, name='vendor_public_profile_api'),
+    path('api/vendors/<int:vendor_id>/profile', Api_views.vendor_public_profile_api),
+    path('api/categories/with-services/', Api_views.categories_with_services_api, name='categories_with_services_api'),
+    path('api/categories/subcategories/', Api_views.get_all_subcategories_api, name='get_all_subcategories_api'),
+    path('api/categories/<int:category_id>/subcategories/', Api_views.get_subcategories_api, name='get_subcategories_api'),
+    path('api/categories/<int:category_id>/subcategories', Api_views.get_subcategories_api),
+    # Chat & Messaging APIs (Bearer Token Protected)
+    path('api/chat/conversations/', Api_views.chat_conversations_api, name='chat_conversations_api'),
+    path('api/chat/conversations', Api_views.chat_conversations_api),
+    path('api/chat/messages/<int:other_user_id>/', Api_views.chat_messages_api, name='chat_messages_api'),
+    path('api/chat/messages/<int:other_user_id>', Api_views.chat_messages_api),
+    path('api/chat/send/', Api_views.chat_send_message_api, name='chat_send_message_api'),
+    path('api/chat/send', Api_views.chat_send_message_api),
+
+    path('api/admin/kyc/<int:kyc_id>/approve/', views.approve_kyc_view, name='approve_kyc_view'),
+    path('api/admin/kyc/<int:kyc_id>/reject/', views.reject_kyc_view, name='reject_kyc_view'),
+    path('api/admin/quick-services/<int:service_id>/status/', views.update_quick_service_status_view, name='update_quick_service_status_view'),
+    # Dedicated Dynamic Bid System APIs (Bearer Token Protected)
+    path('api/bids/create/', Api_views.bids_create_api, name='bids_create_api'),
+    path('api/bids/create', Api_views.bids_create_api),
+    path('api/bids/submit/', Api_views.bids_create_api, name='bids_submit_api'),
+    path('api/bids/submit', Api_views.bids_create_api),
+    path('api/bids/my-bids/', Api_views.bids_list_api, name='bids_list_api'),
+    path('api/bids/my-bids', Api_views.bids_list_api),
+    path('api/bids/', Api_views.bids_list_api, name='bids_root_api'),
+    path('api/bids', Api_views.bids_list_api),
+    path('api/bids/<int:bid_id>/withdraw/', Api_views.bid_withdraw_api, name='bid_withdraw_api'),
+    path('api/bids/<int:bid_id>/withdraw', Api_views.bid_withdraw_api),
+    path('api/bids/job/<int:job_id>/', Api_views.job_bids_api, name='job_bids_api'),
+    path('api/bids/job/<int:job_id>', Api_views.job_bids_api),
+    path('api/bids/<int:bid_id>/action/', Api_views.bid_action_api, name='bid_action_api'),
+    path('api/bids/<int:bid_id>/action', Api_views.bid_action_api),
+    path('api/bids/<int:bid_id>/', Api_views.bid_detail_api, name='bid_detail_api'),
+    path('api/bids/<int:bid_id>', Api_views.bid_detail_api),
+
+    # Dedicated Dynamic Credit System APIs (Bearer Token Protected)
+    path('api/credits/balance/', Api_views.credit_balance_api, name='credit_balance_api'),
+    path('api/credits/balance', Api_views.credit_balance_api),
+    path('api/credits/plans/', Api_views.credit_plans_api, name='credit_plans_api'),
+    path('api/credits/plans', Api_views.credit_plans_api),
+    path('api/credits/packages/', Api_views.credit_plans_api, name='credit_packages_api'),
+    path('api/credits/packages', Api_views.credit_plans_api),
+    path('api/credits/purchase/', Api_views.credit_purchase_api, name='credit_purchase_api'),
+    path('api/credits/purchase', Api_views.credit_purchase_api),
+    path('api/vendor/bid-credits/purchase/', Api_views.credit_purchase_api, name='vendor_bid_credits_purchase_api'),
+    path('api/vendor/bid-credits/purchase', Api_views.credit_purchase_api),
+    path('api/credits/transactions/', Api_views.credit_transactions_api, name='credit_transactions_api'),
+    path('api/credits/transactions', Api_views.credit_transactions_api),
+    path('api/credits/history/', Api_views.credit_transactions_api, name='credit_history_api'),
+    path('api/credits/history', Api_views.credit_transactions_api),
+    path('api/credits/claim-bonus/', Api_views.credit_claim_bonus_api, name='credit_claim_bonus_api'),
+    path('api/credits/claim-bonus', Api_views.credit_claim_bonus_api),
+    path('api/credits/summary/', Api_views.credit_summary_api, name='credit_summary_api'),
+    path('api/credits/summary', Api_views.credit_summary_api),
+
+    # Quick Service Job Completion, Dynamic UPI QR Billing & Revenue Split APIs
+    path('api/quick-services/bookings/<int:booking_id>/generate-bill/', Api_views.generate_booking_bill_api, name='generate_booking_bill_api'),
+    path('api/quick-services/bookings/<int:booking_id>/generate-bill', Api_views.generate_booking_bill_api),
+    path('api/quick-services/bookings/<int:booking_id>/payment-qr/', Api_views.booking_payment_qr_api, name='booking_payment_qr_api'),
+    path('api/quick-services/bookings/<int:booking_id>/payment-qr', Api_views.booking_payment_qr_api),
+    path('api/quick-services/bookings/<int:booking_id>/payment/confirm/', Api_views.confirm_booking_payment_api, name='confirm_booking_payment_api'),
+    path('api/quick-services/bookings/<int:booking_id>/payment/confirm', Api_views.confirm_booking_payment_api),
+    path('api/quick-services/bookings/<int:booking_id>/payment/status/', Api_views.booking_payment_status_api, name='booking_payment_status_api'),
+    path('api/quick-services/bookings/<int:booking_id>/payment/status', Api_views.booking_payment_status_api),
+
+    # Vendor Wallet APIs
+    path('api/vendor/wallet/balance/', Api_views.vendor_wallet_balance_api, name='vendor_wallet_balance_api'),
+    path('api/vendor/wallet/balance', Api_views.vendor_wallet_balance_api),
+    path('api/vendor/wallet/transactions/', Api_views.vendor_wallet_transactions_api, name='vendor_wallet_transactions_api'),
+    path('api/vendor/wallet/transactions', Api_views.vendor_wallet_transactions_api),
+
+    # Beauty & Wellness Dedicated Mobile App & Web Parity APIs
+    path('api/beauty/', beauty_views.beauty_experiences_api),
+    path('api/beauty', beauty_views.beauty_experiences_api),
+    path('api/user/beauty/', beauty_views.beauty_experiences_api, name='user_beauty_api'),
+    path('api/user/beauty', beauty_views.beauty_experiences_api),
+    path('api/user/beauty/services/', beauty_views.beauty_services_api, name='user_beauty_services_api'),
+    path('api/user/beauty/services', beauty_views.beauty_services_api),
+    path('api/user/beauty/parlours/', beauty_views.beauty_parlours_api, name='user_beauty_parlours_api'),
+    path('api/user/beauty/parlours', beauty_views.beauty_parlours_api),
+    path('api/user/beauty/parlours/<str:parlour_id>/', beauty_views.beauty_parlour_detail_api, name='user_beauty_parlour_detail_api'),
+    path('api/user/beauty/parlours/<str:parlour_id>', beauty_views.beauty_parlour_detail_api),
+    path('api/user/beauty/book-appointment/', beauty_views.beauty_book_appointment_api, name='user_beauty_book_appointment_api'),
+    path('api/user/beauty/book-appointment', beauty_views.beauty_book_appointment_api),
+    path('api/beauty/experiences/', beauty_views.beauty_experiences_api, name='beauty_experiences_api'),
+    path('api/beauty/experiences', beauty_views.beauty_experiences_api),
+    path('api/beauty/hubs/', beauty_views.beauty_experiences_api, name='beauty_hubs_api'),
+    path('api/beauty/hubs', beauty_views.beauty_experiences_api),
+    path('api/beauty/services/', beauty_views.beauty_services_api, name='beauty_services_api'),
+    path('api/beauty/services', beauty_views.beauty_services_api),
+    path('api/beauty/parlours/', beauty_views.beauty_parlours_api, name='beauty_parlours_api'),
+    path('api/beauty/parlours', beauty_views.beauty_parlours_api),
+    path('api/beauty/parlours/<str:parlour_id>/', beauty_views.beauty_parlour_detail_api, name='beauty_parlour_detail_api'),
+    path('api/beauty/parlours/<str:parlour_id>', beauty_views.beauty_parlour_detail_api),
+    path('api/beauty/book-appointment/', beauty_views.beauty_book_appointment_api, name='beauty_book_appointment_api'),
+    path('api/beauty/book-appointment', beauty_views.beauty_book_appointment_api),
+
+    # Phase 1 APIs
+    path('api/user/dashboard/', Api_views.user_dashboard_api, name='user_dashboard_api'),
+    path('api/user/dashboard', Api_views.user_dashboard_api),
+    path('api/vendor/selected-jobs/', Api_views.vendor_selected_jobs_api, name='vendor_selected_jobs_api'),
+    path('api/vendor/selected-jobs', Api_views.vendor_selected_jobs_api),
+    path('api/vendor/kyc/submit/', Api_views.vendor_kyc_submit_api, name='vendor_kyc_submit_api'),
+    path('api/vendor/kyc/submit', Api_views.vendor_kyc_submit_api),
+    path('api/vendor/kyc/status/', Api_views.vendor_kyc_status_api, name='vendor_kyc_status_api'),
+    path('api/vendor/kyc/status', Api_views.vendor_kyc_status_api),
+
+    # Phase 2 APIs: Payouts, Disputes, Job Completion Proof
+    path('api/vendor/wallet/payout/request/', Api_views.vendor_payout_request_api, name='vendor_payout_request_api'),
+    path('api/vendor/wallet/payout/request', Api_views.vendor_payout_request_api),
+    path('api/vendor/wallet/payout/history/', Api_views.vendor_payout_history_api, name='vendor_payout_history_api'),
+    path('api/vendor/wallet/payout/history', Api_views.vendor_payout_history_api),
+    path('api/disputes/create/', Api_views.dispute_create_api, name='dispute_create_api'),
+    path('api/disputes/create', Api_views.dispute_create_api),
+    path('api/disputes/', Api_views.dispute_list_api, name='dispute_list_api'),
+    path('api/disputes', Api_views.dispute_list_api),
+    path('api/disputes/<str:ticket_id>/message/', Api_views.dispute_message_api, name='dispute_message_api'),
+    path('api/disputes/<str:ticket_id>/message', Api_views.dispute_message_api),
+    path('api/disputes/<str:ticket_id>/', Api_views.dispute_detail_api, name='dispute_detail_api'),
+    path('api/disputes/<str:ticket_id>', Api_views.dispute_detail_api),
+    path('api/vendor/jobs/<int:job_id>/submit-proof/', Api_views.vendor_submit_completion_proof_api, name='vendor_submit_completion_proof_api'),
+    path('api/vendor/jobs/<int:job_id>/submit-proof', Api_views.vendor_submit_completion_proof_api),
+    path('api/user/jobs/<int:job_id>/proof/', Api_views.user_view_completion_proof_api, name='user_view_completion_proof_api'),
+    path('api/user/jobs/<int:job_id>/proof', Api_views.user_view_completion_proof_api),
+
+    # Phase 3 APIs: Vendor Earnings Summary & Job Gallery Images
+    path('api/vendor/earnings/', Api_views.vendor_earnings_summary_api, name='vendor_earnings_summary_api'),
+    path('api/vendor/earnings', Api_views.vendor_earnings_summary_api),
+    path('api/user/jobs/<int:job_id>/images/upload/', Api_views.user_job_images_upload_api, name='user_job_images_upload_api'),
+    path('api/user/jobs/<int:job_id>/images/upload', Api_views.user_job_images_upload_api),
+    path('api/user/jobs/<int:job_id>/images/<int:image_id>/delete/', Api_views.user_job_image_delete_api, name='user_job_image_delete_api_post'),
+    path('api/user/jobs/<int:job_id>/images/<int:image_id>/delete', Api_views.user_job_image_delete_api),
+    path('api/user/jobs/<int:job_id>/images/<int:image_id>/', Api_views.user_job_image_delete_api, name='user_job_image_delete_api'),
+    path('api/user/jobs/<int:job_id>/images/<int:image_id>', Api_views.user_job_image_delete_api),
+    path('api/user/jobs/<int:job_id>/images/', Api_views.user_job_images_list_api, name='user_job_images_list_api'),
+    path('api/user/jobs/<int:job_id>/images', Api_views.user_job_images_list_api),
+
+    # =====================================================================
+    # SINDHIGA ENTERPRISES: E-COMMERCE CUSTOMER APIS
+    # =====================================================================
+    path('api/ecommerce/categories/', ecom_api.categories_list_api, name='sindhiga_categories_slash'),
+    path('api/ecommerce/categories', ecom_api.categories_list_api, name='sindhiga_categories'),
+    path('api/ecommerce/products/', ecom_api.products_list_api, name='sindhiga_products_slash'),
+    path('api/ecommerce/products', ecom_api.products_list_api, name='sindhiga_products'),
+    path('api/ecommerce/products/<int:product_id>/', ecom_api.product_detail_api, name='sindhiga_product_detail_slash'),
+    path('api/ecommerce/products/<int:product_id>', ecom_api.product_detail_api, name='sindhiga_product_detail'),
+    path('api/ecommerce/products/<int:product_id>/review/', ecom_api.product_review_add_api, name='sindhiga_product_review_slash'),
+    path('api/ecommerce/products/<int:product_id>/review', ecom_api.product_review_add_api, name='sindhiga_product_review'),
+    path('api/ecommerce/cart/', ecom_api.cart_get_api, name='sindhiga_cart_slash'),
+    path('api/ecommerce/cart', ecom_api.cart_get_api, name='sindhiga_cart'),
+    path('api/ecommerce/cart/add/', ecom_api.cart_add_api, name='sindhiga_cart_add_slash'),
+    path('api/ecommerce/cart/add', ecom_api.cart_add_api, name='sindhiga_cart_add'),
+    path('api/ecommerce/cart/update/', ecom_api.cart_update_api, name='sindhiga_cart_update_slash'),
+    path('api/ecommerce/cart/update', ecom_api.cart_update_api, name='sindhiga_cart_update'),
+    path('api/ecommerce/cart/remove/', ecom_api.cart_remove_api, name='sindhiga_cart_remove_slash'),
+    path('api/ecommerce/cart/remove', ecom_api.cart_remove_api, name='sindhiga_cart_remove'),
+    path('api/ecommerce/cart/clear/', ecom_api.cart_clear_api, name='sindhiga_cart_clear_slash'),
+    path('api/ecommerce/cart/clear', ecom_api.cart_clear_api, name='sindhiga_cart_clear'),
+    path('api/ecommerce/wishlist/', ecom_api.wishlist_list_api, name='sindhiga_wishlist_slash'),
+    path('api/ecommerce/wishlist', ecom_api.wishlist_list_api, name='sindhiga_wishlist'),
+    path('api/ecommerce/wishlist/toggle/', ecom_api.wishlist_toggle_api, name='sindhiga_wishlist_toggle_slash'),
+    path('api/ecommerce/wishlist/toggle', ecom_api.wishlist_toggle_api, name='sindhiga_wishlist_toggle'),
+    path('api/ecommerce/coupons/', ecom_api.coupons_list_api, name='sindhiga_coupons_slash'),
+    path('api/ecommerce/coupons', ecom_api.coupons_list_api, name='sindhiga_coupons'),
+    path('api/ecommerce/coupons/apply/', ecom_api.coupon_apply_api, name='sindhiga_coupon_apply_slash'),
+    path('api/ecommerce/coupons/apply', ecom_api.coupon_apply_api, name='sindhiga_coupon_apply'),
+    path('api/ecommerce/checkout/', ecom_api.checkout_order_api, name='sindhiga_checkout_slash'),
+    path('api/ecommerce/checkout', ecom_api.checkout_order_api, name='sindhiga_checkout'),
+    path('api/ecommerce/orders/', ecom_api.orders_list_api, name='sindhiga_orders_slash'),
+    path('api/ecommerce/orders', ecom_api.orders_list_api, name='sindhiga_orders'),
+    path('api/ecommerce/orders/<int:order_id>/', ecom_api.order_detail_api, name='sindhiga_order_detail_slash'),
+    path('api/ecommerce/orders/<int:order_id>', ecom_api.order_detail_api, name='sindhiga_order_detail'),
+    path('api/ecommerce/orders/<int:order_id>/cancel/', ecom_api.order_cancel_api, name='sindhiga_order_cancel_slash'),
+    path('api/ecommerce/orders/<int:order_id>/cancel', ecom_api.order_cancel_api, name='sindhiga_order_cancel'),
+    path('api/ecommerce/orders/<int:order_id>/return/', ecom_api.order_return_api, name='sindhiga_order_return_slash'),
+    path('api/ecommerce/orders/<int:order_id>/return', ecom_api.order_return_api, name='sindhiga_order_return'),
+
+    # =====================================================================
+    # SINDHIGA ENTERPRISES: DELIVERY PARTNER APP APIS
+    # =====================================================================
+    path('api/delivery/profile/', delivery_api.delivery_profile_api, name='delivery_profile_slash'),
+    path('api/delivery/profile', delivery_api.delivery_profile_api, name='delivery_profile'),
+    path('api/delivery/status/toggle/', delivery_api.delivery_toggle_online_api, name='delivery_toggle_slash'),
+    path('api/delivery/status/toggle', delivery_api.delivery_toggle_online_api, name='delivery_toggle'),
+    path('api/delivery/orders/', delivery_api.delivery_orders_list_api, name='delivery_orders_slash'),
+    path('api/delivery/orders', delivery_api.delivery_orders_list_api, name='delivery_orders'),
+    path('api/delivery/orders/<int:order_id>/respond/', delivery_api.delivery_respond_order_api, name='delivery_respond_slash'),
+    path('api/delivery/orders/<int:order_id>/respond', delivery_api.delivery_respond_order_api, name='delivery_respond'),
+    path('api/delivery/orders/<int:order_id>/pickup/', delivery_api.delivery_mark_picked_up_api, name='delivery_pickup_slash'),
+    path('api/delivery/orders/<int:order_id>/pickup', delivery_api.delivery_mark_picked_up_api, name='delivery_pickup'),
+    path('api/delivery/orders/<int:order_id>/out-for-delivery/', delivery_api.delivery_mark_out_for_delivery_api, name='delivery_out_slash'),
+    path('api/delivery/orders/<int:order_id>/out-for-delivery', delivery_api.delivery_mark_out_for_delivery_api, name='delivery_out'),
+    path('api/delivery/orders/<int:order_id>/verify-complete/', delivery_api.delivery_verify_and_complete_api, name='delivery_verify_slash'),
+    path('api/delivery/orders/<int:order_id>/verify-complete', delivery_api.delivery_verify_and_complete_api, name='delivery_verify'),
+    path('api/delivery/earnings/', delivery_api.delivery_earnings_api, name='delivery_earnings_slash'),
+    path('api/delivery/earnings', delivery_api.delivery_earnings_api, name='delivery_earnings'),
+
+    # =====================================================================
+    # SINDHIGA ENTERPRISES: SERVICE PROVIDER APP APIS
+    # =====================================================================
+    path('api/provider/profile/', provider_api.provider_profile_api, name='provider_profile_slash'),
+    path('api/provider/profile', provider_api.provider_profile_api, name='provider_profile'),
+    path('api/provider/availability/toggle/', provider_api.provider_toggle_availability_api, name='provider_toggle_slash'),
+    path('api/provider/availability/toggle', provider_api.provider_toggle_availability_api, name='provider_toggle'),
+    path('api/provider/bookings/', provider_api.provider_bookings_list_api, name='provider_bookings_slash'),
+    path('api/provider/bookings', provider_api.provider_bookings_list_api, name='provider_bookings'),
+    path('api/provider/bookings/<int:booking_id>/respond/', provider_api.provider_respond_booking_api, name='provider_respond_slash'),
+    path('api/provider/bookings/<int:booking_id>/respond', provider_api.provider_respond_booking_api, name='provider_respond'),
+    path('api/provider/bookings/<int:booking_id>/status/', provider_api.provider_update_job_status_api, name='provider_status_slash'),
+    path('api/provider/bookings/<int:booking_id>/status', provider_api.provider_update_job_status_api, name='provider_status'),
+    path('api/provider/bookings/<int:booking_id>/complete/', provider_api.provider_complete_service_api, name='provider_complete_slash'),
+    path('api/provider/bookings/<int:booking_id>/complete', provider_api.provider_complete_service_api, name='provider_complete'),
+    path('api/provider/earnings/', provider_api.provider_earnings_api, name='provider_earnings_slash'),
+    path('api/provider/earnings', provider_api.provider_earnings_api, name='provider_earnings'),
+
+    # =====================================================================
+    # SINDHIGA ENTERPRISES: CUSTOMER HOME SERVICES APIS
+    # =====================================================================
+    path('api/services/time-slots/', services_api.service_time_slots_api, name='services_time_slots_slash'),
+    path('api/services/time-slots', services_api.service_time_slots_api, name='services_time_slots'),
+    path('api/services/catalog/', services_api.service_catalog_api, name='services_catalog_slash'),
+    path('api/services/catalog', services_api.service_catalog_api, name='services_catalog'),
+    path('api/services/book-with-slot/', services_api.book_service_with_slot_api, name='services_book_slot_slash'),
+    path('api/services/book-with-slot', services_api.book_service_with_slot_api, name='services_book_slot'),
+    path('api/services/my-bookings/', services_api.customer_bookings_list_api, name='services_my_bookings_slash'),
+    path('api/services/my-bookings', services_api.customer_bookings_list_api, name='services_my_bookings'),
+    path('api/services/my-bookings/<int:booking_id>/', services_api.customer_booking_detail_api, name='services_booking_detail_slash'),
+    path('api/services/my-bookings/<int:booking_id>', services_api.customer_booking_detail_api, name='services_booking_detail'),
+    path('api/services/my-bookings/<int:booking_id>/cancel/', services_api.customer_booking_cancel_api, name='services_booking_cancel_slash'),
+    path('api/services/my-bookings/<int:booking_id>/cancel', services_api.customer_booking_cancel_api, name='services_booking_cancel'),
+
+    # =====================================================================
+    # SINDHIGA ENTERPRISES: ADMIN MANAGEMENT APIS
+    # =====================================================================
+    path('api/admin/kpis/', admin_api.admin_kpis_api, name='admin_kpis_slash'),
+    path('api/admin/kpis', admin_api.admin_kpis_api, name='admin_kpis'),
+    path('api/admin/orders/', admin_api.admin_orders_list_api, name='admin_orders_slash'),
+    path('api/admin/orders', admin_api.admin_orders_list_api, name='admin_orders'),
+    path('api/admin/orders/<int:order_id>/status/', admin_api.admin_order_update_status_api, name='admin_order_status_slash'),
+    path('api/admin/orders/<int:order_id>/status', admin_api.admin_order_update_status_api, name='admin_order_status'),
+    path('api/admin/orders/<int:order_id>/assign-delivery/', admin_api.admin_assign_delivery_partner_api, name='admin_assign_delivery_slash'),
+    path('api/admin/orders/<int:order_id>/assign-delivery', admin_api.admin_assign_delivery_partner_api, name='admin_assign_delivery'),
+    path('api/admin/service-bookings/', admin_api.admin_service_bookings_list_api, name='admin_service_bookings_slash'),
+    path('api/admin/service-bookings', admin_api.admin_service_bookings_list_api, name='admin_service_bookings'),
+    path('api/admin/service-bookings/<int:booking_id>/assign-provider/', admin_api.admin_assign_service_provider_api, name='admin_assign_provider_slash'),
+    path('api/admin/service-bookings/<int:booking_id>/assign-provider', admin_api.admin_assign_service_provider_api, name='admin_assign_provider'),
+    path('api/admin/returns/', admin_api.admin_returns_list_api, name='admin_returns_slash'),
+    path('api/admin/returns', admin_api.admin_returns_list_api, name='admin_returns'),
+    path('api/admin/returns/<int:return_id>/action/', admin_api.admin_return_action_api, name='admin_return_action_slash'),
+    path('api/admin/returns/<int:return_id>/action', admin_api.admin_return_action_api, name='admin_return_action'),
+    path('api/admin/delivery-partners/', admin_api.admin_delivery_partners_list_api, name='admin_delivery_partners_slash'),
+    path('api/admin/delivery-partners', admin_api.admin_delivery_partners_list_api, name='admin_delivery_partners'),
+    path('api/admin/delivery-partners/<int:partner_id>/verify/', admin_api.admin_verify_delivery_partner_api, name='admin_verify_delivery_partner_slash'),
+    path('api/admin/delivery-partners/<int:partner_id>/verify', admin_api.admin_verify_delivery_partner_api, name='admin_verify_delivery_partner'),
+
+    re_path(r'^(?P<path>.*)$', views.dashboard_view, name='dashboard'),
+]

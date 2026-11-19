@@ -1,0 +1,3418 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Sugu Vendor Portal - My Services Catalog">
+  <title>My Services Catalog · Sugu Vendor</title>
+  <link rel="stylesheet" href="/infinity-vendor-dashboard/assets/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <script defer src="/infinity-vendor-dashboard/assets/app.js"></script>
+  <style>
+    /* Service Form & Live Preview Layout */
+    .catalog-builder-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    @media (max-width: 1024px) {
+      .catalog-builder-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .builder-step-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .builder-step-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .step-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: #0f8a7c;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .step-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0;
+    }
+    .step-subtitle {
+      font-size: 12px;
+      color: #64748b;
+      margin: 2px 0 0;
+    }
+
+    /* Category Cards Grid (Matching Post Jobs UI) */
+    .cat-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+      gap: 12px;
+    }
+    .cat-card {
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #fff;
+      position: relative;
+      user-select: none;
+    }
+    .cat-card:hover {
+      border-color: #0f8a7c;
+      background: #f0fdfa;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(15, 138, 124, 0.1);
+    }
+    .cat-card input[type="radio"] {
+      display: none;
+    }
+    .cat-card.active, .cat-card:has(input[type="radio"]:checked) {
+      border-color: #0f8a7c;
+      background: #ecfdf5;
+      box-shadow: 0 0 0 3px rgba(15, 138, 124, 0.18);
+    }
+    .cat-card .card-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+    .cat-card .card-content i {
+      font-size: 26px;
+      color: #64748b;
+      transition: all 0.2s;
+    }
+    .cat-card .card-content img.cat-card-img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      transition: all 0.2s;
+    }
+    .cat-card.active .card-content i, .cat-card:has(input[type="radio"]:checked) .card-content i,
+    .cat-card.active .card-content img.cat-card-img, .cat-card:has(input[type="radio"]:checked) .card-content img.cat-card-img {
+      color: #0f8a7c;
+      transform: scale(1.08);
+    }
+    .cat-card .cat-title {
+      display: block;
+      margin-top: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #334155;
+      line-height: 1.25;
+      transition: color 0.2s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .cat-card.active .cat-title, .cat-card:has(input[type="radio"]:checked) .cat-title {
+      color: #065f46;
+      font-weight: 700;
+    }
+    .cat-card .cat-check-badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #0f8a7c;
+      color: #fff;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+    }
+    .cat-card.active .cat-check-badge, .cat-card:has(input[type="radio"]:checked) .cat-check-badge {
+      display: flex;
+    }
+    .cat-selected-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      border-radius: 20px;
+      color: #047857;
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 10px;
+    }
+    .subcat-chip {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+    .subcat-chip:hover {
+      border-color: #0f8a7c;
+      background: #f0fdfa;
+      color: #0f8a7c;
+      transform: translateY(-1px);
+    }
+    .subcat-chip.active {
+      background: #0f8a7c;
+      border-color: #0f8a7c;
+      color: #ffffff;
+      font-weight: 700;
+      box-shadow: 0 4px 10px rgba(15, 138, 124, 0.25);
+    }
+    .subcat-chip.active i {
+      color: #ffffff !important;
+    }
+
+    /* Image Preset Selector */
+    .img-preset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .img-preset-item {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid transparent;
+      aspect-ratio: 16/10;
+      background: #f1f5f9;
+      transition: all 0.2s;
+    }
+    .img-preset-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .img-preset-item.selected {
+      border-color: #0f8a7c;
+      box-shadow: 0 0 0 3px rgba(15,138,124,0.25);
+    }
+    .img-preset-item .check-overlay {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: #0f8a7c;
+      color: #fff;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+    }
+    .img-preset-item.selected .check-overlay {
+      display: flex;
+    }
+    .img-preset-label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.75));
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 4px 6px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Package Options Repeater Cards */
+    .pkg-repeater-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .pkg-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .pkg-card:hover {
+      border-color: #cbd5e1;
+      background: #fff;
+    }
+    .pkg-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .pkg-card-title-tag {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f8a7c;
+      background: #e8f7f4;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .pkg-del-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: color 0.15s;
+    }
+    .pkg-del-btn:hover {
+      color: #ef4444;
+      background: #fee2e2;
+    }
+    .pkg-grid-inputs {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 12px;
+      align-items: flex-end;
+    }
+    @media (max-width: 640px) {
+      .pkg-grid-inputs {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Inclusions & Guarantees Chips */
+    .inc-chips-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .inc-item-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      cursor: pointer;
+      font-size: 13px;
+      color: #1e293b;
+      transition: all 0.15s;
+    }
+    .inc-item-checkbox:hover {
+      background: #f1f5f9;
+    }
+    .inc-item-checkbox.active {
+      background: #ecfdf5;
+      border-color: #a7f3d0;
+      color: #065f46;
+    }
+    .inc-item-checkbox input[type="checkbox"] {
+      accent-color: #0f8a7c;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    /* Location Picker */
+    .loc-picker-box {
+      background: #f8fafc;
+      border: 1.5px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .gps-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #0f8a7c;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .gps-btn:hover {
+      background: #0b6f65;
+      transform: translateY(-1px);
+    }
+    .quick-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .quick-chip {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .quick-chip:hover, .quick-chip.active {
+      background: #e8f7f4;
+      border-color: #0f8a7c;
+      color: #0f8a7c;
+    }
+    .subcat-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      user-select: none;
+    }
+    .subcat-chip:hover {
+      border-color: #0f8a7c;
+      color: #0f8a7c;
+      background: #f0fdfa;
+      transform: translateY(-1px);
+    }
+    .subcat-chip.active {
+      background: #0f8a7c;
+      border-color: #0f8a7c;
+      color: #ffffff;
+      font-weight: 700;
+      box-shadow: 0 4px 10px rgba(15,138,124,0.25);
+    }
+    .subcat-chip.active i {
+      color: #ffffff;
+    }
+    .subcat-empty-msg {
+      font-size: 12px;
+      color: #64748b;
+      font-style: italic;
+      padding: 6px 0;
+    }
+    .loc-active-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #047857;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 12px;
+    }
+    @keyframes pulseLive {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.15); }
+    }
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+      animation: pulseLive 1.5s infinite;
+    }
+
+    /* Live Preview Sticky Container */
+    .preview-sticky-wrap {
+      position: sticky;
+      top: 20px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .preview-header {
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .preview-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Modal Replica Inside Preview */
+    .modal-replica {
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+    }
+    .modal-rep-hero {
+      position: relative;
+      height: 190px;
+      background: #1e293b;
+      overflow: hidden;
+    }
+    .modal-rep-hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .modal-rep-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.75) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 16px;
+      color: #fff;
+    }
+    .modal-rep-title {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+    .modal-rep-sub {
+      font-size: 11.5px;
+      color: #e2e8f0;
+      line-height: 1.3;
+    }
+    .modal-rep-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .modal-rep-body {
+      padding: 16px;
+    }
+    .modal-rep-rating-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      font-size: 12px;
+    }
+    .rep-rating-tag {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-weight: 700;
+      color: #0f172a;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .rep-discount-tag {
+      background: #ecfdf5;
+      color: #059669;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+    }
+
+    .modal-rep-sec-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 14px 0 10px;
+    }
+
+    /* Packages preview inside modal */
+    .rep-pkgs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .rep-pkg-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .rep-pkg-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 3px;
+    }
+    .rep-pkg-desc {
+      font-size: 10px;
+      color: #64748b;
+      line-height: 1.3;
+      margin-bottom: 8px;
+      min-height: 26px;
+    }
+    .rep-pkg-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+    .rep-pkg-price {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .rep-pkg-old {
+      font-size: 11px;
+      color: #94a3b8;
+      text-decoration: line-through;
+    }
+    .rep-pkg-add-btn {
+      width: 100%;
+      border: 1px solid #7c3aed;
+      color: #7c3aed;
+      background: #fff;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 4px 0;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    /* Inclusions preview */
+    .rep-inclusions-box {
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .rep-inc-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+    .rep-inc-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      font-size: 11px;
+      color: #334155;
+      line-height: 1.3;
+      margin-bottom: 5px;
+    }
+    .rep-inc-item i.fa-circle-check {
+      color: #10b981;
+      font-size: 11px;
+      margin-top: 1px;
+      flex-shrink: 0;
+    }
+    .rep-inc-item i.fa-circle-xmark {
+      color: #ef4444;
+      font-size: 11px;
+      margin-top: 1px;
+      flex-shrink: 0;
+    }
+
+    .modal-rep-footer {
+      background: #fff;
+      border-top: 1px solid #f1f5f9;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .rep-footer-btn {
+      background: #7c3aed;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: none;
+    }
+
+    /* Active Services Listing Cards */
+    .service-catalog-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+      transition: all 0.2s;
+    }
+    .service-catalog-card:hover {
+      box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+      border-color: #cbd5e1;
+    }
+    .scc-hero {
+      position: relative;
+      height: 220px;
+      background: #090e1a;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .scc-hero .scc-hero-bg {
+      position: absolute;
+      inset: -15px;
+      width: calc(100% + 30px);
+      height: calc(100% + 30px);
+      object-fit: cover;
+      filter: blur(20px) brightness(0.35);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .scc-hero .scc-hero-img,
+    .scc-hero img:not(.scc-hero-bg) {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+    .service-catalog-card:hover .scc-hero .scc-hero-img,
+    .service-catalog-card:hover .scc-hero img:not(.scc-hero-bg) {
+      transform: scale(1.02);
+    }
+    .scc-badge-cat {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(6px);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.15);
+      z-index: 3;
+    }
+    .scc-badge-loc {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(16, 185, 129, 0.95);
+      backdrop-filter: blur(6px);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      z-index: 3;
+    }
+    .scc-hero .scc-live-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 6px;
+      backdrop-filter: blur(6px);
+      z-index: 3;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+    .scc-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .scc-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 6px;
+    }
+    .scc-desc {
+      font-size: 12.5px;
+      color: #64748b;
+      line-height: 1.4;
+      margin-bottom: 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .scc-pkgs-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .scc-pkg-pill {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      font-size: 11.5px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      color: #334155;
+      font-weight: 600;
+    }
+    .scc-pkg-pill strong {
+      color: #0f8a7c;
+    }
+    .scc-footer {
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Status Quick Badges & Selectors */
+    .status-quick-badge {
+      appearance: none;
+      -webkit-appearance: none;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s;
+      border: 1.5px solid transparent;
+      line-height: 1.3;
+    }
+    .status-quick-badge.status-active {
+      background: #ecfdf5;
+      color: #065f46;
+      border-color: #a7f3d0;
+    }
+    .status-quick-badge.status-paused {
+      background: #fef3c7;
+      color: #92400e;
+      border-color: #fde68a;
+    }
+    .status-quick-badge.status-draft {
+      background: #f1f5f9;
+      color: #475569;
+      border-color: #cbd5e1;
+    }
+    .status-quick-badge:hover {
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      filter: brightness(0.97);
+    }
+
+    .status-option-card {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      background: #fff;
+      transition: all 0.15s;
+      display: block;
+    }
+    .status-option-card:hover {
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+    .status-option-card.active {
+      border-color: #0f8a7c;
+      background: #f0fdfa;
+      box-shadow: 0 0 0 1px #0f8a7c;
+    }
+
+    /* Modal Backdrop & Custom Sizing */
+    .modal-backdrop-custom {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 15, 28, 0.65);
+      backdrop-filter: blur(3px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop-custom.open {
+      display: flex;
+    }
+    .modal-dialog-large {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+      width: min(860px, 96vw);
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalIn .18s ease;
+    }
+    .modal-dialog-large .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fafc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-dialog-large .modal-body-scrollable {
+      padding: 24px;
+      overflow-y: auto;
+      max-height: calc(92vh - 140px);
+    }
+    .modal-dialog-large .modal-footer {
+      padding: 14px 24px;
+      border-top: 1px solid #e2e8f0;
+      background: #f8fafc;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+  
+    /* Interactive Experience Selection Cards (Browsing Parity) */
+    .exp-choice-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    @media(max-width: 640px) {
+      .exp-choice-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .exp-card {
+      border: 2px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 16px;
+      background: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      user-select: none;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .exp-card:hover {
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .exp-card.active {
+      border-color: #0f8a7c;
+      background: #f0fdfa;
+      box-shadow: 0 0 0 2px rgba(15, 138, 124, 0.2);
+    }
+    .exp-card.women-card.active {
+      border-color: #ec4899;
+      background: #fdf2f8;
+      box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.25);
+    }
+    .exp-card.men-card.active {
+      border-color: #0284c7;
+      background: #f0f9ff;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+    .exp-card.home-mode.active {
+      border-color: #059669;
+      background: #ecfdf5;
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.25);
+    }
+    .exp-card.parlour-mode.active {
+      border-color: #8b5cf6;
+      background: #f5f3ff;
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+    }
+    .exp-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .exp-card.women-card.active .exp-icon-box { background: #fce7f3; }
+    .exp-card.men-card.active .exp-icon-box { background: #e0f2fe; }
+    .exp-card.home-mode.active .exp-icon-box { background: #d1fae5; }
+    .exp-card.parlour-mode.active .exp-icon-box { background: #ede9fe; }
+    .exp-card-body {
+      flex: 1;
+    }
+    .exp-card-title {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .exp-card-desc {
+      font-size: 11.5px;
+      color: #64748b;
+      line-height: 1.35;
+    }
+    .exp-check-tag {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 1.5px solid #cbd5e1;
+      background: #f8fafc;
+      color: #64748b;
+      transition: all 0.2s;
+    }
+    .exp-card.active .exp-check-tag {
+      border: none;
+      font-weight: 900;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .exp-card.women-card.active .exp-check-tag { background: #ec4899; color: #fff; }
+    .exp-card.men-card.active .exp-check-tag { background: #0284c7; color: #fff; }
+    .exp-card.home-mode.active .exp-check-tag { background: #059669; color: #fff; }
+    .exp-card.parlour-mode.active .exp-check-tag { background: #8b5cf6; color: #fff; }
+
+  </style>
+</head>
+<body data-page="catalog" data-title="My Services" data-root="../">
+  <div class="app-shell">
+    <div id="sidebar-root"></div>
+    <div class="workspace">
+      <div id="topbar-root"></div>
+      <main class="page">
+
+        <!-- Top Header Banner -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:14px;">
+          <div>
+            <h1 style="font-size:24px; font-weight:800; margin:0 0 4px; color:#0f172a;">My Service Catalog</h1>
+            <p class="muted" style="margin:0; font-size:13.5px;">Create and manage quick services with packages, guarantee checklists, and live 10 km GPS delivery zone.</p>
+          </div>
+          <button class="btn btn-primary" onclick="toggleServiceForm()" id="toggleFormBtn" style="padding:10px 20px; font-weight:700;">
+            <i class="fa-solid fa-plus"></i> Add New Quick Service
+          </button>
+        </div>
+
+        {% if messages %}
+          {% for message in messages %}
+          <div class="callout success" style="margin-bottom:24px; padding:14px 18px; border-radius:10px;">
+            <i class="fa-solid fa-circle-check" style="font-size:18px;"></i>
+            <div style="font-weight:600;">{{ message }}</div>
+          </div>
+          {% endfor %}
+        {% endif %}
+
+        <!-- ============================================================== -->
+        <!-- COMPLETE ADD NEW QUICK SERVICE BUILDER (URBAN COMPANY PARITY)  -->
+        <!-- ============================================================== -->
+        <section class="card" id="add-service-form" style="display:none; margin-bottom:32px; border:2px solid #0f8a7c; box-shadow:0 12px 40px rgba(15,138,124,0.12); border-radius:18px; overflow:hidden;">
+          <div class="card-head" style="background:#f8fafc; border-bottom:1px solid #e2e8f0; padding:16px 24px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="background:#0f8a7c; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px; text-transform:uppercase;">Creator</span>
+                <h3 style="font-size:17px; font-weight:800; color:#0f172a; margin:0;">Create New Quick Service</h3>
+              </div>
+              <p class="muted" style="margin:4px 0 0; font-size:12.5px;">Define your service title, cover photo, package tiers, and 10 km live delivery location.</p>
+            </div>
+            <button class="icon-btn" onclick="toggleServiceForm()" title="Close Form">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="card-body" style="padding:24px; background:#f8fafc;">
+            <form method="POST" action="{% url 'dashboard' 'vendor/catalog/index.html' %}" id="serviceCreateForm" enctype="multipart/form-data">
+              {% csrf_token %}
+
+              <div class="catalog-builder-grid">
+                
+                <!-- ============================================== -->
+                <!-- LEFT COLUMN: BUILDER CONTROLS                  -->
+                <!-- ============================================== -->
+                <div class="builder-controls-col">
+                  
+                  <!-- STEP 1: SELECT CATEGORY (CARDS) -->
+                  <div class="builder-step-card">
+                    <div class="builder-step-head">
+                      <div class="step-badge">1</div>
+                      <div>
+                        <h4 class="step-title">Select Service Category</h4>
+                        <p class="step-subtitle">Choose the service domain you are offering</p>
+                      </div>
+                    </div>
+
+                    <div class="cat-card-grid" id="createCategoryCardGrid">
+                      {% for cat in categories %}
+                      <label class="cat-card {% if forloop.first %}active{% endif %}" onclick="selectCreateCategoryCard(this, '{{ cat.id }}', '{{ cat.name|escapejs }}')">
+                        <input type="radio" name="category_radio" value="{{ cat.id }}" {% if forloop.first %}checked{% endif %}>
+                        <div class="card-content">
+                          {% if cat.image %}
+                            <img src="{{ cat.image.url }}" alt="{{ cat.name }}" class="cat-card-img">
+                          {% else %}
+                            <i class="bi {{ cat.icon_class }}"></i>
+                          {% endif %}
+                          <span class="cat-title">{{ cat.name }}</span>
+                        </div>
+                        <span class="cat-check-badge"><i class="fa-solid fa-check"></i></span>
+                      </label>
+                      {% endfor %}
+                    </div>
+                    <input type="hidden" name="category_id" id="formCategory" value="{% if categories %}{{ categories.0.id }}{% endif %}">
+
+                    <!-- Smart Experience & Fulfillment Targeting (VISIBLE ONLY FOR BEAUTY) -->
+                    <div id="domainTargetingSection" style="display:none; margin-top:16px; padding:20px; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:14px;">
+                      
+                      <!-- Target Audience (Gender) -->
+                      <div style="margin-bottom:16px;">
+                        <label style="display:block; font-size:12.5px; font-weight:800; color:#0f172a; margin-bottom:8px;">
+                          <i class="fa-solid fa-venus-mars" style="color:#0f8a7c;"></i> Who is this Beauty Service for? <span style="color:#ef4444;">*</span>
+                        </label>
+                        <div class="exp-choice-grid">
+                          <!-- Women Card -->
+                          <div class="exp-card women-card active" id="vWomenCard" onclick="selectVendorGenderCard('women')">
+                            <div class="exp-icon-box">👩</div>
+                            <div class="exp-card-body">
+                              <div class="exp-card-title">
+                                <span>Women's Salon &amp; Spa</span>
+                                <span class="exp-check-tag" id="vWomenTag"><i class="fa-solid fa-circle-check"></i> SELECTED</span>
+                              </div>
+                              <div class="exp-card-desc">Facials, Waxing, Pedicure, Hair Spa &amp; Styling</div>
+                            </div>
+                          </div>
+
+                          <!-- Men Card -->
+                          <div class="exp-card men-card" id="vMenCard" onclick="selectVendorGenderCard('men')">
+                            <div class="exp-icon-box">👨</div>
+                            <div class="exp-card-body">
+                              <div class="exp-card-title">
+                                <span>Men's Salon &amp; Grooming</span>
+                                <span class="exp-check-tag" id="vMenTag"><i class="fa-regular fa-circle"></i> Select</span>
+                              </div>
+                              <div class="exp-card-desc">Haircut, Beard Trim, Head Massage, Face Care &amp; De-Tan</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Unisex pill -->
+                        <div style="display:flex; justify-content:flex-end;">
+                          <label style="font-size:11.5px; color:#64748b; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                            <input type="radio" name="v_gender_radio" id="vRadioGenderAll" onchange="selectVendorGenderCard('all')" style="accent-color:#0f8a7c;">
+                            <span>Or Unisex / Open to All</span>
+                          </label>
+                        </div>
+                        <input type="hidden" name="gender" id="formGender" value="women">
+                      </div>
+
+                      <!-- Service Fulfillment Mode -->
+                      <div>
+                        <label style="display:block; font-size:12.5px; font-weight:800; color:#0f172a; margin-bottom:8px;">
+                          <i class="fa-solid fa-truck-ramp-box" style="color:#0f8a7c;"></i> How will the customer receive this service? <span style="color:#ef4444;">*</span>
+                        </label>
+                        <div class="exp-choice-grid">
+                          <!-- Salon at Home Card -->
+                          <div class="exp-card home-mode active" id="vHomeCard" onclick="selectVendorDeliveryModeCard('home')">
+                            <div class="exp-icon-box">🏠</div>
+                            <div class="exp-card-body">
+                              <div class="exp-card-title">
+                                <span>1. Salon at Home</span>
+                                <span class="exp-check-tag" id="vHomeTag"><i class="fa-solid fa-circle-check"></i> SELECTED</span>
+                              </div>
+                              <div class="exp-card-desc">Doorstep beautician visit with 100% sealed mono-pack guarantee</div>
+                            </div>
+                          </div>
+
+                          <!-- Premium Parlour Visit Card -->
+                          <div class="exp-card parlour-mode" id="vParlourCard" onclick="selectVendorDeliveryModeCard('parlour')">
+                            <div class="exp-icon-box">👑</div>
+                            <div class="exp-card-body">
+                              <div class="exp-card-title">
+                                <span>2. Premium Parlour Visit</span>
+                                <span class="exp-check-tag" id="vParlourTag"><i class="fa-regular fa-circle"></i> Select</span>
+                              </div>
+                              <div class="exp-card-desc">Customer visits verified luxury salon / parlour studio branch</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Both modes pill -->
+                        <div style="display:flex; justify-content:flex-end;">
+                          <label style="font-size:11.5px; color:#64748b; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                            <input type="radio" name="v_mode_radio" id="vRadioModeBoth" onchange="selectVendorDeliveryModeCard('both')" style="accent-color:#0f8a7c;">
+                            <span>Available for both Doorstep and Parlour visit</span>
+                          </label>
+                        </div>
+                        <input type="hidden" name="delivery_mode" id="formDeliveryMode" value="home">
+                      </div>
+
+                      <!-- Selection Confirmation Banner -->
+                      <div id="vendorActiveExpSummary" style="margin-top:16px; padding:12px 16px; background:#f0fdfa; border:2px solid #0f8a7c; border-radius:12px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <span style="background:#0f8a7c; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px; text-transform:uppercase;">Active Experience</span>
+                          <strong id="vSummaryAudienceText" style="font-size:13.5px; color:#0f172a;">👩 Women's Salon &amp; Spa</strong>
+                          <span style="color:#cbd5e1;">•</span>
+                          <strong id="vSummaryModeText" style="font-size:13.5px; color:#0f172a;">🏠 1. Salon at Home</strong>
+                        </div>
+                        <div style="font-size:11.5px; color:#047857; font-weight:700; display:flex; align-items:center; gap:5px;">
+                          <i class="fa-solid fa-circle-check" style="color:#059669;"></i>
+                          <span>Filtering subcategories below</span>
+                        </div>
+                      </div>
+
+                    </div>
+
+                    <!-- Dynamic Subcategory Selection (Filtered by Audience) -->
+                    <div id="subcategorySection" style="margin-top:14px; padding:16px; background:#f0fdfa; border:1.5px solid #a7f3d0; border-radius:12px;">
+                      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                        <div>
+                          <label style="font-size:12.5px; font-weight:800; color:#065f46; display:flex; align-items:center; gap:6px; margin:0;">
+                            <i class="fa-solid fa-layer-group" style="color:#0f8a7c;"></i> Select Specific Subcategory <span class="required" style="color:#ef4444;">*</span>
+                          </label>
+                          <span style="font-size:11px; color:#047857;">Click a subcategory chip to load tailored title suggestions and presets</span>
+                        </div>
+                        <span id="subcatCountBadge" style="font-size:11px; font-weight:700; color:#0f8a7c; background:#ffffff; border:1px solid #99f6e4; padding:2px 8px; border-radius:12px;"></span>
+                      </div>
+                      <div id="subcategoryChipsContainer" style="display:flex; flex-wrap:wrap; gap:8px;">
+                        <!-- Dynamically populated via JS -->
+                      </div>
+                      <input type="hidden" name="subcategory_id" id="formSubcategory" value="">
+                    </div>
+                  </div>
+
+                  <!-- STEP 2: SERVICE DETAILS & STATUS -->
+                  <div class="builder-step-card">
+                    <div class="builder-step-head">
+                      <div class="step-badge">2</div>
+                      <div>
+                        <h4 class="step-title">Service Details & Listing Status</h4>
+                        <p class="step-subtitle">Customer-facing title, tagline description and visibility mode</p>
+                      </div>
+                    </div>
+
+                    <!-- Service Title -->
+                    <div class="field" style="margin:0 0 14px;">
+                      <label>Service Title <span class="required">*</span></label>
+                      <input type="text" name="title" id="formTitle" class="input" placeholder="e.g. Switchboard Repair" required autocomplete="off" oninput="updateLivePreview()">
+                    </div>
+
+                    <!-- Category Quick Suggestions -->
+                    <div style="margin-bottom:14px;">
+                      <span style="font-size:11px; color:#64748b; font-weight:600; display:block; margin-bottom:6px;">Quick Title Suggestions:</span>
+                      <div class="quick-chips" id="quickTitleChips">
+                        <button type="button" class="quick-chip" onclick="applyTitleSuggestion('Switchboard Repair', 149)">Switchboard Repair</button>
+                        <button type="button" class="quick-chip" onclick="applyTitleSuggestion('Ceiling Fan Repair & Install', 199)">Ceiling Fan Repair</button>
+                        <button type="button" class="quick-chip" onclick="applyTitleSuggestion('Tap & Mixer Repair', 149)">Tap & Mixer Repair</button>
+                        <button type="button" class="quick-chip" onclick="applyTitleSuggestion('Water Tank Cleaning', 499)">Water Tank Cleaning</button>
+                        <button type="button" class="quick-chip" onclick="applyTitleSuggestion('AC Filter Clean & Gas Check', 399)">AC Service</button>
+                      </div>
+                    </div>
+
+                    <!-- Short Description -->
+                    <div class="field" style="margin:0 0 14px;">
+                      <label>Subtitle / Tagline</label>
+                      <input type="text" name="description" id="formDescription" class="input" placeholder="e.g. Professional switchboard repair service by verified experts." oninput="updateLivePreview()">
+                    </div>
+
+                    
+                    <!-- STEP 2.5: PRODUCT SPECIFICATIONS & BRAND ASSURANCES (BROWSING PARITY) -->
+                    <div style="margin-bottom:16px; padding:14px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px;">
+                      <div style="font-size:12.5px; font-weight:800; color:#166534; display:flex; align-items:center; gap:6px; margin-bottom:10px;">
+                        <i class="fa-solid fa-certificate" style="color:#059669;"></i> Product Specifications &amp; Brand Assurances
+                      </div>
+
+                      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+                        <!-- Brand / Product Line Used -->
+                        <div>
+                          <label style="font-size:11px; font-weight:700; color:#334155; display:block; margin-bottom:4px;">
+                            Brand / Product Line Used
+                          </label>
+                          <input type="text" name="brand_name" id="formBrandName" class="input" placeholder="e.g. O3+, L'Oreal, Kerastase" style="font-size:12px; padding:6px 10px;" oninput="updateLivePreview()">
+                          <!-- Quick Brand Chips -->
+                          <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;">
+                            <button type="button" class="quick-chip-sm" onclick="applyBrandSuggestion('O3+ Professional')">O3+</button>
+                            <button type="button" class="quick-chip-sm" onclick="applyBrandSuggestion('L\'Or\u00e9al')">L'Oréal</button>
+                            <button type="button" class="quick-chip-sm" onclick="applyBrandSuggestion('K\u00e9rastase Paris')">Kérastase</button>
+                            <button type="button" class="quick-chip-sm" onclick="applyBrandSuggestion('VLCC Natural')">VLCC</button>
+                            <button type="button" class="quick-chip-sm" onclick="applyBrandSuggestion('Lotus Herbals')">Lotus</button>
+                            <button type="button" class="quick-chip-sm" onclick="applyBrandSuggestion('Havells')">Havells</button>
+                            <button type="button" class="quick-chip-sm" onclick="applyBrandSuggestion('Philips')">Philips</button>
+                          </div>
+                        </div>
+
+                        <!-- Overall Service Duration -->
+                        <div>
+                          <label style="font-size:11px; font-weight:700; color:#334155; display:block; margin-bottom:4px;">
+                            Standard Service Duration
+                          </label>
+                          <input type="text" name="duration" id="formDuration" class="input" value="45 mins" placeholder="e.g. 45 mins" style="font-size:12px; padding:6px 10px;" oninput="updateLivePreview()">
+                          <!-- Quick Duration Chips -->
+                          <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;">
+                            <button type="button" class="quick-chip-sm" onclick="applyServiceDuration('30 mins')">30m</button>
+                            <button type="button" class="quick-chip-sm active" onclick="applyServiceDuration('45 mins')">45m</button>
+                            <button type="button" class="quick-chip-sm" onclick="applyServiceDuration('60 mins')">60m</button>
+                            <button type="button" class="quick-chip-sm" onclick="applyServiceDuration('75 mins')">75m</button>
+                            <button type="button" class="quick-chip-sm" onclick="applyServiceDuration('90 mins')">90m</button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Hygiene Checklist & In-Salon Parlour Name -->
+                      <div style="margin-top:12px; padding-top:10px; border-top:1px dashed #86efac; display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
+                        <!-- Sealed Mono-Pack Assurance -->
+                        <label style="display:flex; align-items:center; gap:8px; font-size:11.5px; font-weight:700; color:#166534; cursor:pointer;">
+                          <input type="checkbox" name="is_mono_pack" id="formIsMonoPack" value="1" checked onchange="updateLivePreview()" style="width:16px; height:16px; accent-color:#059669;">
+                          <span>100% Sealed Single-Dose Mono-Pack</span>
+                        </label>
+
+                        <!-- In-Salon Parlour Branch Name -->
+                        <div id="parlourBranchFieldWrap">
+                          <input type="text" name="parlour_name" id="formParlourName" class="input" placeholder="Salon / Studio Name (if parlour visit)" style="font-size:12px; padding:6px 10px;" oninput="updateLivePreview()">
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Listing Status -->
+                    <div class="field" style="margin:0;">
+                      <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-weight:700;">Listing Status <span class="required">*</span></span>
+                        <span style="font-size:11px; color:#64748b; font-weight:normal;">Active = immediately bookable by customers</span>
+                      </label>
+                      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;">
+                        <label class="status-option-card active" onclick="selectCreateStatus(this, 'active')">
+                          <input type="radio" name="status" value="active" checked style="display:none;">
+                          <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="width:10px; height:10px; border-radius:50%; background:#10b981; display:inline-block; flex-shrink:0;"></span>
+                            <div>
+                              <div style="font-weight:700; font-size:12.5px; color:#0f172a;">Active</div>
+                              <div style="font-size:10.5px; color:#64748b;">Live for bookings</div>
+                            </div>
+                          </div>
+                        </label>
+                        <label class="status-option-card" onclick="selectCreateStatus(this, 'paused')">
+                          <input type="radio" name="status" value="paused" style="display:none;">
+                          <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="width:10px; height:10px; border-radius:50%; background:#f59e0b; display:inline-block; flex-shrink:0;"></span>
+                            <div>
+                              <div style="font-weight:700; font-size:12.5px; color:#0f172a;">Paused</div>
+                              <div style="font-size:10.5px; color:#64748b;">Temporarily paused</div>
+                            </div>
+                          </div>
+                        </label>
+                        <label class="status-option-card" onclick="selectCreateStatus(this, 'draft')">
+                          <input type="radio" name="status" value="draft" style="display:none;">
+                          <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="width:10px; height:10px; border-radius:50%; background:#94a3b8; display:inline-block; flex-shrink:0;"></span>
+                            <div>
+                              <div style="font-weight:700; font-size:12.5px; color:#0f172a;">Draft</div>
+                              <div style="font-size:10.5px; color:#64748b;">Staged/Draft</div>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- STEP 3: SERVICE COVER PHOTO -->
+                  <div class="builder-step-card">
+                    <div class="builder-step-head">
+                      <div class="step-badge">3</div>
+                      <div>
+                        <h4 class="step-title">Service Cover Photo</h4>
+                        <p class="step-subtitle">Select from curated photo presets or upload your own work photo.</p>
+                      </div>
+                    </div>
+
+                    <!-- Preset Photos -->
+                    <div>
+                      <label style="font-size:12px; font-weight:700; color:#334155;">Curated Photo Presets (Click to choose):</label>
+                      <div class="img-preset-grid" id="presetImagesContainer">
+                        <div class="img-preset-item selected" onclick="selectPresetImage(this, 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&auto=format&fit=crop&q=80', 'Electrician')">
+                          <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300&auto=format&fit=crop&q=80" alt="Electrician">
+                          <span class="check-overlay"><i class="fa-solid fa-check"></i></span>
+                          <span class="img-preset-label">Electrician</span>
+                        </div>
+                        <div class="img-preset-item" onclick="selectPresetImage(this, 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=600&auto=format&fit=crop&q=80', 'Plumbing')">
+                          <img src="https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=300&auto=format&fit=crop&q=80" alt="Plumbing">
+                          <span class="check-overlay"><i class="fa-solid fa-check"></i></span>
+                          <span class="img-preset-label">Plumbing</span>
+                        </div>
+                        <div class="img-preset-item" onclick="selectPresetImage(this, 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&auto=format&fit=crop&q=80', 'Cleaning')">
+                          <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&auto=format&fit=crop&q=80" alt="Cleaning">
+                          <span class="check-overlay"><i class="fa-solid fa-check"></i></span>
+                          <span class="img-preset-label">Cleaning</span>
+                        </div>
+                        <div class="img-preset-item" onclick="selectPresetImage(this, 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=600&auto=format&fit=crop&q=80', 'AC Service')">
+                          <img src="https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=300&auto=format&fit=crop&q=80" alt="AC Service">
+                          <span class="check-overlay"><i class="fa-solid fa-check"></i></span>
+                          <span class="img-preset-label">AC Service</span>
+                        </div>
+                        <div class="img-preset-item" onclick="selectPresetImage(this, 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=600&auto=format&fit=crop&q=80', 'Bathroom')">
+                          <img src="https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=300&auto=format&fit=crop&q=80" alt="Bathroom">
+                          <span class="check-overlay"><i class="fa-solid fa-check"></i></span>
+                          <span class="img-preset-label">Bathroom</span>
+                        </div>
+                      </div>
+                      <input type="hidden" name="image_preset" id="inputImagePreset" value="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&auto=format&fit=crop&q=80">
+                    </div>
+
+                    <!-- Custom File Upload -->
+                    <div style="margin-top:14px; padding-top:12px; border-top:1px dashed #e2e8f0; display:flex; align-items:center; gap:12px;">
+                      <div style="flex:1;">
+                        <label style="font-size:12px; font-weight:700; color:#334155; margin-bottom:4px; display:block;">Or Upload Custom Service Image:</label>
+                        <input type="file" name="image" id="formImageFile" accept="image/*" class="input" style="padding:6px 10px; font-size:12px;" onchange="handleCustomImageUpload(this)">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- STEP 4: PACKAGE OPTIONS BUILDER (URBAN COMPANY PARITY) -->
+                  <div class="builder-step-card">
+                    <div class="builder-step-head" style="justify-content:space-between;">
+                      <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="step-badge">4</div>
+                        <div>
+                          <h4 class="step-title">Package Options Builder</h4>
+                          <p class="step-subtitle">Offer 1 to 4 package tiers with clear scopes & pricing.</p>
+                        </div>
+                      </div>
+                      <button type="button" class="btn btn-secondary btn-sm" onclick="addNewPackageCard()" style="font-size:12px; font-weight:700;">
+                        <i class="fa-solid fa-plus"></i> Add Package Tier
+                      </button>
+                    </div>
+
+                    <!-- Package Cards List -->
+                    <div class="pkg-repeater-list" id="packageCardsList">
+                      <!-- Default Package 1 -->
+                      <div class="pkg-card" data-pkg-idx="0">
+                        <div class="pkg-card-head">
+                          <span class="pkg-card-title-tag"><i class="fa-solid fa-box"></i> Package 1 (Basic)</span>
+                          <button type="button" class="pkg-del-btn" onclick="removePackageCard(this)" title="Remove package"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                        <div class="pkg-grid-inputs">
+                          <div>
+                            <label style="font-size:11px; font-weight:700; color:#64748b;">Package Name</label>
+                            <input type="text" name="package_name[]" class="input pkg-input-name" value="1 Point / Switch Fix" placeholder="e.g. 1 Point Fix" required oninput="updateLivePreview()">
+                          </div>
+                          <div>
+                            <label style="font-size:11px; font-weight:700; color:#64748b;">Your Base Price (Payout ₹)</label>
+                            <input type="number" step="1" min="49" name="package_price[]" class="input pkg-input-price" value="149" placeholder="149" required oninput="handlePkgPriceChange(this)">
+                          </div>
+                        </div>
+                        <div style="margin-top:8px;">
+                          <label style="font-size:11px; font-weight:700; color:#64748b;">Tier Specific Scope (Unique to this package)</label>
+                          <input type="text" name="package_desc[]" class="input pkg-input-desc" value="Switch, socket or holder repair" placeholder="e.g. Switch, socket or holder repair" oninput="updateLivePreview()">
+                        </div>
+                        <div style="margin-top:8px;">
+                          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <label style="font-size:11px; font-weight:700; color:#64748b;">Package Duration</label>
+                            <span style="font-size:10px; color:#94a3b8;">Choose chip or type</span>
+                          </div>
+                          <div style="display:flex; align-items:center; gap:8px;">
+                            <input type="text" name="package_duration[]" class="input pkg-input-duration" value="45 mins" style="max-width:110px; font-size:12px; padding:5px 8px;" placeholder="e.g. 45 mins" oninput="updateLivePreview()">
+                            <div class="pkg-duration-chips" style="display:flex; flex-wrap:wrap; gap:4px;">
+                              <button type="button" class="quick-chip-sm" onclick="setPkgDuration(this, '30 mins')">30m</button>
+                              <button type="button" class="quick-chip-sm active" onclick="setPkgDuration(this, '45 mins')">45m</button>
+                              <button type="button" class="quick-chip-sm" onclick="setPkgDuration(this, '60 mins')">60m</button>
+                              <button type="button" class="quick-chip-sm" onclick="setPkgDuration(this, '75 mins')">75m</button>
+                              <button type="button" class="quick-chip-sm" onclick="setPkgDuration(this, '90 mins')">90m</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Default Package 2 -->
+                      <div class="pkg-card" data-pkg-idx="1">
+                        <div class="pkg-card-head">
+                          <span class="pkg-card-title-tag"><i class="fa-solid fa-box"></i> Package 2 (Standard)</span>
+                          <button type="button" class="pkg-del-btn" onclick="removePackageCard(this)" title="Remove package"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                        <div class="pkg-grid-inputs">
+                          <div>
+                            <label style="font-size:11px; font-weight:700; color:#64748b;">Package Name</label>
+                            <input type="text" name="package_name[]" class="input pkg-input-name" value="3-5 Points Checkup" placeholder="e.g. 3-5 Points" required oninput="updateLivePreview()">
+                          </div>
+                          <div>
+                            <label style="font-size:11px; font-weight:700; color:#64748b;">Your Base Price (Payout ₹)</label>
+                            <input type="number" step="1" min="49" name="package_price[]" class="input pkg-input-price" value="349" placeholder="349" required oninput="handlePkgPriceChange(this)">
+                          </div>
+                        </div>
+                        <div style="margin-top:8px;">
+                          <label style="font-size:11px; font-weight:700; color:#64748b;">Tier Specific Scope (Unique to this package)</label>
+                          <input type="text" name="package_desc[]" class="input pkg-input-desc" value="Fan, light & board diagnostic" placeholder="e.g. Diagnostic & wiring checkup" oninput="updateLivePreview()">
+                        </div>
+                        <div style="margin-top:8px;">
+                          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <label style="font-size:11px; font-weight:700; color:#64748b;">Package Duration</label>
+                            <span style="font-size:10px; color:#94a3b8;">Choose chip or type</span>
+                          </div>
+                          <div style="display:flex; align-items:center; gap:8px;">
+                            <input type="text" name="package_duration[]" class="input pkg-input-duration" value="45 mins" style="max-width:110px; font-size:12px; padding:5px 8px;" placeholder="e.g. 45 mins" oninput="updateLivePreview()">
+                            <div class="pkg-duration-chips" style="display:flex; flex-wrap:wrap; gap:4px;">
+                              <button type="button" class="quick-chip-sm" onclick="setPkgDuration(this, '30 mins')">30m</button>
+                              <button type="button" class="quick-chip-sm active" onclick="setPkgDuration(this, '45 mins')">45m</button>
+                              <button type="button" class="quick-chip-sm" onclick="setPkgDuration(this, '60 mins')">60m</button>
+                              <button type="button" class="quick-chip-sm" onclick="setPkgDuration(this, '75 mins')">75m</button>
+                              <button type="button" class="quick-chip-sm" onclick="setPkgDuration(this, '90 mins')">90m</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Default Package 3 -->
+                      <div class="pkg-card" data-pkg-idx="2">
+                        <div class="pkg-card-head">
+                          <span class="pkg-card-title-tag"><i class="fa-solid fa-box"></i> Package 3 (Complete)</span>
+                          <button type="button" class="pkg-del-btn" onclick="removePackageCard(this)" title="Remove package"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                        <div class="pkg-grid-inputs">
+                          <div>
+                            <label style="font-size:11px; font-weight:700; color:#64748b;">Package Name</label>
+                            <input type="text" name="package_name[]" class="input pkg-input-name" value="Full Safety MCB Check" placeholder="e.g. Full Safety" required oninput="updateLivePreview()">
+                          </div>
+                          <div>
+                            <label style="font-size:11px; font-weight:700; color:#64748b;">Your Base Price (Payout ₹)</label>
+                            <input type="number" step="1" min="49" name="package_price[]" class="input pkg-input-price" value="599" placeholder="599" required oninput="handlePkgPriceChange(this)">
+                          </div>
+                        </div>
+                        <div style="margin-top:8px;">
+                          <label style="font-size:11px; font-weight:700; color:#64748b;">Tier Specific Scope (Unique to this package)</label>
+                          <input type="text" name="package_desc[]" class="input pkg-input-desc" value="Load distribution & earthing check" placeholder="e.g. Full house safety verification" oninput="updateLivePreview()">
+                        </div>
+                        <div style="margin-top:8px;">
+                          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <label style="font-size:11px; font-weight:700; color:#64748b;">Package Duration</label>
+                            <span style="font-size:10px; color:#94a3b8;">Choose chip or type</span>
+                          </div>
+                          <div style="display:flex; align-items:center; gap:8px;">
+                            <input type="text" name="package_duration[]" class="input pkg-input-duration" value="45 mins" style="max-width:110px; font-size:12px; padding:5px 8px;" placeholder="e.g. 45 mins" oninput="updateLivePreview()">
+                            <div class="pkg-duration-chips" style="display:flex; flex-wrap:wrap; gap:4px;">
+                              <button type="button" class="quick-chip-sm" onclick="setPkgDuration(this, '30 mins')">30m</button>
+                              <button type="button" class="quick-chip-sm active" onclick="setPkgDuration(this, '45 mins')">45m</button>
+                              <button type="button" class="quick-chip-sm" onclick="setPkgDuration(this, '60 mins')">60m</button>
+                              <button type="button" class="quick-chip-sm" onclick="setPkgDuration(this, '75 mins')">75m</button>
+                              <button type="button" class="quick-chip-sm" onclick="setPkgDuration(this, '90 mins')">90m</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Starting Price Computed Banner (Dynamic Financial Breakdown) -->
+                    <div style="margin-top:14px; background:#f0fdf4; border:1px solid #86efac; border-radius:10px; padding:12px 16px;">
+                      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                        <div style="font-size:12px; color:#166534; font-weight:700;">
+                          <i class="fa-solid fa-calculator" style="margin-right:4px;"></i> Live Dynamic Pricing (Lowest Package Tier)
+                        </div>
+                        <div style="font-size:11px; color:#15803d; font-weight:600; background:#dcfce7; padding:2px 8px; border-radius:12px;">
+                          Platform Cut {{ platform_commission_percent|default:"10.0" }}% · GST {{ cgst_percent|default:"9.0" }}% + {{ sgst_percent|default:"9.0" }}%
+                        </div>
+                      </div>
+                      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap:8px; background:#ffffff; padding:10px; border-radius:8px; border:1px solid #dcfce7; text-align:center;">
+                        <div>
+                          <div style="font-size:10.5px; color:#64748b; font-weight:600;">Your Base Rate</div>
+                          <div style="font-size:15px; font-weight:800; color:#0f172a;" id="displayBaseRate">₹149</div>
+                        </div>
+                        <div>
+                          <div style="font-size:10.5px; color:#64748b; font-weight:600;">Commission Cut</div>
+                          <div style="font-size:15px; font-weight:800; color:#d97706;" id="displayCommCut">+₹15</div>
+                        </div>
+                        <div>
+                          <div style="font-size:10.5px; color:#64748b; font-weight:600;">GST (CGST+SGST)</div>
+                          <div style="font-size:15px; font-weight:800; color:#0284c7;" id="displayGstCut">+₹3</div>
+                        </div>
+                        <div style="background:#ecfdf5; border-radius:6px; padding:4px 6px;">
+                          <div style="font-size:10.5px; color:#065f46; font-weight:700;">Customer Final</div>
+                          <div style="font-size:16px; font-weight:900; color:#059669;" id="displayCustomerTotal">₹167</div>
+                        </div>
+                      </div>
+                      <input type="hidden" name="base_price" id="formBasePrice" value="149">
+                    </div>
+                  </div>
+
+                  <!-- STEP 5: WHAT'S INCLUDED & PROTECTION GUARANTEES -->
+                  <div class="builder-step-card">
+                    <div class="builder-step-head">
+                      <div class="step-badge">5</div>
+                      <div style="flex:1;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                          <h4 class="step-title" style="margin:0;">Inclusions &amp; Guarantee Checklist</h4>
+                          <span style="background:#e0f2fe; color:#0284c7; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px; border:1px solid #bae6fd;">
+                            🌐 Universal (Card &amp; Modal Checklist)
+                          </span>
+                        </div>
+                        <p class="step-subtitle">Platform trust &amp; quality guarantees displayed on customer cards and booking modal.</p>
+                      </div>
+                    </div>
+
+                    <!-- Explainer Box -->
+                    <div style="margin-bottom:14px; padding:12px 14px; background:#f0f9ff; border:1.5px solid #bae6fd; border-radius:10px; font-size:12px; color:#0369a1; line-height:1.45;">
+                      <div style="font-weight:800; margin-bottom:3px; display:flex; align-items:center; gap:6px;">
+                        <i class="fa-solid fa-circle-info" style="color:#0284c7;"></i>
+                        <span>How this displays to customers:</span>
+                      </div>
+                      <div>
+                        These checklist points appear on your <strong>Customer Service Card</strong> and inside the <strong>Service Booking Modal</strong> under <em>"What's included in this service"</em> (see live preview on the right). They apply to <strong>ALL package tiers</strong> as platform quality &amp; warranty assurances.
+                      </div>
+                      <div style="margin-top:6px; font-size:11px; color:#0284c7; padding-top:6px; border-top:1px dashed #7dd3fc;">
+                        👉 <strong>Tier-specific features:</strong> Defined in the <strong>"Scope / Work Description"</strong> input inside each individual Package Card in STEP 3 above (e.g. <em>Basic: Face only</em> vs <em>Premium: Full Body + De-Tan</em>).
+                      </div>
+                    </div>
+
+                    <!-- Inclusions Checkboxes -->
+                    <div class="inc-chips-wrap" id="inclusionsListContainer">
+                      <label class="inc-item-checkbox active">
+                        <input type="checkbox" name="inclusions[]" value="Complete diagnostic inspection of existing fittings & components" checked onchange="toggleIncCheckbox(this)">
+                        <span><i class="fa-solid fa-circle-check" style="color:#10b981; margin-right:4px;"></i> Complete diagnostic inspection of existing fittings & components</span>
+                      </label>
+                      <label class="inc-item-checkbox active">
+                        <input type="checkbox" name="inclusions[]" value="Execution by certified, background-checked professional" checked onchange="toggleIncCheckbox(this)">
+                        <span><i class="fa-solid fa-circle-check" style="color:#10b981; margin-right:4px;"></i> Execution by certified, background-checked professional</span>
+                      </label>
+                      <label class="inc-item-checkbox active">
+                        <input type="checkbox" name="inclusions[]" value="Post-service sanitization and thorough debris cleanup" checked onchange="toggleIncCheckbox(this)">
+                        <span><i class="fa-solid fa-circle-check" style="color:#10b981; margin-right:4px;"></i> Post-service sanitization and thorough debris cleanup</span>
+                      </label>
+                      <label class="inc-item-checkbox active">
+                        <input type="checkbox" name="inclusions[]" value="30 days Sugu protection warranty on all workmanship" checked onchange="toggleIncCheckbox(this)">
+                        <span><i class="fa-solid fa-circle-check" style="color:#10b981; margin-right:4px;"></i> 30 days Sugu protection warranty on all workmanship</span>
+                      </label>
+                    </div>
+
+                    <!-- Add Custom Inclusion -->
+                    <div style="display:flex; gap:8px; margin-top:10px;">
+                      <input type="text" id="customIncInput" class="input" placeholder="Add custom guarantee (e.g. Free switch testing included)..." style="font-size:12.5px;">
+                      <button type="button" class="btn btn-secondary" onclick="addCustomInclusion()" style="white-space:nowrap; font-size:12px; font-weight:700;">
+                        <i class="fa-solid fa-plus"></i> Add
+                      </button>
+                    </div>
+
+                    <!-- Standard Exclusions Pre-Set -->
+                    <div style="margin-top:16px; padding-top:12px; border-top:1px dashed #e2e8f0;">
+                      <span style="font-size:11.5px; font-weight:700; color:#64748b; display:block; margin-bottom:6px;">Standard Exclusions:</span>
+                      <div style="display:flex; flex-direction:column; gap:4px; font-size:11.5px; color:#64748b;">
+                        <div><i class="fa-solid fa-circle-xmark" style="color:#ef4444; margin-right:4px;"></i> Major civil masonry, pipe embedding or wall tearing excluded</div>
+                        <div><i class="fa-solid fa-circle-xmark" style="color:#ef4444; margin-right:4px;"></i> Spare parts / extra hardware to be purchased or charged separately</div>
+                      </div>
+                      <input type="hidden" name="exclusions[]" value="Major civil masonry, pipe embedding or wall tearing excluded">
+                      <input type="hidden" name="exclusions[]" value="Spare parts / extra hardware to be purchased or charged separately">
+                    </div>
+                  </div>
+
+                  <!-- STEP 6: 10 KM LIVE DELIVERY LOCATION -->
+                  <div class="builder-step-card">
+                    <div class="builder-step-head">
+                      <div class="step-badge">6</div>
+                      <div>
+                        <h4 class="step-title">Service Base Location (10 km Delivery Zone)</h4>
+                        <p class="step-subtitle">Customers within 10 km radius of this location can discover and book your service.</p>
+                      </div>
+                    </div>
+
+                    <div class="loc-picker-box">
+                      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                        <button type="button" class="gps-btn" id="btnDetectGps" onclick="detectVendorGps()">
+                          <i class="fa-solid fa-crosshairs" id="gpsIcon"></i>
+                          <span id="gpsBtnText">Use My Live GPS Location</span>
+                        </button>
+
+                        <div style="flex:1; min-width:200px; position:relative;">
+                          <input type="text" id="locSearchInput" class="input" placeholder="Or search colony name (e.g. Lalpur, Doranda, Harmu)..." autocomplete="off" oninput="handleLocSearch(this.value)">
+                          <div id="locSearchSpinner" style="display:none; position:absolute; right:12px; top:11px; color:#0f8a7c;">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i>
+                          </div>
+                          <div id="locSearchResults" style="display:none; position:absolute; left:0; right:0; top:44px; z-index:50; background:#fff; border:1px solid #cbd5e1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.1); max-height:200px; overflow-y:auto;"></div>
+                        </div>
+                      </div>
+
+                      <!-- Quick Ranchi Chips -->
+                      <div class="quick-chips">
+                        <span style="font-size:11px; color:#64748b; font-weight:600; align-self:center;">Popular Localities:</span>
+                        <button type="button" class="quick-chip active" onclick="selectQuickLocality('Lalpur, Circular Road', 23.3697, 85.3346, this)">Lalpur</button>
+                        <button type="button" class="quick-chip" onclick="selectQuickLocality('Harmu Housing Colony', 23.3550, 85.3050, this)">Harmu</button>
+                        <button type="button" class="quick-chip" onclick="selectQuickLocality('Doranda High Court Area', 23.3340, 85.3218, this)">Doranda</button>
+                        <button type="button" class="quick-chip" onclick="selectQuickLocality('Morabadi Grounds', 23.3850, 85.3250, this)">Morabadi</button>
+                        <button type="button" class="quick-chip" onclick="selectQuickLocality('Bariatu Medical Road', 23.3950, 85.3500, this)">Bariatu</button>
+                        <button type="button" class="quick-chip" onclick="selectQuickLocality('Ashok Nagar, Kadru', 23.3380, 85.3120, this)">Ashok Nagar</button>
+                        <button type="button" class="quick-chip" onclick="selectQuickLocality('Kokar Industrial Area', 23.3750, 85.3550, this)">Kokar</button>
+                        <button type="button" class="quick-chip" onclick="selectQuickLocality('Main Road, Albert Ekka', 23.3500, 85.3250, this)">Main Road</button>
+                        <button type="button" class="quick-chip" onclick="selectQuickLocality('Hinoo Birsa Chowk', 23.3220, 85.3150, this)">Hinoo</button>
+                      </div>
+
+                      <!-- Active Live Location Pill -->
+                      <div class="loc-active-pill" id="locActiveDisplay">
+                        <span class="live-dot"></span>
+                        <div>
+                          <strong id="displayLocalityName">Lalpur, Circular Road</strong>
+                          <span style="color:#059669; font-size:12px; margin-left:6px;" id="displayCoords">(23.3697, 85.3346)</span>
+                          <span style="color:#065f46; font-size:11.5px; margin-left:8px;">• 10 km live radius active</span>
+                        </div>
+                      </div>
+
+                      <!-- Hidden Coordinate Fields -->
+                      <input type="hidden" name="locality" id="inputLocality" value="Lalpur, Circular Road">
+                      <input type="hidden" name="latitude" id="inputLat" value="23.3697">
+                      <input type="hidden" name="longitude" id="inputLon" value="85.3346">
+                      <input type="hidden" name="service_radius_km" value="10.0">
+                    </div>
+                  </div>
+
+                  <!-- Form Action Buttons -->
+                  <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:8px;">
+                    <button type="button" class="btn btn-secondary" onclick="toggleServiceForm()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="padding:12px 28px; font-size:14px; font-weight:800;">
+                      <i class="fa-solid fa-cloud-arrow-up"></i> Publish Service Listing
+                    </button>
+                  </div>
+
+                </div>
+
+                <!-- ============================================== -->
+                <!-- RIGHT COLUMN: REAL-TIME LIVE CUSTOMER PREVIEW  -->
+                <!-- ============================================== -->
+                <div class="builder-preview-col">
+                  <div class="preview-sticky-wrap">
+                    
+                    <div class="preview-header">
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="preview-badge"><i class="fa-solid fa-circle-dot"></i> Live Preview</span>
+                        <span style="font-size:12px; font-weight:600; color:#94a3b8;">Customer Modal</span>
+                      </div>
+                      <span style="font-size:11px; color:#cbd5e1;"><i class="fa-solid fa-eye"></i> Real-time</span>
+                    </div>
+
+                    <!-- Modal Replica Container -->
+                    <div class="modal-replica">
+                      <!-- Hero Header Image -->
+                      <div class="modal-rep-hero">
+                        <img id="prevHeroImg" src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&auto=format&fit=crop&q=80" alt="Service Hero">
+                        <div class="modal-rep-close"><i class="fa-solid fa-xmark"></i></div>
+                        <div class="modal-rep-overlay">
+                          <div class="modal-rep-title" id="prevHeroTitle">Switchboard Repair</div>
+                          <div class="modal-rep-sub" id="prevHeroSub">Professional switchboard repair service by verified experts.</div>
+                        </div>
+                      </div>
+
+                      <div class="modal-rep-body">
+                        <!-- Rating & Offer Row -->
+                        <div class="modal-rep-rating-row">
+                          <span class="rep-rating-tag"><i class="fa-solid fa-star" style="color:#7c3aed;"></i> 4.8</span>
+                          <span style="color:#64748b;">(1.8K reviews)</span>
+                          <span class="rep-discount-tag"><i class="fa-solid fa-tag"></i> 25% Off Included</span>
+                        </div>
+
+                        <!-- Packages Grid -->
+                        <div class="modal-rep-sec-title">Select Package Option</div>
+                        <div class="rep-pkgs-grid" id="prevPkgsGrid">
+                          <!-- Populated live via JS -->
+                        </div>
+
+                        <!-- What's Included Box -->
+                        <div class="rep-inclusions-box">
+                          <div class="rep-inc-title">What's included in this service</div>
+                          <div id="prevInclusionsList">
+                            <!-- Populated live via JS -->
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Modal Sticky Footer -->
+                      <div class="modal-rep-footer">
+                        <div style="font-size:12px; font-weight:700; color:#475569;">
+                          Selected: <span style="color:#0f172a;">0 items</span> • <span style="color:#7c3aed; font-size:14px; font-weight:800;" id="prevFooterBasePrice">₹167</span>
+                          <div id="prevPriceBreakdown" style="font-size:9.5px; color:#64748b; font-weight:500; margin-top:2px;">Base ₹149 + Commission ₹15 + GST ₹3</div>
+                        </div>
+                        <button type="button" class="rep-footer-btn">
+                          Done & Review Cart
+                        </button>
+                      </div>
+
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+
+            </form>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- ACTIVE SERVICES CATALOG LIST                   -->
+        <!-- ============================================== -->
+        <section class="card" data-filter-scope style="border-radius:16px;">
+          <div class="card-head" style="padding:16px 20px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <h3 style="font-size:17px; font-weight:800; margin:0; color:#0f172a;">Active Service Listings</h3>
+              <span class="badge badge-success" style="font-weight:700;">{{ my_services|length }} Service{{ my_services|length|pluralize }}</span>
+            </div>
+            <div class="search-box" style="margin:0;">
+              <span data-icon="search"></span>
+              <input class="input" data-search-input placeholder="Filter services by title or locality..." style="width:240px;">
+            </div>
+          </div>
+
+          <div class="card-body" style="padding:20px;">
+            <div class="grid grid-2" data-rows style="gap:20px;">
+              {% for srv in my_services %}
+              <article class="service-catalog-card" data-row data-search="{{ srv.title }} {{ srv.category.name|default:'' }} {{ srv.locality|default:'' }}">
+                
+                <!-- Hero Image -->
+                <div class="scc-hero">
+                  {% if srv.image %}
+                    <img src="{{ srv.image.url }}" alt="" class="scc-hero-bg" aria-hidden="true">
+                    <img src="{{ srv.image.url }}" alt="{{ srv.title }}" class="scc-hero-img">
+                  {% elif srv.image_url %}
+                    <img src="{{ srv.image_url }}" alt="" class="scc-hero-bg" aria-hidden="true">
+                    <img src="{{ srv.image_url }}" alt="{{ srv.title }}" class="scc-hero-img">
+                  {% else %}
+                    <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=500&auto=format&fit=crop&q=80" alt="" class="scc-hero-bg" aria-hidden="true">
+                    <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=500&auto=format&fit=crop&q=80" alt="{{ srv.title }}" class="scc-hero-img">
+                  {% endif %}
+                  <span class="scc-badge-cat">{{ srv.category.name|default:"General" }}</span>
+                  <span class="scc-badge-loc">
+                    <i class="fa-solid fa-location-dot"></i> {{ srv.locality|default:"Ranchi" }} · {{ srv.service_radius_km|default:10|floatformat:"0" }} km live
+                  </span>
+                  {% if srv.status == 'active' %}
+                    <span class="scc-live-badge" style="background:rgba(16,185,129,0.92); color:#fff;"><i class="fa-solid fa-circle-check"></i> Live</span>
+                  {% elif srv.status == 'paused' %}
+                    <span class="scc-live-badge" style="background:rgba(245,158,11,0.92); color:#fff;"><i class="fa-solid fa-circle-pause"></i> Paused</span>
+                  {% else %}
+                    <span class="scc-live-badge" style="background:rgba(100,116,139,0.92); color:#fff;"><i class="fa-solid fa-file-pen"></i> Draft</span>
+                  {% endif %}
+                </div>
+
+                <!-- Body Content -->
+                <div class="scc-body">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:8px;">
+                    <h3 class="scc-title" style="margin:0;">{{ srv.title }}</h3>
+                    <form method="POST" action="{% url 'dashboard' 'vendor/catalog/index.html' %}" style="margin:0; flex-shrink:0;">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="toggle_status">
+                      <input type="hidden" name="service_id" value="{{ srv.id }}">
+                      <select name="status" class="status-quick-badge status-{{ srv.status }}" onchange="this.form.submit()" title="Click to change status">
+                        <option value="active" {% if srv.status == 'active' %}selected{% endif %}>🟢 Active</option>
+                        <option value="paused" {% if srv.status == 'paused' %}selected{% endif %}>🟡 Paused</option>
+                        <option value="draft" {% if srv.status == 'draft' %}selected{% endif %}>⚪ Draft</option>
+                      </select>
+                    </form>
+                  </div>
+
+                  <p class="scc-desc">{{ srv.description|default:"Professional home service by certified partners." }}</p>
+
+                  <!-- Packages Chips -->
+                  {% if srv.service_packages %}
+                  <div class="scc-pkgs-chips">
+                    {% for pkg in srv.service_packages %}
+                    <span class="scc-pkg-pill">
+                      {{ pkg.name }}: <strong>₹{{ pkg.price|floatformat:"0" }}</strong>
+                      {% if pkg.vendor_payout %}<span style="color:#059669; font-size:10px; font-weight:600; margin-left:3px;">(Payout: ₹{{ pkg.vendor_payout|floatformat:"0" }})</span>{% endif %}
+                    </span>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+
+                  <!-- Inclusions Summary -->
+                  <div style="font-size:11.5px; color:#059669; font-weight:600; margin-bottom:12px; display:flex; align-items:center; gap:5px;">
+                    <i class="fa-solid fa-shield-check"></i>
+                    <span>{{ srv.inclusions|length|default:4 }} verified quality assurances & 30-day warranty</span>
+                  </div>
+
+                  <!-- Footer Actions -->
+                  <div class="scc-footer">
+                    <div>
+                      <span style="font-size:11px; color:#64748b; display:block;">Starting Listed Price</span>
+                      <strong style="font-size:17px; color:#0f172a;">₹{{ srv.base_price|floatformat:"0" }}</strong>
+                    </div>
+
+                    <div style="display:flex; gap:8px; align-items:center;">
+                      <button type="button" class="btn btn-primary btn-sm" onclick="openEditModal({{ srv.id }})" style="font-size:12px; font-weight:700;">
+                        <i class="fa-solid fa-pen-to-square"></i> Edit
+                      </button>
+
+                      <a href="/services/browse?category={{ srv.category.id }}" target="_blank" class="btn btn-secondary btn-sm" style="font-size:12px; font-weight:700;">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Customer View
+                      </a>
+
+                      <form method="POST" action="{% url 'dashboard' 'vendor/catalog/index.html' %}" onsubmit="return confirm('Delete this service from catalog?');" style="margin:0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete_service">
+                        <input type="hidden" name="service_id" value="{{ srv.id }}">
+                        <button type="submit" class="btn btn-danger btn-sm" style="font-size:12px;" title="Delete Service">
+                          <i class="fa-solid fa-trash"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+
+                </div>
+
+              </article>
+              {% empty %}
+              <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background:#fff; border-radius:14px; border:1px dashed #cbd5e1;">
+                <div style="width:60px; height:60px; border-radius:50%; background:#e8f7f4; color:#0f8a7c; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 16px;">
+                  <i class="fa-solid fa-bolt"></i>
+                </div>
+                <h4 style="font-size:18px; font-weight:800; color:#0f172a; margin:0 0 6px;">No services in your catalog yet</h4>
+                <p style="font-size:13.5px; color:#64748b; margin:0 0 20px; max-width:440px; margin-left:auto; margin-right:auto;">
+                  Create your first service listing with package options and 10 km live GPS delivery zone to start receiving bookings from customers.
+                </p>
+                <button class="btn btn-primary" onclick="toggleServiceForm()" style="padding:10px 24px; font-weight:700;">
+                  <i class="fa-solid fa-plus"></i> Create Quick Service Now
+                </button>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- EDIT QUICK SERVICE MODAL                       -->
+  <!-- ============================================== -->
+  <div id="edit-service-modal" class="modal-backdrop-custom" role="dialog" aria-modal="true">
+    <div class="modal-dialog-large">
+      <div class="modal-header">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="background:#0f8a7c; color:#fff; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px; text-transform:uppercase;">Editor</span>
+            <h3 style="font-size:17px; font-weight:800; color:#0f172a; margin:0;" id="editModalHeading">Edit Quick Service</h3>
+          </div>
+          <p class="muted" style="margin:4px 0 0; font-size:12.5px;">Update title, status, package options, guarantee checklist, and delivery radius.</p>
+        </div>
+        <button type="button" class="icon-btn" onclick="closeEditModal()" title="Close">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form method="POST" action="{% url 'dashboard' 'vendor/catalog/index.html' %}" id="editServiceForm" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="edit_service">
+        <input type="hidden" name="service_id" id="editServiceId">
+        <input type="hidden" name="packages_json" id="editPackagesJson">
+        <input type="hidden" name="inclusions_json" id="editInclusionsJson">
+        <input type="hidden" name="exclusions_json" id="editExclusionsJson">
+
+        <div class="modal-body-scrollable">
+
+          <!-- Section 1: Basic Information -->
+          <div class="builder-step-card" style="margin-bottom:16px;">
+            <div class="builder-step-head">
+              <div class="step-badge">1</div>
+              <div>
+                <h4 class="step-title">Basic Information</h4>
+                <p class="step-subtitle">Service identity and customer-facing title</p>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+              <div class="field" style="margin:0;">
+                <label>Category <span class="required">*</span></label>
+                <select name="category_id" id="editCategory" class="select" required onchange="handleEditCategoryChange(this.value)">
+                  <option value="">Select Category</option>
+                  {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="field" style="margin:0;">
+                <label>Subcategory</label>
+                <select name="subcategory_id" id="editSubcategory" class="select">
+                  <option value="">Select Subcategory</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field" style="margin:0 0 14px;">
+              <label>Service Title <span class="required">*</span></label>
+              <input type="text" name="title" id="editTitle" class="input" placeholder="e.g. Switchboard Repair" required autocomplete="off">
+            </div>
+
+            <!-- Short Description -->
+            <div class="field" style="margin:0 0 14px;">
+              <label>Subtitle / Tagline</label>
+              <input type="text" name="description" id="editDescription" class="input" placeholder="e.g. Professional switchboard repair service by verified experts.">
+            </div>
+
+            <!-- Status Selector -->
+            <div class="field" style="margin:0 0 14px;">
+              <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <span style="font-weight:700;">Listing Status <span class="required">*</span></span>
+                <span style="font-size:11px; color:#64748b; font-weight:normal;">Change visibility on customer platform</span>
+              </label>
+              <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;">
+                <label class="status-option-card active" id="editStatusCard_active" onclick="selectEditStatus('active')">
+                  <input type="radio" name="status" id="editStatusRadio_active" value="active" checked style="display:none;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="width:10px; height:10px; border-radius:50%; background:#10b981; display:inline-block; flex-shrink:0;"></span>
+                    <div>
+                      <div style="font-weight:700; font-size:12.5px; color:#0f172a;">Active</div>
+                      <div style="font-size:10.5px; color:#64748b;">Live for bookings</div>
+                    </div>
+                  </div>
+                </label>
+                <label class="status-option-card" id="editStatusCard_paused" onclick="selectEditStatus('paused')">
+                  <input type="radio" name="status" id="editStatusRadio_paused" value="paused" style="display:none;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="width:10px; height:10px; border-radius:50%; background:#f59e0b; display:inline-block; flex-shrink:0;"></span>
+                    <div>
+                      <div style="font-weight:700; font-size:12.5px; color:#0f172a;">Paused</div>
+                      <div style="font-size:10.5px; color:#64748b;">Temporarily paused</div>
+                    </div>
+                  </div>
+                </label>
+                <label class="status-option-card" id="editStatusCard_draft" onclick="selectEditStatus('draft')">
+                  <input type="radio" name="status" id="editStatusRadio_draft" value="draft" style="display:none;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="width:10px; height:10px; border-radius:50%; background:#94a3b8; display:inline-block; flex-shrink:0;"></span>
+                    <div>
+                      <div style="font-weight:700; font-size:12.5px; color:#0f172a;">Draft</div>
+                      <div style="font-size:10.5px; color:#64748b;">Staged/Draft</div>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Locality & Service Radius -->
+            <div style="display:grid; grid-template-columns:2fr 1fr; gap:14px; margin:0;">
+              <div class="field" style="margin:0;">
+                <label>Locality / Service Area</label>
+                <input type="text" name="locality" id="editLocality" class="input" placeholder="e.g. Lalpur, Ranchi">
+              </div>
+              <div class="field" style="margin:0;">
+                <label>Service Radius (km)</label>
+                <input type="number" name="service_radius_km" id="editRadius" class="input" min="1" max="100">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Cover Media -->
+          <div class="builder-step-card" style="margin-bottom:16px;">
+            <div class="builder-step-head">
+              <div class="step-badge">2</div>
+              <div>
+                <h4 class="step-title">Service Cover Photo</h4>
+                <p class="step-subtitle">Current cover image or upload new photo</p>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:16px; align-items:center; margin-bottom:12px;">
+              <div style="width:120px; height:80px; border-radius:8px; overflow:hidden; border:1px solid #e2e8f0; background:#f1f5f9; flex-shrink:0;">
+                <img id="editCoverPreview" src="" alt="Cover" style="width:100%; height:100%; object-fit:cover;">
+              </div>
+              <div style="flex:1;">
+                <label style="font-size:12px; font-weight:700; color:#334155; margin-bottom:4px; display:block;">Upload New Photo:</label>
+                <input type="file" name="image" id="editImageFile" accept="image/*" class="input" style="padding:6px 10px; font-size:12px;" onchange="previewEditUploadedImage(this)">
+                <span style="font-size:11px; color:#64748b; margin-top:3px; display:block;">JPG, PNG, WebP up to 5MB</span>
+              </div>
+            </div>
+
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#334155; margin-bottom:6px; display:block;">Or choose preset photo:</label>
+              <div class="img-preset-grid" id="editPresetGrid">
+                <div class="img-preset-item" onclick="selectEditPreset(this, 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&auto=format&fit=crop&q=80')">
+                  <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&auto=format&fit=crop&q=80" alt="Electrician">
+                  <span class="img-preset-label">Electrician</span>
+                </div>
+                <div class="img-preset-item" onclick="selectEditPreset(this, 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=600&auto=format&fit=crop&q=80')">
+                  <img src="https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=200&auto=format&fit=crop&q=80" alt="Plumbing">
+                  <span class="img-preset-label">Plumbing</span>
+                </div>
+                <div class="img-preset-item" onclick="selectEditPreset(this, 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&auto=format&fit=crop&q=80')">
+                  <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&auto=format&fit=crop&q=80" alt="Cleaning">
+                  <span class="img-preset-label">Cleaning</span>
+                </div>
+                <div class="img-preset-item" onclick="selectEditPreset(this, 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=600&auto=format&fit=crop&q=80')">
+                  <img src="https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200&auto=format&fit=crop&q=80" alt="AC Service">
+                  <span class="img-preset-label">AC Service</span>
+                </div>
+                <div class="img-preset-item" onclick="selectEditPreset(this, 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=600&auto=format&fit=crop&q=80')">
+                  <img src="https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=200&auto=format&fit=crop&q=80" alt="Bathroom">
+                  <span class="img-preset-label">Bathroom</span>
+                </div>
+              </div>
+              <input type="hidden" name="image_preset" id="editImagePreset">
+            </div>
+          </div>
+
+          <!-- Section 3: Package Tiers Builder (Single-Price System) -->
+          <div class="builder-step-card" style="margin-bottom:16px;">
+            <div class="builder-step-head" style="justify-content:space-between;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div class="step-badge">3</div>
+                <div>
+                  <h4 class="step-title">Package Options Builder</h4>
+                  <p class="step-subtitle">Offer 1 to 4 package tiers with clear scopes & payout prices.</p>
+                </div>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="addEditPackageCard()" style="font-size:12px; font-weight:700;">
+                <i class="fa-solid fa-plus"></i> Add Package Tier
+              </button>
+            </div>
+
+            <div class="pkg-repeater-list" id="editPackageCardsList">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+
+          <!-- Section 4: Inclusions Checklist -->
+          <div class="builder-step-card">
+            <div class="builder-step-head">
+              <div class="step-badge">4</div>
+              <div>
+                <h4 class="step-title">Inclusions & Guarantee Checklist</h4>
+                <p class="step-subtitle">Trust assurances and guarantees shown on service details.</p>
+              </div>
+            </div>
+
+            <div class="inc-chips-wrap" id="editInclusionsContainer">
+              <!-- Dynamically populated via JS -->
+            </div>
+
+            <div style="display:flex; gap:8px; margin-top:10px;">
+              <input type="text" id="editCustomIncInput" class="input" placeholder="Add custom guarantee item..." style="font-size:12.5px;">
+              <button type="button" class="btn btn-secondary" onclick="addEditCustomInclusion()" style="white-space:nowrap; font-size:12px; font-weight:700;">
+                <i class="fa-solid fa-plus"></i> Add
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="font-weight:700; padding:9px 24px;">
+            <i class="fa-solid fa-check"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Serialized Service Data for Edit Modal Consumption -->
+  <script type="application/json" id="myServicesDataJson">{{ my_services_json|default:'{}'|safe }}</script>
+  <script type="application/json" id="subcategoriesByCatJson">{{ subcategories_by_cat_json|default:'{}'|safe }}</script>
+
+  <!-- Interactive JavaScript Engine -->
+  <script>
+    // Subcategories dictionary by category id: { "<cat_id>": [{id, name}, ...] }
+    let SUBCATEGORIES_BY_CAT = {};
+    try {
+      const subcatEl = document.getElementById('subcategoriesByCatJson');
+      if (subcatEl && subcatEl.textContent.trim()) {
+        SUBCATEGORIES_BY_CAT = JSON.parse(subcatEl.textContent);
+      }
+    } catch (e) {
+      console.warn("Failed to parse subcategories JSON", e);
+    }
+
+    // Render subcategories chips in Create Quick Service form
+    function renderSubcategoriesForCategory(catId, preselectedSubcatId = null, targetGender = null) {
+      const container = document.getElementById('subcategoryChipsContainer');
+      const badge = document.getElementById('subcatCountBadge');
+      const hiddenInput = document.getElementById('formSubcategory');
+      if (!container) return;
+
+      if (!catId) {
+        container.innerHTML = '<span class="subcat-empty-msg"><i class="fa-solid fa-info-circle"></i> Please select a category first.</span>';
+        if (badge) badge.textContent = '0 available';
+        if (hiddenInput) hiddenInput.value = '';
+        return;
+      }
+
+      if (!targetGender) {
+        const gInput = document.getElementById('formGender');
+        targetGender = gInput ? gInput.value : 'all';
+      }
+
+      function processSubs(rawSubs) {
+        let subcats = [...(rawSubs || [])];
+        const activeCard = document.querySelector('#createCategoryCardGrid .cat-card.active .cat-title');
+        const catName = activeCard ? activeCard.textContent.trim().toLowerCase() : '';
+        const isBeauty = catName.includes('beauty') || catName.includes('salon') || catName.includes('spa');
+
+        if (isBeauty && targetGender && targetGender !== 'all') {
+          subcats = subcats.filter(sc => !sc.gender || sc.gender === 'all' || sc.gender === targetGender);
+        }
+        displaySubcategoryChips(subcats, preselectedSubcatId);
+      }
+
+      const subcats = SUBCATEGORIES_BY_CAT[String(catId)];
+      if (subcats && Array.isArray(subcats)) {
+        processSubs(subcats);
+      } else {
+        container.innerHTML = '<span class="subcat-empty-msg"><i class="fa-solid fa-spinner fa-spin"></i> Loading subcategories...</span>';
+        fetch(`/api/categories/${catId}/subcategories/`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.status === 'success' && Array.isArray(data.subcategories)) {
+              SUBCATEGORIES_BY_CAT[String(catId)] = data.subcategories;
+              processSubs(data.subcategories);
+            } else {
+              displaySubcategoryChips([], null);
+            }
+          })
+          .catch(err => {
+            console.error('Error fetching subcategories:', err);
+            displaySubcategoryChips([], null);
+          });
+      }
+    }
+
+    function displaySubcategoryChips(subcats, preselectedSubcatId = null) {
+      const container = document.getElementById('subcategoryChipsContainer');
+      const badge = document.getElementById('subcatCountBadge');
+      const hiddenInput = document.getElementById('formSubcategory');
+      if (!container) return;
+
+      if (!subcats || subcats.length === 0) {
+        container.innerHTML = '<span class="subcat-empty-msg"><i class="fa-solid fa-circle-exclamation" style="color:#f59e0b; margin-right:4px;"></i> No specific subcategories found for this category. You can proceed with standard details.</span>';
+        if (badge) badge.textContent = '0 available';
+        if (hiddenInput) hiddenInput.value = '';
+        return;
+      }
+
+      if (badge) badge.textContent = `${subcats.length} subcategories`;
+
+      let selectedId = preselectedSubcatId ? String(preselectedSubcatId) : String(subcats[0].id);
+      if (hiddenInput) hiddenInput.value = selectedId;
+
+      container.innerHTML = subcats.map((sc) => {
+        const isSelected = String(sc.id) === selectedId;
+        const safeName = escapeHtml(sc.name);
+        const genderBadge = (sc.gender === 'women') 
+          ? '<span style="font-size:10.5px; opacity:0.85; margin-left:3px; font-weight:700;">(Women)</span>' 
+          : (sc.gender === 'men' ? '<span style="font-size:10.5px; opacity:0.85; margin-left:3px; font-weight:700;">(Men)</span>' : '');
+        return `
+          <button type="button" 
+                  class="subcat-chip ${isSelected ? 'active' : ''}" 
+                  data-id="${sc.id}" 
+                  data-name="${sc.name.replace(/"/g, '&quot;')}"
+                  onclick="selectCreateSubcategory(this, '${sc.id}', '${sc.name.replace(/'/g, "\\'")}')">
+            <i class="fa-solid ${isSelected ? 'fa-circle-check' : 'fa-tag'}"></i>
+            <span>${safeName}</span> ${genderBadge}
+          </button>
+        `;
+      }).join('');
+
+      if (selectedId) {
+        const matched = subcats.find(s => String(s.id) === selectedId);
+        if (matched) {
+          const titleInput = document.getElementById('formTitle');
+          if (titleInput && (!titleInput.value || titleInput.value === 'Switchboard Repair' || titleInput.value === 'Professional Home Service')) {
+            titleInput.value = matched.name;
+            const descInput = document.getElementById('formDescription');
+            if (descInput && (!descInput.value || descInput.value.includes('Professional'))) {
+              descInput.value = `Professional ${matched.name.toLowerCase()} service by verified experts.`;
+            }
+          }
+        }
+      }
+    }
+
+    function selectCreateSubcategory(btnEl, subcatId, subcatName) {
+      document.querySelectorAll('#subcategoryChipsContainer .subcat-chip').forEach(btn => {
+        btn.classList.remove('active');
+        const icon = btn.querySelector('i');
+        if (icon) {
+          icon.className = 'fa-solid fa-tag';
+        }
+      });
+      btnEl.classList.add('active');
+      const icon = btnEl.querySelector('i');
+      if (icon) {
+        icon.className = 'fa-solid fa-circle-check';
+      }
+
+      const hiddenInput = document.getElementById('formSubcategory');
+      if (hiddenInput) hiddenInput.value = subcatId;
+
+      const titleInput = document.getElementById('formTitle');
+      if (titleInput) {
+        titleInput.value = subcatName;
+        titleInput.setAttribute('data-auto', 'true');
+        const descInput = document.getElementById('formDescription');
+        if (descInput) {
+          descInput.value = `Professional ${subcatName.toLowerCase()} service by verified experts.`;
+        }
+      }
+      updateLivePreview();
+    }
+
+    // Subcategory handling for Edit Modal
+    function handleEditCategoryChange(catId, selectedSubcatId = null) {
+      const select = document.getElementById('editSubcategory');
+      if (!select) return;
+      select.innerHTML = '<option value="">Select Subcategory</option>';
+      if (!catId) return;
+
+      function populateSelect(subcats) {
+        if (!subcats || subcats.length === 0) return;
+        subcats.forEach(sc => {
+          const opt = document.createElement('option');
+          opt.value = sc.id;
+          opt.textContent = sc.name + ((sc.gender === 'women') ? ' (Women)' : (sc.gender === 'men' ? ' (Men)' : ''));
+          if (selectedSubcatId && String(sc.id) === String(selectedSubcatId)) {
+            opt.selected = true;
+          }
+          select.appendChild(opt);
+        });
+      }
+
+      const subcats = SUBCATEGORIES_BY_CAT[String(catId)];
+      if (subcats && Array.isArray(subcats)) {
+        populateSelect(subcats);
+      } else {
+        fetch(`/api/categories/${catId}/subcategories/`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.status === 'success' && Array.isArray(data.subcategories)) {
+              SUBCATEGORIES_BY_CAT[String(catId)] = data.subcategories;
+              populateSelect(data.subcategories);
+            }
+          })
+          .catch(e => console.error(e));
+      }
+    }
+
+    // Form Visibility Toggle
+    function toggleServiceForm() {
+      const form = document.getElementById('add-service-form');
+      const btn = document.getElementById('toggleFormBtn');
+      if (!form) return;
+      const isHidden = (form.style.display === 'none' || window.getComputedStyle(form).display === 'none');
+      if (isHidden) {
+        form.style.display = 'block';
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (btn) btn.style.display = 'none';
+        if (typeof updateLivePreview === 'function') {
+          updateLivePreview();
+        }
+      } else {
+        form.style.display = 'none';
+        if (btn) btn.style.display = 'inline-flex';
+      }
+    }
+    window.toggleServiceForm = toggleServiceForm;
+
+    // ====== CATEGORY-BASED DATA MAPS ======
+    const CATEGORY_SUGGESTIONS = {
+      'Beauty': [
+        {title: 'O3+ Bridal Glow Luxury Facial', basePrice: 999, desc: 'Single-dose sealed mono pack, blackhead removal, ultrasonic scrub and peel-off glow mask.'},
+        {title: 'Chocolate Roll-On Full Waxing', basePrice: 499, desc: 'Gentle, pain-minimized chocolate roll-on wax with post-wax soothing aloe vera gel.'},
+        {title: 'Keratin Hair Spa & Deep Conditioning', basePrice: 799, desc: 'Intensive keratin cream massage, infrared steam and mirror-shine blowout.'},
+        {title: 'Executive Haircut & Beard Sculpting', basePrice: 299, desc: 'Tailored haircut customized to face shape, precision beard trim & hot towel treatment.'},
+        {title: 'Luxury Express Pedicure & Manicure', basePrice: 599, desc: 'Aroma foot soak, cuticle care, scrub, foot massage and premium polish application.'},
+        {title: 'Charcoal Deep Cleanse & Face Detox', basePrice: 399, desc: 'Active charcoal mask, sebum extraction, facial acupressure and glowing ice roller finish.'},
+      ],
+      'Electrical': [
+        {title: 'Switchboard Repair', basePrice: 149, desc: 'Professional switchboard repair and wiring fix by certified electricians.'},
+        {title: 'Ceiling Fan Installation', basePrice: 199, desc: 'Complete fan mounting, wiring and speed regulator setup.'},
+        {title: 'LED Light & Tube Fix', basePrice: 99, desc: 'LED panel, tube light and CFL replacement with proper wiring.'},
+        {title: 'MCB & Safety Check', basePrice: 299, desc: 'Full house MCB trip analysis, earthing test and safety audit.'},
+        {title: 'Inverter & UPS Setup', basePrice: 399, desc: 'Inverter installation, battery check and backup wiring setup.'},
+      ],
+      'Plumbing': [
+        {title: 'Tap & Mixer Repair', basePrice: 149, desc: 'Leaking tap fix, mixer cartridge replacement and joint sealing.'},
+        {title: 'Pipe Leakage Repair', basePrice: 249, desc: 'Hidden and visible pipe leak detection, cutting and re-joining.'},
+        {title: 'Toilet & Flush Repair', basePrice: 299, desc: 'Flush mechanism fix, seat replacement and drain cleaning.'},
+        {title: 'Water Tank Cleaning', basePrice: 799, desc: 'Complete tank drain, scrub, disinfection and refill service.'},
+        {title: 'Bathroom Fitting Install', basePrice: 349, desc: 'Shower, geyser, basin and accessory installation by experts.'},
+      ],
+      'Cleaning': [
+        {title: 'Deep Home Cleaning', basePrice: 1499, desc: 'Room by room deep clean including kitchen, bathrooms and balconies.'},
+        {title: 'Bathroom & Kitchen Cleaning', basePrice: 699, desc: 'Intensive scrub, tile stain removal and sanitization of wet areas.'},
+        {title: 'Sofa & Carpet Shampoo', basePrice: 599, desc: 'Professional fabric shampooing, vacuuming and stain treatment.'},
+        {title: 'Water Tank Cleaning', basePrice: 799, desc: 'Full drain, scrub, anti-bacterial wash and safe refill.'},
+        {title: 'Office & Commercial Cleaning', basePrice: 1999, desc: 'Desk area, floor, glass and washroom deep cleaning for offices.'},
+      ],
+      'AC': [
+        {title: 'AC Comprehensive Service', basePrice: 499, desc: 'Filter wash, gas pressure check and cooling coil cleaning.'},
+        {title: 'AC Gas Refill & Top-Up', basePrice: 1499, desc: 'Refrigerant gas leak check, top-up and performance test.'},
+        {title: 'AC Installation & Uninstall', basePrice: 999, desc: 'Wall mount, copper piping and drain pipe setup for split AC.'},
+        {title: 'AC PCB & Compressor Repair', basePrice: 899, desc: 'Circuit board diagnosis, compressor check and parts replacement.'},
+      ],
+      'Painting': [
+        {title: 'Room Wall Painting', basePrice: 1999, desc: 'Single or multi-room emulsion or distemper painting service.'},
+        {title: 'Exterior Wall Painting', basePrice: 4999, desc: 'Weatherproof exterior paint with primer and putty finish.'},
+        {title: 'Waterproofing & Sealing', basePrice: 2499, desc: 'Terrace, bathroom and wall waterproof coating application.'},
+      ],
+      'Carpentry': [
+        {title: 'Furniture Assembly', basePrice: 399, desc: 'Bed, wardrobe, table and shelf assembly or disassembly.'},
+        {title: 'Door & Lock Repair', basePrice: 249, desc: 'Door hinge fix, lock replacement and alignment adjustment.'},
+        {title: 'Custom Woodwork', basePrice: 799, desc: 'Custom shelving, cabinet and wooden partition fabrication.'},
+      ],
+      '_default': [
+        {title: 'Professional Home Service', basePrice: 199, desc: 'Verified and trained professionals for all home needs.'},
+        {title: 'Premium Maintenance Visit', basePrice: 349, desc: 'Comprehensive inspection and maintenance by certified experts.'},
+        {title: 'Emergency Repair Service', basePrice: 299, desc: 'Quick response repair and fix service at your doorstep.'},
+      ],
+    };
+
+    const CATEGORY_INCLUSIONS = {
+      'Electrical': [
+        'Complete wiring inspection and safety diagnostic',
+        'Certified electrician with verified background',
+        'Post-service cleanup and debris removal',
+        '30 days Sugu protection warranty on workmanship',
+        'All basic components and consumables included',
+      ],
+      'Plumbing': [
+        'Full pipe and joint inspection before work',
+        'Licensed plumber with verified credentials',
+        'Leak-proof guarantee on all joints and fittings',
+        '30 days Sugu protection warranty on workmanship',
+        'Basic sealants, tape and washers included',
+      ],
+      'Cleaning': [
+        'Professional grade cleaning chemicals and tools',
+        'Trained and background-verified cleaning staff',
+        'Post-service sanitization and disinfection',
+        'Satisfaction guarantee or free re-clean within 48hrs',
+        'Eco-friendly and child-safe products used',
+      ],
+      'AC': [
+        'Complete AC diagnostic and performance check',
+        'Certified AC technician with brand training',
+        'Gas pressure test and cooling efficiency report',
+        '30 days Sugu protection warranty on service',
+        'Filter cleaning and drain pipe flush included',
+      ],
+      'Painting': [
+        'Surface preparation, putty and primer included',
+        'Trained painters with 3+ years experience',
+        'Furniture and floor protection during work',
+        '30 days Sugu protection warranty on finish',
+        'Final touch-up and cleanup after completion',
+      ],
+      'Carpentry': [
+        'Precision measurement and material assessment',
+        'Experienced carpenter with verified portfolio',
+        'Hardware, screws and basic fittings included',
+        '30 days Sugu protection warranty on work',
+        'Post-work cleanup and debris removal',
+      ],
+      '_default': [
+        'Complete diagnostic inspection of existing fittings and components',
+        'Execution by certified, background-checked professional',
+        'Post-service sanitization and thorough debris cleanup',
+        '30 days Sugu protection warranty on all workmanship',
+      ],
+    };
+
+    // Platform financial config from GlobalSettings
+    const PLATFORM_CONFIG = {
+      commissionPct: {{ platform_commission_percent|default:"10.0" }},
+      cgstPct: {{ cgst_percent|default:"9.0" }},
+      sgstPct: {{ sgst_percent|default:"9.0" }},
+      flatFee: {{ platform_flat_fee|default:"0.0" }},
+      taxMode: '{{ tax_calculation_mode|default:"commission_only" }}',
+    };
+
+    function calcCustomerPrice(vendorPrice) {
+      const vp = parseFloat(vendorPrice) || 0;
+      const commission = vp * (PLATFORM_CONFIG.commissionPct / 100);
+      let taxableBase = PLATFORM_CONFIG.taxMode === 'commission_only' ? commission : (vp + commission);
+      const cgst = taxableBase * (PLATFORM_CONFIG.cgstPct / 100);
+      const sgst = taxableBase * (PLATFORM_CONFIG.sgstPct / 100);
+      const flat = PLATFORM_CONFIG.flatFee;
+      const customerPrice = vp + commission + cgst + sgst + flat;
+      return {
+        customerPrice: Math.round(customerPrice),
+        commission: Math.round(commission),
+        cgst: Math.round(cgst),
+        sgst: Math.round(sgst),
+        flat: Math.round(flat),
+        vendorGets: vp
+      };
+    }
+
+    // Resolve category key from name
+    function getCatKey(catName) {
+      if (!catName) return '_default';
+      const n = catName.toLowerCase();
+      if (n.includes('beauty') || n.includes('salon') || n.includes('spa') || n.includes('groom')) return 'Beauty';
+      if (n.includes('electr')) return 'Electrical';
+      if (n.includes('plumb')) return 'Plumbing';
+      if (n.includes('clean')) return 'Cleaning';
+      if (n.includes('ac') || n.includes('appliance') || n.includes('air')) return 'AC';
+      if (n.includes('paint')) return 'Painting';
+      if (n.includes('carpen') || n.includes('wood')) return 'Carpentry';
+      return '_default';
+    }
+
+    function populateTitleSuggestions(catName) {
+      const key = getCatKey(catName);
+      const suggestions = CATEGORY_SUGGESTIONS[key] || CATEGORY_SUGGESTIONS['_default'];
+      const container = document.getElementById('quickTitleChips');
+      if (!container) return;
+      container.innerHTML = suggestions.map(s => {
+        const cp = calcCustomerPrice(s.basePrice || 149);
+        return `
+          <button type="button" class="quick-chip" onclick="applyTitleSuggestion('${s.title.replace(/'/g, "\\'")}', ${s.basePrice || 149})"
+            title="${s.desc}">
+            <span>${s.title}</span>
+            <span style="font-size:10px; margin-left:4px; font-weight:700; color:#0d9488;">(Cust: ₹${cp.customerPrice})</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function populateInclusions(catName) {
+      const key = getCatKey(catName);
+      const inclusions = CATEGORY_INCLUSIONS[key] || CATEGORY_INCLUSIONS['_default'];
+      const container = document.getElementById('inclusionsListContainer');
+      if (!container) return;
+      container.innerHTML = inclusions.map(inc => `
+        <label class="inc-item-checkbox active">
+          <input type="checkbox" name="inclusions[]" value="${inc}" checked onchange="toggleIncCheckbox(this)">
+          <span><i class="fa-solid fa-circle-check" style="color:#10b981; margin-right:4px;"></i> ${inc}</span>
+        </label>
+      `).join('');
+    }
+
+    // Helper: update vendor experience cards visual active states
+    function updateVendorExpCardsVisuals() {
+      const gInput = document.getElementById('formGender');
+      const mInput = document.getElementById('formDeliveryMode');
+      const gender = gInput ? gInput.value : 'women';
+      const mode = mInput ? mInput.value : 'home';
+
+      const wCard = document.getElementById('vWomenCard');
+      const mCard = document.getElementById('vMenCard');
+      const wTag = document.getElementById('vWomenTag');
+      const mTag = document.getElementById('vMenTag');
+      const rAll = document.getElementById('vRadioGenderAll');
+
+      if (wCard) {
+        const isW = (gender === 'women');
+        wCard.classList.toggle('active', isW);
+        if (wTag) wTag.innerHTML = isW ? '<i class="fa-solid fa-circle-check"></i> SELECTED' : '<i class="fa-regular fa-circle"></i> Select';
+      }
+      if (mCard) {
+        const isM = (gender === 'men');
+        mCard.classList.toggle('active', isM);
+        if (mTag) mTag.innerHTML = isM ? '<i class="fa-solid fa-circle-check"></i> SELECTED' : '<i class="fa-regular fa-circle"></i> Select';
+      }
+      if (rAll) rAll.checked = (gender === 'all');
+
+      const hCard = document.getElementById('vHomeCard');
+      const pCard = document.getElementById('vParlourCard');
+      const hTag = document.getElementById('vHomeTag');
+      const pTag = document.getElementById('vParlourTag');
+      const rBoth = document.getElementById('vRadioModeBoth');
+
+      if (hCard) {
+        const isH = (mode === 'home');
+        hCard.classList.toggle('active', isH);
+        if (hTag) hTag.innerHTML = isH ? '<i class="fa-solid fa-circle-check"></i> SELECTED' : '<i class="fa-regular fa-circle"></i> Select';
+      }
+      if (pCard) {
+        const isP = (mode === 'parlour');
+        pCard.classList.toggle('active', isP);
+        if (pTag) pTag.innerHTML = isP ? '<i class="fa-solid fa-circle-check"></i> SELECTED' : '<i class="fa-regular fa-circle"></i> Select';
+      }
+      if (rBoth) rBoth.checked = (mode === 'both');
+
+      // Update Summary Banner Text
+      const audText = document.getElementById('vSummaryAudienceText');
+      const modeText = document.getElementById('vSummaryModeText');
+      if (audText) {
+        if (gender === 'women') audText.innerHTML = "👩 Women's Salon &amp; Spa";
+        else if (gender === 'men') audText.innerHTML = "👨 Men's Salon &amp; Grooming";
+        else audText.innerHTML = "✨ Unisex / All Services";
+      }
+      if (modeText) {
+        if (mode === 'home') modeText.innerHTML = "🏠 1. Salon at Home";
+        else if (mode === 'parlour') modeText.innerHTML = "👑 2. Premium Parlour Visit";
+        else modeText.innerHTML = "🔄 Both Doorstep &amp; Parlour";
+      }
+    }
+
+    function selectVendorGenderCard(gender) {
+      const gInput = document.getElementById('formGender');
+      if (gInput) gInput.value = gender;
+      updateVendorExpCardsVisuals();
+
+      const catInput = document.getElementById('formCategory');
+      const catId = catInput ? catInput.value : null;
+      if (catId) {
+        renderSubcategoriesForCategory(catId, null, gender);
+      }
+      updateLivePreview();
+    }
+    window.selectVendorGenderCard = selectVendorGenderCard;
+
+    function selectVendorDeliveryModeCard(mode) {
+      const mInput = document.getElementById('formDeliveryMode');
+      if (mInput) mInput.value = mode;
+      updateVendorExpCardsVisuals();
+
+      // Show/hide parlour name field
+      const parlourWrap = document.getElementById('parlourBranchFieldWrap');
+      if (parlourWrap) {
+        parlourWrap.style.display = (mode === 'parlour' || mode === 'both') ? 'block' : 'none';
+      }
+      updateLivePreview();
+    }
+    window.selectVendorDeliveryModeCard = selectVendorDeliveryModeCard;
+
+    function selectCreateCategoryCard(cardEl, catId, catName) {
+      document.querySelectorAll('#createCategoryCardGrid .cat-card').forEach(c => c.classList.remove('active'));
+      cardEl.classList.add('active');
+      const radio = cardEl.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+
+      const catInput = document.getElementById('formCategory');
+      if (catInput) {
+        catInput.value = catId;
+        catInput.setAttribute('data-name', catName);
+      }
+
+      // Check if Beauty Category (Target Experience ONLY visible for Beauty)
+      const isBeauty = (catName.toLowerCase().includes('beauty') || catName.toLowerCase().includes('salon') || catName.toLowerCase().includes('spa') || String(catId) === '37');
+      const domainSec = document.getElementById('domainTargetingSection');
+      if (domainSec) {
+        domainSec.style.display = isBeauty ? 'block' : 'none';
+      }
+
+      const gInput = document.getElementById('formGender');
+      const mInput = document.getElementById('formDeliveryMode');
+
+      if (isBeauty) {
+        if (!gInput.value || gInput.value === 'all') {
+          gInput.value = 'women';
+        }
+        updateVendorExpCardsVisuals();
+        renderSubcategoriesForCategory(catId, null, gInput.value);
+      } else {
+        gInput.value = 'all';
+        mInput.value = 'both';
+        renderSubcategoriesForCategory(catId, null, 'all');
+      }
+
+      // Populate dynamic suggestions and inclusions
+      populateTitleSuggestions(catName);
+      populateInclusions(catName);
+
+      // Auto-fill title if empty or default
+      const key = getCatKey(catName);
+      const suggestions = CATEGORY_SUGGESTIONS[key] || CATEGORY_SUGGESTIONS['_default'];
+      const titleInput = document.getElementById('formTitle');
+      const descInput = document.getElementById('formDescription');
+      if (!titleInput.value || titleInput.value === 'Switchboard Repair' || titleInput.value === 'Professional Home Service') {
+        titleInput.value = suggestions[0].title;
+        descInput.value = suggestions[0].desc;
+        if (suggestions[0].basePrice) {
+          const firstCard = document.querySelector('#packageCardsList .pkg-card');
+          if (firstCard) {
+            const priceInput = firstCard.querySelector('.pkg-input-price');
+            if (priceInput) {
+              priceInput.value = suggestions[0].basePrice;
+              handlePkgPriceChange(priceInput);
+            }
+          }
+        }
+      }
+      updateLivePreview();
+    }
+
+    // Category Change Handler backward-compat
+    function handleCategoryChange(select) {
+      const catName = select.options ? (select.options[select.selectedIndex]?.getAttribute('data-name') || '') : '';
+      populateTitleSuggestions(catName);
+      populateInclusions(catName);
+      updateLivePreview();
+    }
+
+    // Quick Title Suggestions
+    function applyTitleSuggestion(title, basePrice) {
+      document.getElementById('formTitle').value = title;
+      const activeCard = document.querySelector('#createCategoryCardGrid .cat-card.active .cat-title');
+      const catInput = document.getElementById('formCategory');
+      const catName = activeCard ? activeCard.textContent.trim() : (catInput ? catInput.getAttribute('data-name') || '' : '');
+      const key = getCatKey(catName);
+      const suggestions = CATEGORY_SUGGESTIONS[key] || CATEGORY_SUGGESTIONS['_default'];
+      const match = suggestions.find(s => s.title === title);
+      if (match) {
+        document.getElementById('formDescription').value = match.desc;
+        const priceToSet = basePrice || match.basePrice;
+        if (priceToSet) {
+          const firstCard = document.querySelector('#packageCardsList .pkg-card');
+          if (firstCard) {
+            const priceInput = firstCard.querySelector('.pkg-input-price');
+            if (priceInput) {
+              priceInput.value = priceToSet;
+              handlePkgPriceChange(priceInput);
+            }
+          }
+        }
+      } else {
+        document.getElementById('formDescription').value = `Professional ${title.toLowerCase()} service by verified experts.`;
+      }
+      updateLivePreview();
+    }
+
+    // Image Preset Picker
+    function selectPresetImage(el, url, label) {
+      document.querySelectorAll('.img-preset-item').forEach(item => item.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('inputImagePreset').value = url;
+      document.getElementById('formImageFile').value = ''; // clear custom upload
+      document.getElementById('prevHeroImg').src = url;
+    }
+
+    // Custom Image File Upload Preview
+    function handleCustomImageUpload(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('prevHeroImg').src = e.target.result;
+          document.querySelectorAll('.img-preset-item').forEach(item => item.classList.remove('selected'));
+          document.getElementById('inputImagePreset').value = '';
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    // Live Breakdown Inside Each Package Card
+    function updateCardBreakdown(card) {
+      const priceInput = card.querySelector('.pkg-input-price');
+      if (!priceInput) return;
+      const val = parseFloat(priceInput.value) || 0;
+      const cp = calcCustomerPrice(val);
+      let note = card.querySelector('.pkg-price-calc-note');
+      if (!note) {
+        note = document.createElement('div');
+        note.className = 'pkg-price-calc-note';
+        note.style.cssText = 'margin-top:8px; font-size:11px; color:#047857; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; padding:5px 10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;';
+        const inputsGrid = card.querySelector('.pkg-grid-inputs');
+        inputsGrid.insertAdjacentElement('afterend', note);
+      }
+      note.innerHTML = `
+        <span><i class="fa-solid fa-calculator" style="margin-right:4px;"></i> Customer Listed Price: <strong style="font-size:12px; color:#065f46;">₹${cp.customerPrice}</strong> <span style="color:#64748b; font-size:10px;">(Base ₹${Math.round(cp.vendorGets)} + Comm ₹${cp.commission} + GST ₹${cp.cgst + cp.sgst})</span></span>
+        <span style="font-size:10.5px; color:#065f46; font-weight:700;">Payout to you: ₹${Math.round(cp.vendorGets)}</span>
+      `;
+    }
+
+    // Package Price Change (Auto Calculates Customer Listed Price and Card Breakdown)
+    function handlePkgPriceChange(input) {
+      const card = input.closest('.pkg-card');
+      updateCardBreakdown(card);
+      updateLivePreview();
+    }
+
+    // Add New Package Tier
+    function addNewPackageCard() {
+      const container = document.getElementById('packageCardsList');
+      const currentCards = container.querySelectorAll('.pkg-card');
+      if (currentCards.length >= 4) {
+        alert("Maximum 4 package options allowed per service.");
+        return;
+      }
+
+      const idx = currentCards.length;
+      const tierNames = ["Basic", "Standard", "Complete", "Premium"];
+      const tierName = tierNames[idx] || `Tier ${idx + 1}`;
+      const defaultPrice = 199 * (idx + 1);
+
+      const div = document.createElement('div');
+      div.className = 'pkg-card';
+      div.setAttribute('data-pkg-idx', idx);
+      div.innerHTML = `
+        <div class="pkg-card-head">
+          <span class="pkg-card-title-tag"><i class="fa-solid fa-box"></i> Package ${idx + 1} (${tierName})</span>
+          <button type="button" class="pkg-del-btn" onclick="removePackageCard(this)" title="Remove package"><i class="fa-solid fa-trash"></i></button>
+        </div>
+        <div class="pkg-grid-inputs">
+          <div>
+            <label style="font-size:11px; font-weight:700; color:#64748b;">Package Name</label>
+            <input type="text" name="package_name[]" class="input pkg-input-name" value="${tierName} Package" placeholder="e.g. ${tierName}" required oninput="updateLivePreview()">
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:700; color:#64748b;">Your Base Price (Payout ₹)</label>
+            <input type="number" step="1" min="49" name="package_price[]" class="input pkg-input-price" value="${defaultPrice}" placeholder="${defaultPrice}" required oninput="handlePkgPriceChange(this)">
+          </div>
+        </div>
+        <div style="margin-top:8px;">
+          <label style="font-size:11px; font-weight:700; color:#64748b;">Tier Specific Scope (Unique to this package)</label>
+          <input type="text" name="package_desc[]" class="input pkg-input-desc" value="Full procedure & materials inspection" placeholder="Scope description" oninput="updateLivePreview()">
+        </div>
+      `;
+      container.appendChild(div);
+      updateCardBreakdown(div);
+      updateLivePreview();
+    }
+
+    // Remove Package Card
+    function removePackageCard(btn) {
+      const container = document.getElementById('packageCardsList');
+      if (container.querySelectorAll('.pkg-card').length <= 1) {
+        alert("At least 1 package option is required.");
+        return;
+      }
+      btn.closest('.pkg-card').remove();
+      updateLivePreview();
+    }
+
+    // Inclusions Toggle
+    function toggleIncCheckbox(cb) {
+      const label = cb.closest('.inc-item-checkbox');
+      if (cb.checked) {
+        label.classList.add('active');
+      } else {
+        label.classList.remove('active');
+      }
+      updateLivePreview();
+    }
+
+    // Add Custom Inclusion
+    function addCustomInclusion() {
+      const input = document.getElementById('customIncInput');
+      const val = input.value.trim();
+      if (!val) return;
+
+      const container = document.getElementById('inclusionsListContainer');
+      const label = document.createElement('label');
+      label.className = 'inc-item-checkbox active';
+      label.innerHTML = `
+        <input type="checkbox" name="inclusions[]" value="${val}" checked onchange="toggleIncCheckbox(this)">
+        <span><i class="fa-solid fa-circle-check" style="color:#10b981; margin-right:4px;"></i> ${val}</span>
+      `;
+      container.appendChild(label);
+      input.value = '';
+      updateLivePreview();
+    }
+
+    // REAL-TIME LIVE PREVIEW UPDATER (with dynamic pricing)
+    function updateLivePreview() {
+      const title = document.getElementById('formTitle').value.trim() || 'Switchboard Repair';
+      const desc = document.getElementById('formDescription').value.trim() || 'Professional switchboard repair service by verified experts.';
+
+      // Update Hero Overlay
+      document.getElementById('prevHeroTitle').textContent = title;
+      document.getElementById('prevHeroSub').textContent = desc;
+
+      // Update Packages with DYNAMIC PRICING
+      const pkgCards = document.querySelectorAll('#packageCardsList .pkg-card');
+      const pkgsGrid = document.getElementById('prevPkgsGrid');
+      let minVendorPrice = Infinity;
+      let minCustomerPrice = Infinity;
+
+      let pkgsHtml = '';
+      pkgCards.forEach(card => {
+        const name = card.querySelector('.pkg-input-name').value.trim() || 'Service';
+        const vendorPrice = parseFloat(card.querySelector('.pkg-input-price').value) || 149;
+        const pDesc = card.querySelector('.pkg-input-desc').value.trim() || 'Standard procedure';
+
+        // Calculate final customer price
+        const cp = calcCustomerPrice(vendorPrice);
+
+        if (vendorPrice < minVendorPrice) minVendorPrice = vendorPrice;
+        if (cp.customerPrice < minCustomerPrice) minCustomerPrice = cp.customerPrice;
+
+        pkgsHtml += `
+          <div class="rep-pkg-card">
+            <div>
+              <div class="rep-pkg-name">${name}</div>
+              <div class="rep-pkg-desc">${pDesc}</div>
+            </div>
+            <div>
+              <div class="rep-pkg-price-row">
+                <span class="rep-pkg-price">₹${cp.customerPrice}</span>
+              </div>
+              <div style="font-size:9px; color:#94a3b8; text-align:right; margin-top:1px;">incl. taxes & fees</div>
+              <div class="rep-pkg-add-btn">Add</div>
+            </div>
+          </div>
+        `;
+      });
+
+      pkgsGrid.innerHTML = pkgsHtml;
+
+      // Update Lowest Base Price Banner & Breakdown
+      if (minVendorPrice === Infinity) minVendorPrice = 149;
+      const bp = calcCustomerPrice(minVendorPrice);
+
+      const baseRateEl = document.getElementById('displayBaseRate');
+      if (baseRateEl) baseRateEl.textContent = `₹${Math.round(minVendorPrice)}`;
+
+      const commCutEl = document.getElementById('displayCommCut');
+      if (commCutEl) commCutEl.textContent = `+₹${bp.commission}`;
+
+      const gstCutEl = document.getElementById('displayGstCut');
+      if (gstCutEl) gstCutEl.textContent = `+₹${bp.cgst + bp.sgst}`;
+
+      const custTotalEl = document.getElementById('displayCustomerTotal');
+      if (custTotalEl) custTotalEl.textContent = `₹${bp.customerPrice}`;
+
+      document.getElementById('formBasePrice').value = minVendorPrice;
+      document.getElementById('prevFooterBasePrice').textContent = `₹${bp.customerPrice}`;
+
+      // Price breakdown tooltip in live preview footer
+      const breakdownEl = document.getElementById('prevPriceBreakdown');
+      if (breakdownEl) {
+        breakdownEl.textContent = `Base ₹${Math.round(bp.vendorGets)} + Comm (${PLATFORM_CONFIG.commissionPct}%) ₹${bp.commission} + GST (${PLATFORM_CONFIG.cgstPct + PLATFORM_CONFIG.sgstPct}%) ₹${bp.cgst + bp.sgst}${bp.flat > 0 ? ' + Fee ₹' + bp.flat : ''}`;
+      }
+
+      // Update Inclusions List
+      const checkedIncs = document.querySelectorAll('#inclusionsListContainer input[type="checkbox"]:checked');
+      const incsContainer = document.getElementById('prevInclusionsList');
+      let incsHtml = '';
+      checkedIncs.forEach(cb => {
+        incsHtml += `
+          <div class="rep-inc-item">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>${cb.value}</span>
+          </div>
+        `;
+      });
+      // Standard exclusions
+      const activeCard = document.querySelector('#createCategoryCardGrid .cat-card.active .cat-title');
+      const catInput = document.getElementById('formCategory');
+      const currentCat = activeCard ? activeCard.textContent.trim() : (catInput ? (catInput.getAttribute('data-name') || '') : '');
+      const catKey = getCatKey(currentCat);
+      let exclusion1 = 'Major civil masonry, pipe embedding or wall tearing excluded';
+      let exclusion2 = 'Spare parts / extra hardware to be purchased or charged separately';
+      if (catKey === 'Cleaning') {
+        exclusion1 = 'Heavy stain removal on natural stone or marble surfaces excluded';
+        exclusion2 = 'Pest control or fumigation services not included';
+      } else if (catKey === 'AC') {
+        exclusion1 = 'Compressor or PCB replacement parts charged separately';
+        exclusion2 = 'Gas refill beyond standard top-up charged at actuals';
+      } else if (catKey === 'Painting') {
+        exclusion1 = 'Wall putty and primer for damaged surfaces charged extra';
+        exclusion2 = 'Scaffolding for heights above 12ft arranged separately';
+      }
+      incsHtml += `
+        <div class="rep-inc-item">
+          <i class="fa-solid fa-circle-xmark"></i>
+          <span>${exclusion1}</span>
+        </div>
+        <div class="rep-inc-item">
+          <i class="fa-solid fa-circle-xmark"></i>
+          <span>${exclusion2}</span>
+        </div>
+      `;
+      incsContainer.innerHTML = incsHtml;
+    }
+
+    // Quick Locality Selector
+    function selectQuickLocality(name, lat, lon, btn) {
+      document.getElementById('inputLocality').value = name;
+      document.getElementById('inputLat').value = lat;
+      document.getElementById('inputLon').value = lon;
+
+      document.getElementById('displayLocalityName').textContent = name;
+      document.getElementById('displayCoords').textContent = `(${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+
+      if (btn) {
+        document.querySelectorAll('.quick-chip').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+      }
+
+      const searchInput = document.getElementById('locSearchInput');
+      if (searchInput) searchInput.value = '';
+      const searchRes = document.getElementById('locSearchResults');
+      if (searchRes) searchRes.style.display = 'none';
+    }
+
+    // HTML5 GPS Geolocation
+    function detectVendorGps() {
+      const icon = document.getElementById('gpsIcon');
+      const text = document.getElementById('gpsBtnText');
+
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser. Please select a locality from the list.");
+        return;
+      }
+
+      if (icon) icon.className = "fa-solid fa-circle-notch fa-spin";
+      if (text) text.textContent = "Detecting GPS coordinates...";
+
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+
+          try {
+            const res = await fetch(`/api/detect-location/?lat=${lat}&lon=${lon}`);
+            const data = await res.json();
+            const locName = data.primary ? `${data.primary}, ${data.city || 'Ranchi'}` : `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+
+            selectQuickLocality(locName, lat, lon, null);
+
+            if (icon) icon.className = "fa-solid fa-check";
+            if (text) text.textContent = "Live GPS Location Set!";
+            setTimeout(() => {
+              if (icon) icon.className = "fa-solid fa-crosshairs";
+              if (text) text.textContent = "Use My Live GPS Location";
+            }, 2000);
+          } catch(e) {
+            selectQuickLocality("Current Live Location", lat, lon, null);
+            if (icon) icon.className = "fa-solid fa-check";
+            if (text) text.textContent = "GPS Coordinates Set!";
+          }
+        },
+        (err) => {
+          if (icon) icon.className = "fa-solid fa-crosshairs";
+          if (text) text.textContent = "Use My Live GPS Location";
+          alert("Could not retrieve GPS location. Please allow browser location access or pick a locality below.");
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    }
+
+    // Colony Search Autocomplete
+    let searchTimer = null;
+    function handleLocSearch(query) {
+      clearTimeout(searchTimer);
+      const spinner = document.getElementById('locSearchSpinner');
+      const resultsBox = document.getElementById('locSearchResults');
+
+      if (!query || query.length < 2) {
+        if (spinner) spinner.style.display = 'none';
+        if (resultsBox) resultsBox.style.display = 'none';
+        return;
+      }
+
+      if (spinner) spinner.style.display = 'block';
+
+      searchTimer = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/search-locations/?q=${encodeURIComponent(query)}`);
+          const data = await res.json();
+          if (spinner) spinner.style.display = 'none';
+
+          if (data && data.results && data.results.length > 0) {
+            resultsBox.innerHTML = data.results.map(r => `
+              <div style="padding:10px 14px; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:12.5px; transition:background 0.15s;"
+                   onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'"
+                   onclick="selectQuickLocality('${r.primary || r.name}', ${r.lat || 23.3697}, ${r.lon || 85.3346}, null)">
+                <strong style="color:#0f172a; display:block;">${r.primary || r.name}</strong>
+                <span style="color:#64748b; font-size:11px;">${r.secondary || ''}</span>
+              </div>
+            `).join('');
+            resultsBox.style.display = 'block';
+          } else {
+            resultsBox.innerHTML = `
+              <div style="padding:12px; color:#64748b; font-size:12px; text-align:center; cursor:pointer;"
+                   onclick="selectQuickLocality('${query}, Ranchi', 23.3697, 85.3346, null)">
+                Use "<strong>${query}</strong>" as locality
+              </div>
+            `;
+            resultsBox.style.display = 'block';
+          }
+        } catch(e) {
+          if (spinner) spinner.style.display = 'none';
+        }
+      }, 300);
+    }
+
+    // ==========================================
+    // VENDOR QUICK SERVICE EDIT MODAL LOGIC
+    // ==========================================
+    let editPackages = [];
+    let editInclusions = [];
+
+    function selectCreateStatus(labelEl, statusVal) {
+      document.querySelectorAll('#add-service-form .status-option-card').forEach(c => c.classList.remove('active'));
+      labelEl.classList.add('active');
+      const radio = labelEl.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+    }
+
+    function selectEditStatus(statusVal) {
+      document.querySelectorAll('#edit-service-modal .status-option-card').forEach(c => c.classList.remove('active'));
+      const card = document.getElementById(`editStatusCard_${statusVal}`);
+      if (card) card.classList.add('active');
+      const radio = document.getElementById(`editStatusRadio_${statusVal}`);
+      if (radio) radio.checked = true;
+    }
+
+    function openEditModal(srvId) {
+      const dataEl = document.getElementById('myServicesDataJson');
+      if (!dataEl) return;
+      let services = {};
+      try { services = JSON.parse(dataEl.textContent); } catch(e) {}
+      const srv = services[String(srvId)];
+      if (!srv) {
+        alert("Service details could not be loaded.");
+        return;
+      }
+
+      document.getElementById('editServiceId').value = srv.id;
+      document.getElementById('editModalHeading').textContent = `Edit Quick Service: ${srv.title}`;
+      document.getElementById('editTitle').value = srv.title || '';
+      document.getElementById('editCategory').value = srv.category_id || '';
+      handleEditCategoryChange(srv.category_id || '', srv.subcategory_id || '');
+      document.getElementById('editDescription').value = srv.description || '';
+      document.getElementById('editLocality').value = srv.locality || '';
+      document.getElementById('editRadius').value = srv.service_radius_km || 10;
+      document.getElementById('editImagePreset').value = srv.image_url || '';
+
+      selectEditStatus(srv.status || 'active');
+
+      const imgPreview = document.getElementById('editCoverPreview');
+      if (srv.image_url) {
+        imgPreview.src = srv.image_url;
+      } else {
+        imgPreview.src = 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&auto=format&fit=crop&q=80';
+      }
+
+      // Load packages
+      if (Array.isArray(srv.packages) && srv.packages.length > 0) {
+        editPackages = JSON.parse(JSON.stringify(srv.packages));
+      } else {
+        const basePayout = parseFloat(srv.base_price) || 199;
+        const cp = calcCustomerPrice(basePayout);
+        editPackages = [
+          { name: 'Standard Service', vendor_payout: basePayout, price: cp.customerPrice, desc: srv.description || 'Full professional service.' }
+        ];
+      }
+      renderEditPackages();
+
+      // Load inclusions
+      if (Array.isArray(srv.inclusions) && srv.inclusions.length > 0) {
+        editInclusions = [...srv.inclusions];
+      } else {
+        editInclusions = [
+          "Complete diagnostic inspection of existing fittings & components",
+          "Execution by certified, background-checked professional",
+          "Post-service sanitization and thorough debris cleanup",
+          "30 days Sugu protection warranty on all workmanship"
+        ];
+      }
+      renderEditInclusions();
+
+      const modal = document.getElementById('edit-service-modal');
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeEditModal() {
+      const modal = document.getElementById('edit-service-modal');
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function renderEditPackages() {
+      const container = document.getElementById('editPackageCardsList');
+      container.innerHTML = '';
+      editPackages.forEach((pkg, idx) => {
+        const payout = pkg.vendor_payout !== undefined ? pkg.vendor_payout : (pkg.price || 199);
+        const cp = calcCustomerPrice(payout);
+
+        const card = document.createElement('div');
+        card.className = 'pkg-card';
+        card.innerHTML = `
+          <div class="pkg-card-head">
+            <span class="pkg-card-title-tag"><i class="fa-solid fa-box"></i> Package Tier ${idx + 1}</span>
+            ${editPackages.length > 1 ? `<button type="button" class="pkg-del-btn" onclick="removeEditPackageCard(${idx})" title="Remove"><i class="fa-solid fa-trash"></i></button>` : ''}
+          </div>
+          <div class="pkg-grid-inputs">
+            <div>
+              <label style="font-size:11px; font-weight:700; color:#64748b;">Package Name</label>
+              <input type="text" class="input" value="${escapeHtml(pkg.name || '')}" placeholder="Tier Name" required oninput="editPackages[${idx}].name=this.value;">
+            </div>
+            <div>
+              <label style="font-size:11px; font-weight:700; color:#64748b;">Your Base Price (Payout ₹)</label>
+              <input type="number" step="1" min="49" class="input" value="${payout}" placeholder="149" required oninput="handleEditPkgPriceChange(${idx}, this.value)">
+            </div>
+          </div>
+          <div style="margin-top:8px;">
+            <label style="font-size:11px; font-weight:700; color:#64748b;">Tier Specific Scope (Unique to this package)</label>
+            <input type="text" class="input" value="${escapeHtml(pkg.desc || '')}" placeholder="Scope description..." oninput="editPackages[${idx}].desc=this.value;">
+          </div>
+          <div style="margin-top:8px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:6px 10px; display:flex; justify-content:space-between; align-items:center; font-size:11.5px;">
+            <div>
+              <span style="color:#166534; font-weight:600;">Customer Listed Price:</span>
+              <strong style="color:#059669; font-size:13.5px; margin-left:4px;" id="editPkgCustPrice_${idx}">₹${cp.customerPrice}</strong>
+            </div>
+            <span style="color:#15803d; font-size:10.5px;">(Payout ₹${Math.round(cp.vendorGets)} + Cut ₹${cp.commission} + GST ₹${cp.cgst + cp.sgst})</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function handleEditPkgPriceChange(idx, val) {
+      const payout = parseFloat(val) || 0;
+      editPackages[idx].vendor_payout = payout;
+      const cp = calcCustomerPrice(payout);
+      editPackages[idx].price = cp.customerPrice;
+      const custEl = document.getElementById(`editPkgCustPrice_${idx}`);
+      if (custEl) custEl.textContent = `₹${cp.customerPrice}`;
+      if (custEl && custEl.parentElement && custEl.parentElement.nextElementSibling) {
+        custEl.parentElement.nextElementSibling.textContent = `(Payout ₹${Math.round(cp.vendorGets)} + Cut ₹${cp.commission} + GST ₹${cp.cgst + cp.sgst})`;
+      }
+    }
+
+    function addEditPackageCard() {
+      if (editPackages.length >= 4) {
+        alert("Maximum 4 package options allowed per service.");
+        return;
+      }
+      const idx = editPackages.length;
+      const p = 199 * (idx + 1);
+      const cp = calcCustomerPrice(p);
+      editPackages.push({
+        name: `Package Tier ${idx + 1}`,
+        vendor_payout: p,
+        price: cp.customerPrice,
+        desc: "Diagnostic verification and quality service."
+      });
+      renderEditPackages();
+    }
+
+    function removeEditPackageCard(idx) {
+      if (editPackages.length > 1) {
+        editPackages.splice(idx, 1);
+        renderEditPackages();
+      }
+    }
+
+    function renderEditInclusions() {
+      const container = document.getElementById('editInclusionsContainer');
+      container.innerHTML = '';
+      editInclusions.forEach((text, idx) => {
+        const item = document.createElement('div');
+        item.className = 'inc-item-checkbox active';
+        item.style.justifyContent = 'space-between';
+        item.innerHTML = `
+          <div style="display:flex; align-items:center; gap:8px; flex:1;">
+            <i class="fa-solid fa-circle-check" style="color:#10b981;"></i>
+            <span style="font-size:12.5px;">${escapeHtml(text)}</span>
+          </div>
+          <button type="button" class="pkg-del-btn" onclick="removeEditInclusion(${idx})" title="Remove"><i class="fa-solid fa-xmark"></i></button>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function addEditCustomInclusion() {
+      const input = document.getElementById('editCustomIncInput');
+      const val = input.value.trim();
+      if (!val) return;
+      editInclusions.push(val);
+      input.value = '';
+      renderEditInclusions();
+    }
+
+    function removeEditInclusion(idx) {
+      editInclusions.splice(idx, 1);
+      renderEditInclusions();
+    }
+
+    function selectEditPreset(el, url) {
+      document.querySelectorAll('#editPresetGrid .img-preset-item').forEach(i => i.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('editImagePreset').value = url;
+      document.getElementById('editCoverPreview').src = url;
+      document.getElementById('editImageFile').value = '';
+    }
+
+    function previewEditUploadedImage(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('editCoverPreview').src = e.target.result;
+          document.getElementById('editImagePreset').value = '';
+          document.querySelectorAll('#editPresetGrid .img-preset-item').forEach(i => i.classList.remove('selected'));
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Initial Live Preview & Listeners on Page Load
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize active category card if present
+      const firstActiveCard = document.querySelector('#createCategoryCardGrid .cat-card.active') || document.querySelector('#createCategoryCardGrid .cat-card');
+      let initialCat = '';
+      let initialCatId = '';
+      if (firstActiveCard) {
+        firstActiveCard.classList.add('active');
+        const radio = firstActiveCard.querySelector('input[type="radio"]');
+        if (radio) {
+          radio.checked = true;
+          initialCatId = radio.value;
+        }
+        const titleSpan = firstActiveCard.querySelector('.cat-title');
+        initialCat = titleSpan ? titleSpan.textContent.trim() : '';
+        const catInput = document.getElementById('formCategory');
+        if (catInput && radio) {
+          catInput.value = radio.value;
+          catInput.setAttribute('data-name', initialCat);
+        }
+      }
+      if (initialCatId) {
+        renderSubcategoriesForCategory(initialCatId);
+      }
+      populateTitleSuggestions(initialCat);
+      populateInclusions(initialCat);
+      document.querySelectorAll('#packageCardsList .pkg-card').forEach(updateCardBreakdown);
+      updateLivePreview();
+
+      // Submit handler for editServiceForm
+      const editForm = document.getElementById('editServiceForm');
+      if (editForm) {
+        editForm.addEventListener('submit', (e) => {
+          if (!editPackages || editPackages.length === 0) {
+            e.preventDefault();
+            alert("Please include at least one package tier.");
+            return;
+          }
+          document.getElementById('editPackagesJson').value = JSON.stringify(editPackages);
+          document.getElementById('editInclusionsJson').value = JSON.stringify(editInclusions);
+        });
+      }
+    });
+
+    // Vendor Target Audience (Gender) Selector
+    function selectVendorGender(gender, btn) {
+      document.querySelectorAll('#vendorGenderSelector .vendor-seg-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      const hidden = document.getElementById('formGender');
+      if (hidden) hidden.value = gender;
+      
+      // Re-filter subcategories chips if Beauty is active
+      const catInput = document.getElementById('formCategory');
+      const catId = catInput ? catInput.value : null;
+      if (catId) {
+        renderSubcategoriesForCategory(catId, null, gender);
+      }
+      updateLivePreview();
+    }
+    window.selectVendorGender = selectVendorGender;
+
+    // Vendor Service Fulfillment Channel Selector
+    function selectVendorDeliveryMode(mode, btn) {
+      document.querySelectorAll('#vendorModeSelector .vendor-seg-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      const hidden = document.getElementById('formDeliveryMode');
+      if (hidden) hidden.value = mode;
+      updateLivePreview();
+    }
+    window.selectVendorDeliveryMode = selectVendorDeliveryMode;
+
+    // Package Duration Chip Handler
+    function setPkgDuration(btn, dur) {
+      const card = btn.closest('.pkg-card');
+      if (!card) return;
+      const input = card.querySelector('.pkg-input-duration');
+      if (input) input.value = dur;
+      card.querySelectorAll('.pkg-duration-chips button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      updateLivePreview();
+    }
+    window.setPkgDuration = setPkgDuration;
+
+
+    function applyBrandSuggestion(brand) {
+      const input = document.getElementById('formBrandName');
+      if (input) input.value = brand;
+      updateLivePreview();
+    }
+    window.applyBrandSuggestion = applyBrandSuggestion;
+
+    function applyServiceDuration(dur) {
+      const input = document.getElementById('formDuration');
+      if (input) input.value = dur;
+      document.querySelectorAll('#formDuration + div .quick-chip-sm').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      updateLivePreview();
+    }
+    window.applyServiceDuration = applyServiceDuration;
+
+  </script>
+</body>
+</html>

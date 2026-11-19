@@ -1,0 +1,125 @@
+{% extends 'superadmin/base.html' %}
+{% block title %}Featured Projects (Bidding) - CMS{% endblock %}
+{% block header_title %}Featured Bidding Project Cards{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'super_admin_landing_overview' %}" class="btn btn-outline btn-sm">
+  <i class="fa-solid fa-arrow-left"></i>
+  <span>CMS Hub</span>
+</a>
+<a href="{% url 'super_admin_landing_featured_project_create' %}" class="btn btn-primary btn-sm">
+  <i class="fa-solid fa-plus"></i>
+  <span>Add Project Card</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="padding: 0; overflow: hidden;">
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 70px;">Photo</th>
+          <th>Project Title &amp; Category</th>
+          <th>Budget Range</th>
+          <th>Location &amp; Timeline</th>
+          <th>Vendor Teaser / Quotes</th>
+          <th>Status Tag</th>
+          <th>Order</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for card in cards %}
+        <tr>
+          <td>
+            {% if card.image %}
+              <img src="{{ card.image.url }}" alt="{{ card.title }}" style="width: 50px; height: 38px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border);">
+            {% else %}
+              <div style="width: 50px; height: 38px; background: #e5e7eb; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-muted);">
+                <i class="fa-solid fa-image"></i>
+              </div>
+            {% endif %}
+          </td>
+          <td>
+            <strong>{{ card.title }}</strong>
+            <div style="font-size: 12px; color: var(--accent); font-weight: 600;">{{ card.category_name }}</div>
+          </td>
+          <td>
+            <strong style="color: var(--text-main);">{{ card.budget_range }}</strong>
+          </td>
+          <td style="color: var(--text-muted); font-size: 13px;">
+            <div>{{ card.location }}</div>
+            <div style="font-size: 11px;">⏱ {{ card.timeline }}</div>
+          </td>
+          <td style="font-size: 12px; color: var(--text-muted); max-width: 200px;">
+            {{ card.vendor_quote_preview|truncatewords:8 }}
+          </td>
+          <td>
+            <span class="badge" style="background: rgba(16,185,129,0.1); color: var(--success);">{{ card.status_tag }}</span>
+          </td>
+          <td>{{ card.order }}</td>
+          <td>
+            <a href="{% url 'super_admin_landing_featured_project_toggle' card.id %}" style="text-decoration: none;">
+              <span class="badge {% if card.is_active %}active{% else %}inactive{% endif %}">
+                {% if card.is_active %}<i class="fa-solid fa-circle-check"></i> Active{% else %}<i class="fa-solid fa-circle-xmark"></i> Inactive{% endif %}
+              </span>
+            </a>
+          </td>
+          <td>
+            <div style="display: flex; gap: 8px;">
+              <a href="{% url 'super_admin_landing_featured_project_edit' card.id %}" class="btn btn-outline btn-sm">
+                <i class="fa-solid fa-pen-to-square"></i> Edit
+              </a>
+              <a href="{% url 'super_admin_landing_featured_project_delete' card.id %}" class="btn btn-outline btn-sm" style="border-color: rgba(239,68,68,0.3); color: var(--danger);" onclick="return confirm('Delete this project card?');">
+                <i class="fa-solid fa-trash"></i>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" style="text-align: center; padding: 48px; color: var(--text-muted);">
+            <i class="fa-solid fa-briefcase" style="font-size: 32px; margin-bottom: 12px; display: block;"></i>
+            No featured project cards found. Click "Add Project Card" to create one.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if cards.has_other_pages %}
+    <div class="pagination-wrap">
+      <div>Showing <strong>{{ cards.start_index|default:0 }}</strong> to <strong>{{ cards.end_index|default:0 }}</strong> of <strong>{{ cards.paginator.count }}</strong> project cards</div>
+      <nav class="pagination-nav" aria-label="Page navigation">
+        {% if cards.has_previous %}
+          <a href="?page=1" class="page-link" title="First Page"><i class="fa-solid fa-angles-left"></i></a>
+          <a href="?page={{ cards.previous_page_number }}" class="page-link" title="Previous Page"><i class="fa-solid fa-chevron-left"></i></a>
+        {% else %}
+          <span class="page-link disabled"><i class="fa-solid fa-angles-left"></i></span>
+          <span class="page-link disabled"><i class="fa-solid fa-chevron-left"></i></span>
+        {% endif %}
+
+        {% for p in page_range %}
+          {% if p == cards.paginator.ELLIPSIS %}
+            <span class="page-link disabled">…</span>
+          {% elif p == cards.number %}
+            <span class="page-link active">{{ p }}</span>
+          {% else %}
+            <a href="?page={{ p }}" class="page-link">{{ p }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if cards.has_next %}
+          <a href="?page={{ cards.next_page_number }}" class="page-link" title="Next Page"><i class="fa-solid fa-chevron-right"></i></a>
+          <a href="?page={{ cards.paginator.num_pages }}" class="page-link" title="Last Page"><i class="fa-solid fa-angles-right"></i></a>
+        {% else %}
+          <span class="page-link disabled"><i class="fa-solid fa-chevron-right"></i></span>
+          <span class="page-link disabled"><i class="fa-solid fa-angles-right"></i></span>
+        {% endif %}
+      </nav>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Sugu Vendor Portal - Available Jobs in your City">
+  <title>Available Jobs · Sugu Vendor</title>
+  <link rel="stylesheet" href="/infinity-vendor-dashboard/assets/styles.css">
+  <script>
+    window.VENDOR_INITIALS = "{{ vendor_initials|default:'VN'|escapejs }}";
+    window.VENDOR_NAME = "{{ vendor_name|default:'Vendor'|escapejs }}";
+    window.VENDOR_TYPE = "{{ vendor_type|default:'Vendor'|escapejs }}";
+    window.VENDOR_LOCATION = "{{ vendor_location|default:'Ranchi'|escapejs }}";
+    window.PROFILE_IMAGE_URL = "{{ profile_image_url|default:''|escapejs }}" || null;
+    window.VENDOR_WALLET_BALANCE = "{{ wallet_balance|default:'0.00'|escapejs }}";
+    window.VENDOR_CREDITS = {{ available_bids|default:0 }};
+  </script>
+  <script defer src="/infinity-vendor-dashboard/assets/app.js"></script>
+</head>
+<body data-page="jobs-available" data-title="Available Jobs" data-root="../">
+<div class="app-shell">
+  <div id="sidebar-root"></div>
+  <div class="workspace">
+    <div id="topbar-root"></div>
+    <main class="page">
+
+      <!-- Page Header & Territory Indicator -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+        <div>
+          <h1 style="font-size:22px; font-weight:800; margin:0 0 4px; color:var(--ink);">Available Jobs</h1>
+          <p class="muted" style="margin:0; font-size:13px;">Browse and submit quotations for customer leads posted in your service city.</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span class="badge badge-purple" style="font-size:12px; padding:6px 14px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+            <span data-icon="map"></span> City: <strong>{% if vendor_city %}{{ vendor_city }}{% elif vendor_location %}{{ vendor_location }}{% else %}All Cities{% endif %}</strong>
+          </span>
+          {% if vendor_categories %}
+          <span class="badge" style="font-size:12px; padding:6px 14px; font-weight:700; display:inline-flex; align-items:center; gap:6px; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;">
+            <span data-icon="briefcase"></span> Categories: <strong>{{ vendor_categories|join:", " }}</strong>
+          </span>
+          {% endif %}
+          <a href="/vendor/settings/index.html#profile" class="btn btn-primary btn-sm" title="Update Profile & Location in Settings">
+            <span data-icon="settings"></span> Location Settings
+          </a>
+        </div>
+      </div>
+
+      <section class="card" data-filter-scope>
+        <div class="toolbar">
+          <div class="search-box">
+            <span data-icon="search"></span>
+            <input class="input" data-search-input placeholder="Search jobs, category or locality">
+          </div>
+
+          <select class="select" style="max-width:180px" data-filter="category">
+            <option value="all">All your categories</option>
+            {% if vendor_categories %}
+              {% for cat_name in vendor_categories %}
+                <option value="{{ cat_name }}">{{ cat_name }}</option>
+              {% endfor %}
+            {% else %}
+              {% for cat in all_categories %}
+                <option value="{{ cat.name }}">{{ cat.name }}</option>
+              {% endfor %}
+              {% if not all_categories %}
+                <option>Waterproofing</option>
+                <option>AC Repair</option>
+                <option>Plumbing</option>
+                <option>Electrical</option>
+                <option>Civil Work</option>
+                <option>Painting</option>
+                <option>Cleaning</option>
+              {% endif %}
+            {% endif %}
+          </select>
+
+          <select class="select" style="max-width:155px" data-filter="budgetband">
+            <option value="all">Any budget</option>
+            <option value="under15000">Under ₹15,000</option>
+            <option value="15000to50000">₹15,000 - ₹50,000</option>
+            <option value="over50000">Over ₹50,000</option>
+          </select>
+
+          <select class="select" style="max-width:150px" data-filter="location">
+            <option value="all">All in {% if vendor_city %}{{ vendor_city }}{% elif vendor_location %}{{ vendor_location }}{% else %}City{% endif %}</option>
+            {% if vendor_city %}
+              <option value="{{ vendor_city }}">{{ vendor_city }}</option>
+            {% endif %}
+          </select>
+
+          <select class="select" style="max-width:150px" data-sort>
+            <option value="date:desc">Newest first</option>
+            <option value="date:asc">Oldest first</option>
+          </select>
+        </div>
+
+        <div class="card-body">
+          <div class="grid grid-2" data-rows>
+            {% for job in available_jobs %}
+              <article class="card service-card" data-row 
+                       data-category="{{ job.category.name|default:'General' }}" 
+                       data-budgetband="{% if job.budget < 15000 %}under15000{% elif job.budget > 50000 %}over50000{% else %}15000to50000{% endif %}" 
+                       data-location="{% if job.location %}{{ job.location.city }}{% else %}{{ vendor_city|default:'Unknown' }}{% endif %}" 
+                       data-date="{{ job.created_at|date:'Ymd' }}" 
+                       data-search="JOB-{{ job.id }} {{ job.title }} {{ job.category.name|default:'General' }} {% if job.location %}{{ job.location.city }}{% endif %} {{ job.locality|default:'' }} {{ job.address|default:'' }} {{ job.user.get_full_name }}">
+                
+                <div class="service-top">
+                  <div>
+                    <div class="eyebrow">JOB-{{ job.id }}</div>
+                    <h3>{{ job.title }}</h3>
+                    <div class="small muted">{{ job.category.name|default:"General" }}</div>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    {% if job.image %}
+                    <span class="badge" style="background:#e0e7ff; color:#4338ca; border:1px solid #c7d2fe; font-size:11px; padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:4px;">
+                      <i class="fa-solid fa-camera"></i> Photo
+                    </span>
+                    {% endif %}
+                    <span class="badge badge-{{ job.status }}">{{ job.get_status_display|default:"Open" }}</span>
+                  </div>
+                </div>
+
+                <div class="service-meta">
+                  <span><span data-icon="rupee"></span> Budget <strong>₹{{ job.budget }}</strong> ({{ job.get_budget_type_display|default:'Fixed' }})</span>
+                  <span><span data-icon="map"></span> {% if job.location %}{{ job.location.city }}{% else %}{{ vendor_city|default:"Unknown Location" }}{% endif %}{% if job.locality %}, {{ job.locality }}{% endif %}{% if job.latitude and job.longitude %} <a href="https://maps.google.com/?q={{ job.latitude }},{{ job.longitude }}" target="_blank" rel="noopener noreferrer" style="color:#2563eb; font-weight:700; margin-left:4px; text-decoration:none;" title="Open in Google Maps">📍 Map ↗</a>{% endif %}{% if job.distance_km %}<span class="badge" style="background:#f0fdf4; color:#166534; font-size:11px; padding:2px 8px; border-radius:12px; margin-left:6px; font-weight:600;">{{ job.distance_km }} km</span>{% endif %}</span>
+                  <span><span data-icon="calendar"></span> Posted {{ job.created_at|date:"d-m-Y" }}</span>
+                </div>
+
+                <p class="service-description">{{ job.description|default:"No specific instructions provided."|truncatechars:120 }}</p>
+
+                <div class="service-footer">
+                  <div class="cell-user">
+                    <span class="avatar sm teal">{{ job.user.get_full_name|make_list|first|upper|default:job.user.username|make_list|first|upper }}</span>
+                    <div>
+                      <strong>{{ job.user.get_full_name|default:job.user.username }}</strong>
+                      <div class="tiny muted">★ 4.8 customer rating</div>
+                    </div>
+                  </div>
+                  <div class="actions">
+                    <a class="btn btn-secondary btn-sm" href="details.html?id={{ job.id }}">View Details</a>
+                    <a class="btn btn-primary btn-sm" href="send-quotation.html?job_id={{ job.id }}">Send Quotation</a>
+                  </div>
+                </div>
+              </article>
+            {% empty %}
+              <div style="grid-column: 1 / -1; text-align: center; padding: 50px 20px; background:#f8fafc; border-radius:12px; border:1.5px dashed #cbd5e1;">
+                <div style="font-size:38px; margin-bottom:12px;">📍</div>
+                <h3 style="font-size:17px; font-weight:700; color:var(--ink); margin-bottom:6px;">No Active Jobs in {% if vendor_city %}{{ vendor_city }}{% elif vendor_location %}{{ vendor_location }}{% else %}your city{% endif %}</h3>
+                <p class="muted" style="max-width:440px; margin:0 auto 16px; font-size:13px;">There are no open customer requests in your city territory right now. Jobs posted from outside your city territory are hidden automatically.</p>
+                <div style="display:flex; justify-content:center; gap:10px;">
+                  <a href="/vendor/settings/index.html#profile" class="btn btn-primary btn-sm">
+                    <span data-icon="settings"></span> Update Location in Settings
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+</body>
+</html>

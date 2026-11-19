@@ -1,0 +1,82 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Sugu User Portal - Messages">
+  <title>Messages · Sugu User</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+  <script defer src="../assets/app.js"></script>
+</head>
+<body data-page="messages" data-title="Messages" data-root="../">
+  <div class="app-shell">
+    <div id="sidebar-root"></div>
+    <div class="workspace">
+      <div id="topbar-root"></div>
+      <main class="page">
+
+        <section class="card inbox">
+          <div class="conversation-list">
+            <div class="conversation-search">
+              <div class="search-box" style="max-width:none">
+                <span data-icon="search"></span>
+                <input class="input" placeholder="Search conversations">
+              </div>
+            </div>
+
+            {% for conv in conversations %}
+            <a class="conversation {% if forloop.first %}active{% endif %}" href="chat.html?vendor_id={{ conv.vendor_id }}">
+              <span class="avatar md vendor">{{ conv.initials }}</span>
+              <span class="conversation-copy">
+                <span class="conversation-line">
+                  <strong>{{ conv.name }}</strong>
+                  {% if conv.latest_message %}
+                  <time>{{ conv.latest_message.created_at|date:"h:i A" }}</time>
+                  {% endif %}
+                </span>
+                <span class="conversation-line">
+                  <p>{{ conv.latest_message.content|default:"Start conversation..."|truncatechars:40 }}</p>
+                  {% if conv.unread_count > 0 %}
+                  <span class="badge" style="background:var(--primary);color:#fff">{{ conv.unread_count }}</span>
+                  {% endif %}
+                </span>
+              </span>
+            </a>
+            {% empty %}
+            <div style="padding: 24px; text-align:center; color: var(--text-muted);">
+              No active conversations. When vendors quote on your requests, you can chat with them here.
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="chat-preview">
+            {% if conversations %}
+            {% with first_conv=conversations.0 %}
+            <div class="chat-header">
+              <span class="avatar md vendor">{{ first_conv.initials }}</span>
+              <div class="vendor-meta">
+                <h3>{{ first_conv.name }}</h3>
+                <span>Verified Vendor</span>
+              </div>
+              <a class="btn btn-primary btn-sm" href="chat.html?vendor_id={{ first_conv.vendor_id }}">Open Full Chat</a>
+            </div>
+
+            <div class="chat-messages" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+              <span class="avatar lg vendor">{{ first_conv.initials }}</span>
+              <h3>Chat with {{ first_conv.name }}</h3>
+              <p class="muted">Discuss specifications, clarify quotation items and coordinate visits.</p>
+              <a class="btn btn-primary" href="chat.html?vendor_id={{ first_conv.vendor_id }}">Open Chat Window</a>
+            </div>
+            {% endwith %}
+            {% else %}
+            <div class="chat-messages" style="display:flex;align-items:center;justify-content:center;">
+              <p class="muted">Select or start a conversation from your requests.</p>
+            </div>
+            {% endif %}
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

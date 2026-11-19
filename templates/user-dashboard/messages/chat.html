@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Sugu User Portal - Chat with Vendor">
+  <title>Chat with Vendor · Sugu User</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+  <script defer src="../assets/app.js"></script>
+</head>
+<body data-page="message-chat" data-title="Chat with Vendor" data-root="../">
+  <div class="app-shell">
+    <div id="sidebar-root"></div>
+    <div class="workspace">
+      <div id="topbar-root"></div>
+      <main class="page">
+        <div class="page-head">
+          <div>
+            <a class="link small" href="index.html">← Back to inbox</a>
+          </div>
+        </div>
+
+        <section class="card chat-panel" style="height:calc(100vh - 150px);min-height:590px">
+          {% if chat_vendor %}
+          <div class="chat-header">
+            <span class="avatar md vendor">{{ chat_vendor.initials }}</span>
+            <div class="vendor-meta">
+              <h3>{{ chat_vendor.name }} <span class="verified"><span data-icon="check"></span></span></h3>
+              <span>● Online · {{ chat_vendor.category }}</span>
+            </div>
+            <a class="btn btn-secondary btn-sm" href="../vendors/details.html?id={{ chat_vendor.id }}">Vendor Profile</a>
+          </div>
+
+          <div class="chat-messages">
+            <div class="date-separator"><span>Messages</span></div>
+            {% for msg in chat_messages %}
+            <div class="message-row {% if msg.sender == request.user %}sent{% endif %}" data-msg-id="{{ msg.id }}">
+              <div class="message">
+                {{ msg.content }}
+                {% if msg.attachment %}
+                <div class="message-file">
+                  <span><strong><a href="{{ msg.attachment.url }}" target="_blank">Attachment</a></strong></span>
+                </div>
+                {% endif %}
+                <div class="message-time">
+                  {{ msg.created_at|date:"h:i A" }}
+                  {% if msg.sender == request.user and msg.is_read %}· Read ✓✓{% endif %}
+                </div>
+              </div>
+            </div>
+            {% empty %}
+            <p style="text-align:center; color:var(--text-muted); margin-top:20px;">No messages yet. Send a message to start chatting with {{ chat_vendor.name }}.</p>
+            {% endfor %}
+          </div>
+
+          <div class="payment-note">Chat is for negotiation and coordination. Actual service payment is not processed through Sugu-pay the vendor directly.</div>
+
+          <form class="chat-compose" method="POST" action="chat.html?vendor_id={{ chat_vendor.id }}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="attachment" id="chat-attach" style="display:none;" onchange="alert('File selected! Click Send when ready.')">
+            <button type="button" class="icon-btn" onclick="document.getElementById('chat-attach').click()" aria-label="Attach file"><span data-icon="paperclip"></span></button>
+            <input class="input" name="content" placeholder="Write a message to {{ chat_vendor.name }}..." aria-label="Message" required autocomplete="off">
+            <button class="btn btn-primary" type="submit"><span data-icon="send"></span> Send</button>
+          </form>
+
+          <script>
+            const vendorId = {{ chat_vendor.id }};
+            const currentUserId = {{ request.user.id }};
+            const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+            let chatSocket = null;
+            let reconnectTimer = null;
+            
+            const messagesContainer = document.querySelector('.chat-messages');
+            if (messagesContainer) {
+              messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            // Track rendered message IDs for deduplication
+            const renderedMsgIds = new Set();
+            document.querySelectorAll('.message-row[data-msg-id]').forEach(el => {
+              const mid = parseInt(el.getAttribute('data-msg-id'));
+              if (mid) renderedMsgIds.add(mid);
+            });
+
+            function renderIncomingMessage(id, messageText, senderId, timeStr) {
+              if (id && renderedMsgIds.has(id)) return;
+              if (id) renderedMsgIds.add(id);
+
+              if (messagesContainer) {
+                const noMsg = messagesContainer.querySelector('p');
+                if (noMsg && noMsg.textContent.includes('No messages yet')) {
+                  noMsg.remove();
+                }
+                const isSent = (senderId === currentUserId);
+                const msgRowClass = isSent ? "message-row sent" : "message-row";
+                const row = document.createElement('div');
+                row.className = msgRowClass;
+                if (id) row.setAttribute('data-msg-id', id);
+                row.innerHTML = `
+                  <div class="message">${messageText}
+                    <div class="message-time">${timeStr}</div>
+                  </div>
+                `;
+                messagesContainer.appendChild(row);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+              }
+            }
+
+            function connectWebSocket() {
+              if (chatSocket && (chatSocket.readyState === WebSocket.OPEN || chatSocket.readyState === WebSocket.CONNECTING)) {
+                return;
+              }
+              try {
+                chatSocket = new WebSocket(wsScheme + '://' + window.location.host + '/ws/chat/' + vendorId + '/');
+                chatSocket.onopen = function() {
+                  console.log('Chat WebSocket connected.');
+                };
+                chatSocket.onmessage = function(e) {
+                  try {
+                    const data = JSON.parse(e.data);
+                    renderIncomingMessage(data.id, data.message, data.sender_id, data.time);
+                  } catch (err) {
+                    console.error('Error parsing WS data:', err);
+                  }
+                };
+                chatSocket.onclose = function(e) {
+                  console.log('WebSocket closed, scheduling reconnect...');
+                  clearTimeout(reconnectTimer);
+                  reconnectTimer = setTimeout(connectWebSocket, 2000);
+                };
+                chatSocket.onerror = function(err) {
+                  try { chatSocket.close(); } catch(e) {}
+                };
+              } catch (err) {
+                console.log("WebSocket init error:", err);
+                clearTimeout(reconnectTimer);
+                reconnectTimer = setTimeout(connectWebSocket, 3000);
+              }
+            }
+
+            connectWebSocket();
+
+            // Background Polling Fallback (runs every 2.5s to ensure zero missed messages from REST API / mobile app)
+            async function syncMessages() {
+              try {
+                const res = await fetch('/api/chat/messages/' + vendorId + '/?t=' + Date.now(), {
+                  headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                  }
+                });
+                if (res.ok) {
+                  const data = await res.json();
+                  if (data.status === 'success' && Array.isArray(data.messages)) {
+                    data.messages.forEach(m => {
+                      renderIncomingMessage(m.id, m.content, m.sender_id, m.time_formatted);
+                    });
+                  }
+                }
+              } catch (err) {
+                // Background sync silent catch
+              }
+            }
+            setInterval(syncMessages, 2500);
+
+            const composeForm = document.querySelector('.chat-compose');
+            if (composeForm) {
+              composeForm.addEventListener('submit', function(e) {
+                const fileInput = document.getElementById('chat-attach');
+                const msgInput = composeForm.querySelector('input[name="content"]');
+                if ((!fileInput || !fileInput.files.length) && msgInput && msgInput.value.trim() !== '' && chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+                  e.preventDefault();
+                  chatSocket.send(JSON.stringify({
+                    'message': msgInput.value.trim()
+                  }));
+                  msgInput.value = '';
+                }
+              });
+            }
+          </script>
+          {% else %}
+          <div class="chat-messages" style="display:flex;align-items:center;justify-content:center;height:100%;">
+            <p class="muted">Please select a conversation from <a href="index.html">messages inbox</a>.</p>
+          </div>
+          {% endif %}
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

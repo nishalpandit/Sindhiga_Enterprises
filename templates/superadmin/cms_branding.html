@@ -1,0 +1,299 @@
+{% extends 'superadmin/base.html' %}
+{% block title %}Site Branding & Identity{% endblock %}
+{% block header_title %}Site Branding & Identity{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'super_admin_landing_overview' %}" class="btn btn-outline btn-sm">
+  <i class="fa-solid fa-arrow-left"></i>
+  <span>CMS Hub</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<form method="POST" enctype="multipart/form-data" id="brandingForm">
+  {% csrf_token %}
+
+  <div style="display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 28px; align-items: start;">
+    
+    <!-- LEFT COLUMN: FORM SETTINGS -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      
+      <!-- Section 1: Brand Info -->
+      <div class="card" style="margin-bottom: 0;">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fa-solid fa-id-card"></i>
+            <span>Portal Name &amp; Tagline</span>
+          </div>
+          <span class="badge info">Global Header &amp; SEO</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="id_site_title">Site Title / Portal Name *</label>
+            {{ form.site_title }}
+            {% if form.site_title.errors %}<div style="color:var(--danger); font-size:12px; margin-top:4px;">{{ form.site_title.errors|striptags }}</div>{% endif %}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_tagline">Brand Tagline</label>
+            {{ form.tagline }}
+            {% if form.tagline.errors %}<div style="color:var(--danger); font-size:12px; margin-top:4px;">{{ form.tagline.errors|striptags }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 6px; margin-bottom: 0;">
+          <label class="form-label" for="id_copyright_text">Footer Copyright Notice</label>
+          {{ form.copyright_text }}
+          {% if form.copyright_text.errors %}<div style="color:var(--danger); font-size:12px; margin-top:4px;">{{ form.copyright_text.errors|striptags }}</div>{% endif %}
+        </div>
+      </div>
+
+      <!-- Section 2: Contact Information -->
+      <div class="card" style="margin-bottom: 0;">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fa-solid fa-address-book"></i>
+            <span>Customer Support &amp; Address</span>
+          </div>
+          <span class="badge active">Public Footer</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="id_contact_email"><i class="fa-solid fa-envelope" style="color: #6366f1;"></i> Public Contact Email</label>
+            {{ form.contact_email }}
+            {% if form.contact_email.errors %}<div style="color:var(--danger); font-size:12px; margin-top:4px;">{{ form.contact_email.errors|striptags }}</div>{% endif %}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_support_phone"><i class="fa-solid fa-phone" style="color: #10b981;"></i> Support Phone Number</label>
+            {{ form.support_phone }}
+            {% if form.support_phone.errors %}<div style="color:var(--danger); font-size:12px; margin-top:4px;">{{ form.support_phone.errors|striptags }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 6px; margin-bottom: 0;">
+          <label class="form-label" for="id_address"><i class="fa-solid fa-location-dot" style="color: #ef4444;"></i> Physical Operating Address</label>
+          {{ form.address }}
+          {% if form.address.errors %}<div style="color:var(--danger); font-size:12px; margin-top:4px;">{{ form.address.errors|striptags }}</div>{% endif %}
+        </div>
+      </div>
+
+      <!-- Section 3: Social Channels -->
+      <div class="card" style="margin-bottom: 0;">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fa-solid fa-share-nodes"></i>
+            <span>Official Social Handles</span>
+          </div>
+          <span class="badge info">External Links</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"><i class="fa-brands fa-facebook" style="color: #1877f2;"></i> Facebook URL</label>
+            {{ form.facebook_url }}
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fa-brands fa-instagram" style="color: #e4405f;"></i> Instagram URL</label>
+            {{ form.instagram_url }}
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top: 10px;">
+          <div class="form-group">
+            <label class="form-label"><i class="fa-brands fa-linkedin" style="color: #0a66c2;"></i> LinkedIn URL</label>
+            {{ form.linkedin_url }}
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fa-brands fa-x-twitter"></i> X / Twitter URL</label>
+            {{ form.twitter_url }}
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 10px; margin-bottom: 0;">
+          <label class="form-label"><i class="fa-brands fa-youtube" style="color: #ff0000;"></i> YouTube Channel URL</label>
+          {{ form.youtube_url }}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: ASSET UPLOADS & LIVE PREVIEWS -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      
+      <!-- Logo Dropzone -->
+      <div class="card" style="margin-bottom: 0;">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fa-solid fa-image"></i>
+            <span>Site Logo</span>
+          </div>
+          <span style="font-size: 11.5px; color: var(--text-muted);">PNG, SVG, WEBP</span>
+        </div>
+
+        {% if branding.logo %}
+        <div class="dropzone-preview-wrap" id="logoCurrentWrap">
+          <img src="{{ branding.logo.url }}" id="logoImgPreview" class="dropzone-thumb" alt="Current Logo">
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--text-main);">Current Active Logo</div>
+            <div style="font-size: 11.5px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" id="logoFileText">{{ branding.logo.name }}</div>
+          </div>
+        </div>
+        {% else %}
+        <div class="dropzone-preview-wrap" id="logoCurrentWrap" style="display: none;">
+          <img src="" id="logoImgPreview" class="dropzone-thumb" alt="Logo Preview">
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--text-main);">Selected Logo</div>
+            <div style="font-size: 11.5px; color: var(--text-muted);" id="logoFileText">Ready to upload</div>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="dropzone-box" id="logoDropBox">
+          {{ form.logo }}
+          <div class="dropzone-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+          <div class="dropzone-title">Click to upload new logo</div>
+          <div class="dropzone-subtitle">Recommended height: 40px - 80px transparent PNG</div>
+        </div>
+      </div>
+
+      <!-- Favicon Dropzone -->
+      <div class="card" style="margin-bottom: 0;">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fa-solid fa-globe"></i>
+            <span>Browser Favicon</span>
+          </div>
+          <span style="font-size: 11.5px; color: var(--text-muted);">32x32 / ICO / PNG</span>
+        </div>
+
+        {% if branding.favicon %}
+        <div class="dropzone-preview-wrap" id="favCurrentWrap">
+          <img src="{{ branding.favicon.url }}" id="favImgPreview" style="width: 32px; height: 32px; border-radius: 4px; border: 1px solid var(--border);" alt="Favicon">
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--text-main);">Current Favicon</div>
+            <div style="font-size: 11.5px; color: var(--text-muted);" id="favFileText">{{ branding.favicon.name }}</div>
+          </div>
+        </div>
+        {% else %}
+        <div class="dropzone-preview-wrap" id="favCurrentWrap" style="display: none;">
+          <img src="" id="favImgPreview" style="width: 32px; height: 32px; border-radius: 4px; border: 1px solid var(--border);" alt="Favicon">
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--text-main);">Selected Favicon</div>
+            <div style="font-size: 11.5px; color: var(--text-muted);" id="favFileText">Ready to upload</div>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="dropzone-box" id="favDropBox">
+          {{ form.favicon }}
+          <div class="dropzone-icon"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
+          <div class="dropzone-title">Click to upload favicon</div>
+          <div class="dropzone-subtitle">Square icon (32×32 or 64×64)</div>
+        </div>
+      </div>
+
+      <!-- Live Mockup Preview Widget -->
+      <div class="card" style="background: linear-gradient(135deg, #1e1b4b, #0f172a); color: white; border: none; margin-bottom: 0;">
+        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #a5b4fc; margin-bottom: 12px;">
+          <i class="fa-solid fa-eye"></i> Live Public Navbar Preview
+        </div>
+        <div style="padding: 16px; background: rgba(255,255,255,0.06); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div id="mockupLogoWrap">
+              {% if branding.logo %}
+                <img src="{{ branding.logo.url }}" id="mockupLogo" style="height: 28px; width: auto; object-fit: contain; border-radius: 4px;" alt="Logo">
+              {% else %}
+                <img src="/static/images/logo.png" id="mockupLogo" style="height: 36px; width: auto; object-fit: contain; border-radius: 4px;" alt="Logo">
+              {% endif %}
+            </div>
+            <div>
+              <div id="mockupTitle" style="font-weight: 800; font-size: 14.5px; color: white;">{{ branding.site_title|default:"Sugu" }}</div>
+              <div id="mockupTagline" style="font-size: 11px; color: #94a3b8;">{{ branding.tagline|default:"Services & Bidding" }}</div>
+            </div>
+          </div>
+          <span style="font-size: 11px; padding: 3px 8px; border-radius: 20px; background: rgba(16,185,129,0.2); color: #34d399; font-weight: 700;">Verified</span>
+        </div>
+      </div>
+
+      <!-- Save Actions Card -->
+      <div class="card" style="margin-bottom: 0; background: #f8fafc;">
+        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; font-size: 15px; font-weight: 700; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);">
+          <i class="fa-solid fa-floppy-disk"></i> Save &amp; Publish Branding
+        </button>
+        <div style="text-align: center; margin-top: 10px;">
+          <a href="{% url 'super_admin_landing_overview' %}" style="font-size: 13px; color: var(--text-muted); text-decoration: none;">Cancel changes</a>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</form>
+
+<script>
+  // Live previews for logo & favicon upload
+  var logoInput = document.getElementById('id_logo');
+  var logoPreview = document.getElementById('logoImgPreview');
+  var logoWrap = document.getElementById('logoCurrentWrap');
+  var logoText = document.getElementById('logoFileText');
+  var mockupLogo = document.getElementById('mockupLogo');
+
+  if (logoInput) {
+    logoInput.addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (file) {
+        var reader = new FileReader();
+        reader.onload = function(evt) {
+          logoPreview.src = evt.target.result;
+          logoWrap.style.display = 'flex';
+          logoText.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+          if (mockupLogo.tagName === 'IMG') {
+            mockupLogo.src = evt.target.result;
+          } else {
+            mockupLogo.innerHTML = '<img src="' + evt.target.result + '" style="height:28px; width:auto; border-radius:4px;" />';
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  var favInput = document.getElementById('id_favicon');
+  var favPreview = document.getElementById('favImgPreview');
+  var favWrap = document.getElementById('favCurrentWrap');
+  var favText = document.getElementById('favFileText');
+
+  if (favInput) {
+    favInput.addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (file) {
+        var reader = new FileReader();
+        reader.onload = function(evt) {
+          favPreview.src = evt.target.result;
+          favWrap.style.display = 'flex';
+          favText.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  // Live text update on mockup
+  var titleInp = document.getElementById('id_site_title');
+  var taglineInp = document.getElementById('id_tagline');
+  var mockupTitle = document.getElementById('mockupTitle');
+  var mockupTagline = document.getElementById('mockupTagline');
+
+  if (titleInp && mockupTitle) {
+    titleInp.addEventListener('input', function() {
+      mockupTitle.textContent = titleInp.value || 'Sugu';
+    });
+  }
+  if (taglineInp && mockupTagline) {
+    taglineInp.addEventListener('input', function() {
+      mockupTagline.textContent = taglineInp.value || 'Services & Bidding';
+    });
+  }
+</script>
+{% endblock %}

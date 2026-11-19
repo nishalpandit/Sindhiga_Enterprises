@@ -1,0 +1,988 @@
+================================================================================
+SINDHIGA ENTERPRISES - COMPLETE API DOCUMENTATION (PLAIN TEXT FORMAT)
+E-COMMERCE & HOME SERVICES PLATFORM
+Unified Architecture for Customer App, Service Provider App, Delivery Partner App & Admin
+================================================================================
+
+AUTH NOTE FOR ALL APIS:
+All protected endpoints accept authentication via:
+1. Header: Authorization: Bearer <token>
+2. Query Parameter: ?token=<token>
+3. Request Body Parameter: "token": "<token>"
+4. Standard Multipart Form-Data Parameter: token = <token>
+
+
+--------------------------------------------------------------------------------
+MODULE 1: CUSTOMER APP (E-COMMERCE & MULTI-ADDRESS)
+--------------------------------------------------------------------------------
+
+1. List Product Categories & Subcategories
+url : /api/ecommerce/categories/
+method : GET
+params :-
+None
+response :-
+{
+  "status": "success",
+  "categories": [
+    {
+      "id": 1,
+      "name": "Home Appliances & Spares",
+      "slug": "home-appliances-spares",
+      "description": "Genuine replacement parts, filters, and maintenance spares",
+      "icon_class": "bi-cpu",
+      "image": "/media/product_categories/appliances.png",
+      "products_count": 3,
+      "subcategories": [
+        {
+          "id": 1,
+          "name": "Filters & Purifier Spares",
+          "slug": "filters-purifier-spares",
+          "image": null,
+          "products_count": 1
+        }
+      ]
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+2. Filter & Search Products Catalog
+url : /api/ecommerce/products/
+method : GET
+params :-
+category_id (optional, integer) : Filter by category ID
+subcategory_id (optional, integer) : Filter by subcategory ID
+search (optional, string) : Search query matching title, brand, sku, description
+brand (optional, string) : Filter by specific brand name
+min_price (optional, float) : Minimum sale price
+max_price (optional, float) : Maximum sale price
+sort (optional, string) : 'price_low_high', 'price_high_low', 'rating', 'newest'
+response :-
+{
+  "status": "success",
+  "count": 1,
+  "products": [
+    {
+      "id": 1,
+      "title": "Universal RO Water Purifier Membrane (80 GPD)",
+      "brand": "Aquaflow",
+      "category_id": 1,
+      "category_name": "Home Appliances & Spares",
+      "subcategory_id": 1,
+      "subcategory_name": "Filters & Purifier Spares",
+      "mrp_price": 1299.0,
+      "sale_price": 749.0,
+      "discount_percent": 42,
+      "unit": "1 Piece",
+      "stock_quantity": 45,
+      "in_stock": true,
+      "rating": 4.9,
+      "reviews_count": 38,
+      "image": "https://images.unsplash.com/...",
+      "sku": "SND-RO-80GPD",
+      "is_featured": true
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+3. Product Detail (Specifications, Gallery & Reviews)
+url : /api/ecommerce/products/<product_id>/
+method : GET
+params :-
+product_id (path parameter, integer) : ID of the product
+response :-
+{
+  "status": "success",
+  "product": {
+    "id": 1,
+    "title": "Universal RO Water Purifier Membrane (80 GPD)",
+    "brand": "Aquaflow",
+    "mrp_price": 1299.0,
+    "sale_price": 749.0,
+    "discount_percent": 42,
+    "unit": "1 Piece",
+    "stock_quantity": 45,
+    "in_stock": true,
+    "rating": 4.9,
+    "reviews_count": 38,
+    "description": "High-rejection 80 GPD reverse osmosis membrane...",
+    "specifications": {
+      "Capacity": "80 GPD",
+      "Material": "Polyamide Thin Film",
+      "Warranty": "6 Months"
+    },
+    "gallery": [
+      "https://images.unsplash.com/..."
+    ],
+    "reviews": [
+      {
+        "id": 1,
+        "customer_name": "Rahul Verma",
+        "rating": 5,
+        "review_text": "Excellent quality filter, TDS dropped from 400 to 25.",
+        "created_at": "2026-11-18"
+      }
+    ],
+    "related_products": []
+  }
+}
+
+--------------------------------------------------------------------------------
+
+4. View Customer Cart
+url : /api/ecommerce/cart/
+method : GET
+params :-
+token (Bearer or header) : Customer Auth Token
+response :-
+{
+  "status": "success",
+  "items": [
+    {
+      "cart_item_id": 12,
+      "product_id": 1,
+      "title": "Universal RO Water Purifier Membrane (80 GPD)",
+      "unit": "1 Piece",
+      "unit_price": 749.0,
+      "mrp_price": 1299.0,
+      "quantity": 2,
+      "stock_quantity": 45,
+      "in_stock": true,
+      "total_price": 1498.0,
+      "image": "https://images.unsplash.com/..."
+    }
+  ],
+  "item_count": 2,
+  "subtotal": 1498.0,
+  "delivery_fee": 0.0,
+  "free_delivery_threshold": 499.0,
+  "grand_total": 1498.0
+}
+
+--------------------------------------------------------------------------------
+
+5. Add Product to Cart
+url : /api/ecommerce/cart/add/
+method : POST
+params :-
+product_id (required, integer) : Product ID to add
+quantity (optional, integer, default 1) : Number of units
+response :-
+{
+  "status": "success",
+  "message": "Added Universal RO Water Purifier Membrane (80 GPD) to cart",
+  "cart_item_id": 12,
+  "current_quantity": 2
+}
+
+--------------------------------------------------------------------------------
+
+6. Update Cart Item Quantity
+url : /api/ecommerce/cart/update/
+method : POST
+params :-
+cart_item_id (or product_id, integer) : Cart item to update
+quantity (required, integer) : New quantity (0 deletes item)
+response :-
+{
+  "status": "success",
+  "message": "Quantity updated",
+  "cart_item_id": 12,
+  "quantity": 3,
+  "total_price": 2247.0
+}
+
+--------------------------------------------------------------------------------
+
+7. Remove Item From Cart
+url : /api/ecommerce/cart/remove/
+method : POST
+params :-
+cart_item_id (or product_id, integer) : Item to delete
+response :-
+{
+  "status": "success",
+  "message": "Item removed from cart"
+}
+
+--------------------------------------------------------------------------------
+
+8. Clear Cart
+url : /api/ecommerce/cart/clear/
+method : POST
+params :-
+None
+response :-
+{
+  "status": "success",
+  "message": "Cart emptied successfully"
+}
+
+--------------------------------------------------------------------------------
+
+9. Toggle Wishlist Item
+url : /api/ecommerce/wishlist/toggle/
+method : POST
+params :-
+product_id (required, integer) : Product to add/remove
+response :-
+{
+  "status": "success",
+  "is_in_wishlist": true,
+  "message": "Added to wishlist"
+}
+
+--------------------------------------------------------------------------------
+
+10. List Active Coupons
+url : /api/ecommerce/coupons/
+method : GET
+params :-
+None
+response :-
+{
+  "status": "success",
+  "coupons": [
+    {
+      "code": "WELCOME50",
+      "description": "Flat ₹50 OFF on your first e-commerce order",
+      "discount_type": "fixed",
+      "discount_value": 50.0,
+      "min_order_amount": 299.0,
+      "max_discount_amount": 50.0,
+      "valid_until": "2027-11-19 10:22"
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+11. Apply & Validate Coupon Code
+url : /api/ecommerce/coupons/apply/
+method : POST
+params :-
+code (required, string) : Coupon code e.g. "WELCOME50"
+order_amount (required, float) : Cart subtotal e.g. 749.0
+response :-
+{
+  "status": "success",
+  "code": "WELCOME50",
+  "discount_type": "fixed",
+  "discount_amount": 50.0,
+  "original_amount": 749.0,
+  "final_amount": 699.0,
+  "message": "Coupon 'WELCOME50' applied successfully!"
+}
+
+--------------------------------------------------------------------------------
+
+12. Checkout & Place E-Commerce Order
+url : /api/ecommerce/checkout/
+method : POST
+params :-
+address_id (optional, integer) : Saved CustomerAddress ID
+customer_name (optional, string) : Recipient full name
+customer_phone (optional, string) : Recipient mobile number
+address_text (optional, string) : Street address
+city (optional, string) : City
+state (optional, string) : State
+pincode (optional, string) : Pincode
+payment_method (optional, string) : 'COD' or 'ONLINE' (default 'COD')
+coupon_code (optional, string) : Promo code to deduct
+delivery_notes (optional, string) : Special instructions for delivery rider
+response :-
+{
+  "status": "success",
+  "message": "Order placed successfully!",
+  "order_id": 1,
+  "order_number": "ORD-20261119-0001",
+  "delivery_otp": "718293",
+  "total_amount": 699.0,
+  "payment_method": "COD",
+  "payment_status": "PENDING",
+  "order_status": "PENDING",
+  "created_at": "2026-11-19 10:30"
+}
+
+--------------------------------------------------------------------------------
+
+13. List Customer Orders
+url : /api/ecommerce/orders/
+method : GET
+params :-
+status (optional, string) : Filter by 'PENDING', 'CONFIRMED', 'PACKED', 'ASSIGNED', 'PICKED_UP', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'
+response :-
+{
+  "status": "success",
+  "orders": [
+    {
+      "order_id": 1,
+      "order_number": "ORD-20261119-0001",
+      "order_status": "DELIVERED",
+      "status_display": "Delivered",
+      "total_amount": 699.0,
+      "item_count": 2,
+      "first_item_title": "Universal RO Water Purifier Membrane (80 GPD)",
+      "payment_method": "COD",
+      "payment_status": "PAID",
+      "delivery_otp": "718293",
+      "created_at": "2026-11-19 10:30"
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+14. Track Order Timeline & Delivery Partner Details
+url : /api/ecommerce/orders/<order_id>/
+method : GET
+params :-
+order_id (path parameter, integer or string) : Order ID or Order Number
+response :-
+{
+  "status": "success",
+  "order": {
+    "order_id": 1,
+    "order_number": "ORD-20261119-0001",
+    "order_status": "OUT_FOR_DELIVERY",
+    "status_display": "Out for Delivery",
+    "delivery_otp": "718293",
+    "customer_name": "Nishal",
+    "customer_phone": "9876500001",
+    "delivery_address": "Flat 402, Namkum Greens, Ranchi, Jharkhand - 834001",
+    "items_subtotal": 749.0,
+    "coupon_discount": 50.0,
+    "delivery_fee": 0.0,
+    "total_amount": 699.0,
+    "payment_method": "COD",
+    "payment_status": "PENDING",
+    "items": [
+      {
+        "id": 1,
+        "product_id": 1,
+        "product_title": "Universal RO Water Purifier Membrane (80 GPD)",
+        "unit_price": 749.0,
+        "quantity": 1,
+        "total_price": 749.0
+      }
+    ],
+    "delivery_partner": {
+      "name": "Rohan Rider",
+      "phone": "9876500003",
+      "vehicle": "Motorcycle (JH-01-AB-1234)",
+      "rating": 5.0
+    },
+    "timeline": [
+      {"step": "Placed", "status": "PENDING", "done": true, "timestamp": "2026-11-19 10:30"},
+      {"step": "Confirmed", "status": "CONFIRMED", "done": true, "timestamp": "2026-11-19 10:32"},
+      {"step": "Packed", "status": "PACKED", "done": true, "timestamp": "2026-11-19 10:35"},
+      {"step": "Picked Up", "status": "PICKED_UP", "done": true, "timestamp": "2026-11-19 10:40"},
+      {"step": "Out for Delivery", "status": "OUT_FOR_DELIVERY", "done": true, "timestamp": null},
+      {"step": "Delivered", "status": "DELIVERED", "done": false, "timestamp": null}
+    ],
+    "can_cancel": false,
+    "can_return": false
+  }
+}
+
+--------------------------------------------------------------------------------
+
+15. Cancel Order
+url : /api/ecommerce/orders/<order_id>/cancel/
+method : POST
+params :-
+reason (optional, string) : Cancellation reason
+response :-
+{
+  "status": "success",
+  "message": "Order cancelled successfully and stock restored."
+}
+
+--------------------------------------------------------------------------------
+
+16. Request Return / Refund
+url : /api/ecommerce/orders/<order_id>/return/
+method : POST
+params :-
+reason (required, string) : Reason for returning delivered item
+response :-
+{
+  "status": "success",
+  "message": "Return request submitted successfully. Our team will review and schedule pickup.",
+  "return_id": 1
+}
+
+--------------------------------------------------------------------------------
+
+17. Add Product Review
+url : /api/ecommerce/products/<product_id>/review/
+method : POST
+params :-
+rating (required, integer, 1 to 5) : Star rating
+review_text (optional, string) : Review comment
+response :-
+{
+  "status": "success",
+  "message": "Review submitted successfully",
+  "new_rating": 4.9,
+  "reviews_count": 39
+}
+
+
+--------------------------------------------------------------------------------
+MODULE 2: DELIVERY PARTNER APP
+--------------------------------------------------------------------------------
+
+18. View & Update Delivery Partner Profile
+url : /api/delivery/profile/
+method : GET or POST (Multipart Form-Data supported)
+params (POST) :-
+phone_number (optional, string) : Mobile number
+vehicle_type (optional, string) : e.g. Motorcycle, Electric Scooter, Van
+vehicle_number (optional, string) : e.g. JH-01-AB-1234
+driving_license_number (optional, string) : Driving license string
+driving_license_doc (optional, file) : Driving license document image/PDF
+id_proof_doc (optional, file) : Government ID document
+profile_image (optional, file) : Profile photo
+city (optional, string) : Base city
+response (GET) :-
+{
+  "status": "success",
+  "partner": {
+    "id": 1,
+    "partner_code": "DEL-0001",
+    "name": "Rohan Rider",
+    "email": "rider@sindhiga.com",
+    "phone_number": "9876500003",
+    "vehicle_type": "Motorcycle",
+    "vehicle_number": "JH-01-AB-1234",
+    "is_verified": true,
+    "is_online": true,
+    "current_status": "available",
+    "rating": 5.0,
+    "total_deliveries": 14,
+    "total_earnings": 560.0,
+    "wallet_balance": 560.0
+  }
+}
+
+--------------------------------------------------------------------------------
+
+19. Toggle Duty Status (Online / Offline) & Update GPS
+url : /api/delivery/status/toggle/
+method : POST
+params :-
+is_online (optional, boolean) : true or false
+latitude (optional, float) : Current GPS latitude
+longitude (optional, float) : Current GPS longitude
+response :-
+{
+  "status": "success",
+  "is_online": true,
+  "current_status": "available",
+  "message": "Duty status switched to ONLINE"
+}
+
+--------------------------------------------------------------------------------
+
+20. Delivery Feed (Assigned Deliveries)
+url : /api/delivery/orders/
+method : GET
+params :-
+tab (optional, string) : 'pending' (waiting for accept/reject), 'active' (in transit), 'completed' (history), or 'all'
+response :-
+{
+  "status": "success",
+  "tab": "pending",
+  "count": 1,
+  "orders": [
+    {
+      "order_id": 1,
+      "order_number": "ORD-20261119-0001",
+      "order_status": "ASSIGNED",
+      "assignment_status": "PENDING",
+      "customer_name": "Nishal",
+      "customer_phone": "9876500001",
+      "delivery_address": "Flat 402, Namkum Greens, Ranchi - 834001",
+      "total_amount": 699.0,
+      "payment_method": "COD",
+      "payment_status": "PENDING",
+      "collect_cash": 699.0,
+      "items_count": 2,
+      "delivery_notes": "Call before arrival",
+      "created_at": "2026-11-19 10:30"
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+21. Accept or Reject Assigned Delivery
+url : /api/delivery/orders/<order_id>/respond/
+method : POST
+params :-
+action (required, string) : 'accept' or 'reject'
+reason (optional, string) : Reason if declining assignment
+response :-
+{
+  "status": "success",
+  "message": "Order #ORD-20261119-0001 accepted. Please proceed to pick up."
+}
+
+--------------------------------------------------------------------------------
+
+22. Mark Package Picked Up from Hub
+url : /api/delivery/orders/<order_id>/pickup/
+method : POST
+params :-
+None
+response :-
+{
+  "status": "success",
+  "message": "Order #ORD-20261119-0001 marked as Picked Up. You may start delivery.",
+  "order_status": "PICKED_UP"
+}
+
+--------------------------------------------------------------------------------
+
+23. Mark Package Out for Delivery
+url : /api/delivery/orders/<order_id>/out-for-delivery/
+method : POST
+params :-
+None
+response :-
+{
+  "status": "success",
+  "message": "Order #ORD-20261119-0001 is now Out for Delivery.",
+  "order_status": "OUT_FOR_DELIVERY"
+}
+
+--------------------------------------------------------------------------------
+
+24. Verify Customer OTP & Complete Delivery
+url : /api/delivery/orders/<order_id>/verify-complete/
+method : POST
+params :-
+otp (required, string) : 6-digit delivery OTP from the customer e.g. "718293"
+response :-
+{
+  "status": "success",
+  "message": "Order #ORD-20261119-0001 delivered successfully! ₹40.00 credited to your wallet.",
+  "delivered_at": "2026-11-19 10:45",
+  "payout_credited": 40.0,
+  "new_wallet_balance": 600.0
+}
+
+--------------------------------------------------------------------------------
+
+25. Delivery Earnings & Payout Breakdown
+url : /api/delivery/earnings/
+method : GET
+params :-
+None
+response :-
+{
+  "status": "success",
+  "summary": {
+    "total_deliveries": 15,
+    "total_earnings": 600.0,
+    "wallet_balance": 600.0,
+    "today_earnings": 120.0,
+    "rating": 5.0
+  },
+  "payout_history": [
+    {
+      "id": 1,
+      "order_number": "ORD-20261119-0001",
+      "amount": 40.0,
+      "payout_type": "Delivery Fee",
+      "status": "paid",
+      "created_at": "2026-11-19 10:45"
+    }
+  ]
+}
+
+
+--------------------------------------------------------------------------------
+MODULE 3: SERVICE PROVIDER APP
+--------------------------------------------------------------------------------
+
+26. Service Provider Profile
+url : /api/provider/profile/
+method : GET or POST (Multipart Form-Data supported)
+params (POST) :-
+business_name (optional, string) : Company or provider brand name
+contact_phone (optional, string) : Mobile number
+experience_years (optional, integer) : Number of years of experience
+bio (optional, string) : Provider bio / about description
+profile_image (optional, file) : Profile photo upload
+response (GET) :-
+{
+  "status": "success",
+  "provider": {
+    "id": 1,
+    "name": "Suresh Sharma",
+    "business_name": "Ranchi Pro Care",
+    "email": "suresh@sindhiga.com",
+    "phone": "9876500002",
+    "city": "Ranchi",
+    "category": "Plumbing, AC & Electrical",
+    "experience_years": 8,
+    "bio": "Certified HVAC & Plumbing technician with 8 years field experience.",
+    "is_verified": true,
+    "is_available": true,
+    "kyc_status": "approved",
+    "rating": 4.8
+  }
+}
+
+--------------------------------------------------------------------------------
+
+27. Toggle Service Availability
+url : /api/provider/availability/toggle/
+method : POST
+params :-
+is_available (optional, boolean) : true or false
+response :-
+{
+  "status": "success",
+  "is_available": true,
+  "message": "Status set to ONLINE & AVAILABLE"
+}
+
+--------------------------------------------------------------------------------
+
+28. Service Provider Bookings Feed
+url : /api/provider/bookings/
+method : GET
+params :-
+tab (optional, string) : 'pending' (assigned, awaiting accept), 'active' (in progress), 'completed' (history), or 'all'
+response :-
+{
+  "status": "success",
+  "tab": "pending",
+  "count": 1,
+  "bookings": [
+    {
+      "booking_id": 9,
+      "service_name": "AC Servicing & Gas Top-up",
+      "customer_name": "Pooja Singh",
+      "customer_phone": "9876500001",
+      "service_location": "Main Road, Namkum, Ranchi",
+      "booking_date": "2026-11-20",
+      "time_slot": "09:00 AM - 11:00 AM (Morning)",
+      "status": "assigned",
+      "status_display": "Provider Assigned / Awaiting Acceptance",
+      "total_amount": 499.0,
+      "payment_mode": "Cash After Service",
+      "payment_status": "Pending",
+      "created_at": "2026-11-19 10:35"
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+29. Accept or Reject Service Booking
+url : /api/provider/bookings/<booking_id>/respond/
+method : POST
+params :-
+action (required, string) : 'accept' or 'reject'
+reason (optional, string) : Reason if declining booking
+response :-
+{
+  "status": "success",
+  "message": "Booking accepted. Customer has been notified."
+}
+
+--------------------------------------------------------------------------------
+
+30. Update Real-Time Service Status
+url : /api/provider/bookings/<booking_id>/status/
+method : POST
+params :-
+status (required, string) : 'heading' (on the way) or 'in_progress' (started service)
+response :-
+{
+  "status": "success",
+  "message": "Status updated: You are on the way to the customer location.",
+  "booking_status": "heading"
+}
+
+--------------------------------------------------------------------------------
+
+31. Complete Service with OTP & Wallet Credit
+url : /api/provider/bookings/<booking_id>/complete/
+method : POST
+params :-
+otp (required, string) : 6-digit service OTP from customer e.g. "632595"
+response :-
+{
+  "status": "success",
+  "message": "Service marked as Completed! ₹399.20 credited to your wallet.",
+  "payout_credited": 399.20,
+  "wallet_balance": 399.20
+}
+
+--------------------------------------------------------------------------------
+
+32. Service Provider Earnings & Wallet Summary
+url : /api/provider/earnings/
+method : GET
+params :-
+None
+response :-
+{
+  "status": "success",
+  "summary": {
+    "wallet_balance": 399.20,
+    "total_earned": 399.20,
+    "completed_bookings": 1,
+    "rating": 4.8
+  },
+  "transactions": [
+    {
+      "id": 1,
+      "amount": 399.20,
+      "type": "credit",
+      "description": "Earnings for Service Booking #9",
+      "created_at": "2026-11-19 10:45"
+    }
+  ]
+}
+
+
+--------------------------------------------------------------------------------
+MODULE 4: CUSTOMER HOME SERVICES
+--------------------------------------------------------------------------------
+
+33. Service Time Slots
+url : /api/services/time-slots/
+method : GET
+params :-
+None
+response :-
+{
+  "status": "success",
+  "time_slots": [
+    {"id": 1, "start_time": "09:00 AM", "end_time": "11:00 AM", "label": "09:00 AM - 11:00 AM (Morning)"},
+    {"id": 2, "start_time": "11:00 AM", "end_time": "01:00 PM", "label": "11:00 AM - 01:00 PM (Late Morning)"},
+    {"id": 3, "start_time": "02:00 PM", "end_time": "04:00 PM", "label": "02:00 PM - 04:00 PM (Afternoon)"},
+    {"id": 4, "start_time": "04:00 PM", "end_time": "06:00 PM", "label": "04:00 PM - 06:00 PM (Evening)"},
+    {"id": 5, "start_time": "06:00 PM", "end_time": "08:00 PM", "label": "06:00 PM - 08:00 PM (Night)"}
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+34. Book Service with Date & Time Slot
+url : /api/services/book-with-slot/
+method : POST
+params :-
+service_id (required, integer) : QuickService ID
+booking_date (required, string) : YYYY-MM-DD e.g. "2026-11-20"
+time_slot_id (optional, integer) : Time Slot ID
+time_slot (optional, string) : Time Slot label string e.g. "09:00 AM - 11:00 AM (Morning)"
+address_id (optional, integer) : CustomerAddress ID
+address (optional, string) : Street address
+payment_method (optional, string) : 'COD' or 'ONLINE' (default 'COD')
+customer_notes (optional, string) : Special notes
+response :-
+{
+  "status": "success",
+  "message": "Service booking created successfully! We will assign the nearest professional.",
+  "booking_id": 9,
+  "service_title": "AC Servicing & Gas Top-up",
+  "booking_date": "2026-11-20",
+  "time_slot": "09:00 AM - 11:00 AM (Morning)",
+  "otp_code": "632595",
+  "status": "pending",
+  "status_display": "Pending Provider Assignment",
+  "total_amount": 499.0
+}
+
+--------------------------------------------------------------------------------
+
+35. Customer Home Service Bookings List
+url : /api/services/my-bookings/
+method : GET
+params :-
+tab (optional, string) : 'pending', 'active', 'completed', or 'all'
+response :-
+{
+  "status": "success",
+  "tab": "all",
+  "bookings": [
+    {
+      "booking_id": 9,
+      "service_title": "AC Servicing & Gas Top-up",
+      "booking_date": "2026-11-20",
+      "time_slot": "09:00 AM - 11:00 AM (Morning)",
+      "status": "completed",
+      "status_display": "Service Completed",
+      "total_amount": 499.0,
+      "otp_code": "632595",
+      "created_at": "2026-11-19 10:35"
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+36. Customer Service Booking Tracking & Provider Details
+url : /api/services/my-bookings/<booking_id>/
+method : GET
+params :-
+booking_id (path parameter, integer) : Booking ID
+response :-
+{
+  "status": "success",
+  "booking": {
+    "booking_id": 9,
+    "service_title": "AC Servicing & Gas Top-up",
+    "booking_date": "2026-11-20",
+    "time_slot": "09:00 AM - 11:00 AM (Morning)",
+    "status": "in_progress",
+    "status_display": "Service In Progress",
+    "total_amount": 499.0,
+    "otp_code": "632595",
+    "payment_method": "COD",
+    "payment_status": "pending",
+    "service_location": "Main Road, Namkum, Ranchi",
+    "provider": {
+      "name": "Suresh Sharma",
+      "phone": "9876500002",
+      "photo": null,
+      "rating": 4.8,
+      "experience": "8 years"
+    },
+    "timeline": [
+      {"step": "Booking Placed", "code": "pending", "done": true},
+      {"step": "Provider Assigned", "code": "assigned", "done": true},
+      {"step": "Provider Accepted", "code": "accepted", "done": true},
+      {"step": "On The Way", "code": "heading", "done": true},
+      {"step": "Work In Progress", "code": "in_progress", "done": true},
+      {"step": "Completed", "code": "completed", "done": false}
+    ],
+    "can_cancel": false
+  }
+}
+
+--------------------------------------------------------------------------------
+
+37. Cancel Customer Service Booking
+url : /api/services/my-bookings/<booking_id>/cancel/
+method : POST
+params :-
+reason (optional, string) : Reason for cancellation
+response :-
+{
+  "status": "success",
+  "message": "Service booking cancelled successfully."
+}
+
+
+--------------------------------------------------------------------------------
+MODULE 5: ADMIN MANAGEMENT APIS
+--------------------------------------------------------------------------------
+
+38. Platform-Wide Operational KPIs
+url : /api/admin/kpis/
+method : GET
+params :-
+None (Requires Admin Bearer token)
+response :-
+{
+  "status": "success",
+  "kpis": {
+    "total_customers": 1,
+    "total_service_providers": 1,
+    "total_delivery_partners": 1,
+    "total_orders": 5,
+    "pending_orders": 0,
+    "packed_orders": 0,
+    "delivered_orders": 5,
+    "total_service_bookings": 7,
+    "unassigned_service_bookings": 0,
+    "completed_service_bookings": 5,
+    "ecommerce_revenue": 2150.0,
+    "services_revenue": 250.0,
+    "total_revenue": 2400.0
+  }
+}
+
+--------------------------------------------------------------------------------
+
+39. Admin Update Order Status (Confirm / Pack)
+url : /api/admin/orders/<order_id>/status/
+method : POST
+params :-
+status (required, string) : 'CONFIRMED' or 'PACKED'
+response :-
+{
+  "status": "success",
+  "message": "Order status updated to PACKED"
+}
+
+--------------------------------------------------------------------------------
+
+40. Admin Assign Delivery Partner to Packed Order
+url : /api/admin/orders/<order_id>/assign-delivery/
+method : POST
+params :-
+partner_id (required, integer) : User ID of Delivery Partner
+response :-
+{
+  "status": "success",
+  "message": "Order #ORD-20261119-0001 successfully assigned to delivery partner Rohan Rider.",
+  "assignment_status": "PENDING"
+}
+
+--------------------------------------------------------------------------------
+
+41. Admin Assign / Reassign Provider to Service Booking
+url : /api/admin/service-bookings/<booking_id>/assign-provider/
+method : POST
+params :-
+provider_id (required, integer) : User ID of Service Provider
+response :-
+{
+  "status": "success",
+  "message": "Booking #9 assigned to provider Suresh Sharma.",
+  "booking_status": "assigned"
+}
+
+--------------------------------------------------------------------------------
+
+42. Admin Return / Refund Action
+url : /api/admin/returns/<return_id>/action/
+method : POST
+params :-
+action (required, string) : 'approve', 'reject', or 'refund'
+notes (optional, string) : Admin internal note
+response :-
+{
+  "status": "success",
+  "message": "Refund completed successfully."
+}
+
+--------------------------------------------------------------------------------
+
+43. Admin Verify Delivery Partner
+url : /api/admin/delivery-partners/<partner_id>/verify/
+method : POST
+params :-
+is_verified (optional, boolean) : true or false
+response :-
+{
+  "status": "success",
+  "message": "Delivery partner DEL-0001 approved & verified.",
+  "is_verified": true
+}
+================================================================================
+END OF SINDHIGA ENTERPRISES API DOCUMENTATION
+================================================================================

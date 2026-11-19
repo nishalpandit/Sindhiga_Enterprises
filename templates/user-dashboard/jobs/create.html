@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Sugu User Portal - Post a Job">
+  <title>Post a Job · Sugu User</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script defer src="../assets/app.js"></script>
+  <style>
+    .loc-picker-box {
+      background: #f8fafc;
+      border: 1.5px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 6px;
+    }
+    .gps-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #5b5bd6;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .gps-btn:hover {
+      background: #4747bd;
+      transform: translateY(-1px);
+    }
+    .quick-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .quick-chip {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .quick-chip:hover, .quick-chip.active {
+      background: #eeeeff;
+      border-color: #5b5bd6;
+      color: #5b5bd6;
+    }
+    .loc-active-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #047857;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 12px;
+    }
+    @keyframes pulseLive {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.15); }
+    }
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+      animation: pulseLive 1.5s infinite;
+    }
+  </style>
+</head>
+<body data-page="job-create" data-title="Post a Job" data-root="../">
+  <div class="app-shell">
+    <div id="sidebar-root"></div>
+    <div class="workspace">
+      <div id="topbar-root"></div>
+      <main class="page">
+        <div class="page-head">
+          <div>
+            <h1 style="font-size:24px; font-weight:800; margin:0 0 4px; color:#0f172a;">Post a New Job Requirement</h1>
+            <p class="muted" style="margin:0; font-size:13px;">Tell local verified professionals what you need. Receive competing quotations within your 10 km location radius.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-secondary" href="index.html"><span data-icon="x"></span> Cancel</a>
+          </div>
+        </div>
+
+        <div class="layout-main">
+          <!-- Main Simple Form -->
+          <section class="card form-card" style="box-shadow:0 8px 30px rgba(0,0,0,0.04);">
+            <form method="POST" action="/user/jobs/create" id="postJobForm" enctype="multipart/form-data">
+              {% csrf_token %}
+
+              <div class="form-section" style="padding:24px;">
+                <div class="form-grid">
+                  <!-- Hidden Defaults to bypass validation if required -->
+                  <input type="hidden" name="description" value="Details to be discussed.">
+                  
+                  <style>
+                  .cat-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+                  .cat-card { border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; background: #fff; }
+                  .cat-card:hover { border-color: #5b5bd6; background: #f8f8ff; }
+                  .cat-card input[type="radio"] { display: none; }
+                  .cat-card input[type="radio"]:checked + .card-content { color: #5b5bd6; font-weight: 700; }
+                  .cat-card:has(input[type="radio"]:checked) { border-color: #5b5bd6; background: #f0f0ff; box-shadow: 0 0 0 3px rgba(91,91,214,0.15); }
+                  .card-content i { font-size: 26px; color: #64748b; }
+                  .card-content img.cat-card-img { width: 34px; height: 34px; object-fit: contain; }
+                  .cat-card input[type="radio"]:checked + .card-content i { color: #5b5bd6; }
+                  </style>
+
+                  <!-- 1. Category Cards -->
+                  <div class="field full">
+                    <label>Select Category <span class="required">*</span></label>
+                    <div class="cat-card-grid">
+                      {% for cat in categories %}
+                      <label class="cat-card" onclick="updateSubcats('{{ cat.id }}')">
+                         <input type="radio" name="category" value="{{ cat.id }}" required>
+                         <div class="card-content">
+                            {% if cat.image %}
+                              <img src="{{ cat.image.url }}" alt="{{ cat.name }}" class="cat-card-img">
+                            {% else %}
+                              <i class="bi {{ cat.icon_class }}"></i>
+                            {% endif %}
+                            <span style="display:block; margin-top:8px; font-size:13px;">{{ cat.name }}</span>
+                         </div>
+                      </label>
+                      {% endfor %}
+                    </div>
+                  </div>
+
+                  <!-- 2. Subcategory Cards -->
+                  <div class="field full" id="subcat-container" style="display: none;">
+                    <label>Select Subcategory <span class="required">*</span></label>
+                    <div class="cat-card-grid" id="subcategory_grid">
+                      <!-- Subcategories will be injected here as cards -->
+                    </div>
+                  </div>
+
+                  <script type="application/json" id="subcats-data">
+                  {
+                    {% for cat in categories %}
+                    "{{ cat.id }}": [
+                      {% for sub in cat.subcategories.all %}
+                      { "id": "{{ sub.id }}", "name": "{{ sub.name|escapejs }}" }{% if not forloop.last %},{% endif %}
+                      {% endfor %}
+                    ]{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                  }
+                  </script>
+                  <script>
+                  const subcats = JSON.parse(document.getElementById('subcats-data').textContent);
+
+                  function updateSubcats(catId) {
+                    const grid = document.getElementById('subcategory_grid');
+                    grid.innerHTML = '';
+                    if (subcats[catId] && subcats[catId].length > 0) {
+                      subcats[catId].forEach(s => {
+                         grid.innerHTML += `
+                           <label class="cat-card">
+                             <input type="radio" name="subcategory" value="${s.id}" required>
+                             <div class="card-content">
+                               <i class="bi bi-tag"></i>
+                               <span style="display:block; margin-top:8px; font-size:13px;">${s.name}</span>
+                             </div>
+                           </label>
+                         `;
+                      });
+                      document.getElementById('subcat-container').style.display = 'block';
+                    } else {
+                      document.getElementById('subcat-container').style.display = 'none';
+                    }
+                  }
+                  </script>
+
+                  <!-- 3. Title -->
+                  <div class="field full">
+                    <label>What service do you need? <span class="required">*</span></label>
+                    <input class="input" name="title" required placeholder="e.g. Full Bathroom Renovation, Bridal Makeup" autocomplete="off">
+                  </div>
+
+                  <!-- 4. Preferred Start Date -->
+                  <div class="field">
+                    <label>When do you want to start? <span class="required">*</span></label>
+                    <input class="input" name="preferred_start_date" type="date" required>
+                  </div>
+
+                  <!-- 5. Contact Mobile (Empty by default) -->
+                  <div class="field">
+                    <label>Your Contact Phone <span class="required">*</span></label>
+                    <input class="input" name="contact_mobile" required value="" placeholder="+91 98765 43210">
+                  </div>
+
+                  <!-- 6. Expected Budget / Price -->
+                  <div class="field">
+                    <label>Expected Budget / Price (₹) <span class="required">*</span></label>
+                    <div class="input-prefix">
+                      <span>₹</span>
+                      <input class="input" name="budget" required type="number" min="100" placeholder="e.g. 1500">
+                    </div>
+                  </div>
+
+                  <!-- ============================================== -->
+                  <!-- LIVE LOCATION PICKER (10 KM RANGE)            -->
+                  <!-- ============================================== -->
+                  <div class="field full">
+                    <label style="display:flex; align-items:center; justify-content:space-between;">
+                      <span>Worksite Location <span class="required">*</span></span>
+                    </label>
+
+                    <div class="loc-picker-box">
+                      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                        <button type="button" class="gps-btn" id="btnUserGps" onclick="detectUserJobGps()">
+                          <i class="fa-solid fa-crosshairs" id="userGpsIcon"></i>
+                          <span id="userGpsText">Use My Live Location</span>
+                        </button>
+
+                        <div style="flex:1; min-width:200px; position:relative;">
+                          <input type="text" id="jobLocSearchInput" class="input" placeholder="Or search colony name (e.g. Lalpur, Doranda, Harmu)..." autocomplete="off" oninput="handleJobLocSearch(this.value)">
+                          <div id="jobLocSearchSpinner" style="display:none; position:absolute; right:12px; top:11px; color:#5b5bd6;">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i>
+                          </div>
+                          <div id="jobLocSearchResults" style="display:none; position:absolute; left:0; right:0; top:44px; z-index:50; background:#fff; border:1px solid #cbd5e1; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.1); max-height:200px; overflow-y:auto;"></div>
+                        </div>
+                      </div>
+
+                      <!-- Quick Localities in Ranchi -->
+                      <div class="quick-chips">
+                        <span style="font-size:11px; color:#64748b; font-weight:600; align-self:center;">Popular Areas:</span>
+                        <button type="button" class="quick-chip" onclick="selectJobLocality('RIADA Road, Namkum', 23.3555, 85.3609)">Namkum</button>
+                        <button type="button" class="quick-chip" onclick="selectJobLocality('Lalpur, Circular Road', 23.3697, 85.3346)">Lalpur</button>
+                        <button type="button" class="quick-chip" onclick="selectJobLocality('Harmu Housing Colony', 23.3550, 85.3050)">Harmu</button>
+                        <button type="button" class="quick-chip" onclick="selectJobLocality('Doranda High Court Area', 23.3340, 85.3218)">Doranda</button>
+                        <button type="button" class="quick-chip" onclick="selectJobLocality('Morabadi Grounds', 23.3850, 85.3250)">Morabadi</button>
+                        <button type="button" class="quick-chip" onclick="selectJobLocality('Bariatu Medical Road', 23.3950, 85.3500)">Bariatu</button>
+                        <button type="button" class="quick-chip" onclick="selectJobLocality('Ashok Nagar, Kadru', 23.3380, 85.3120)">Ashok Nagar</button>
+                        <button type="button" class="quick-chip" onclick="selectJobLocality('Main Road, Albert Ekka', 23.3500, 85.3250)">Main Road</button>
+                        <button type="button" class="quick-chip" onclick="selectJobLocality('Kokar Industrial Area', 23.3750, 85.3550)">Kokar</button>
+                      </div>
+
+                      <!-- Live Active Location Pill -->
+                      <div class="loc-active-pill" id="jobLocActiveDisplay" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <span class="live-dot"></span>
+                          <div>
+                            <strong id="jobDisplayLocName">Lalpur, Circular Road</strong>
+                            <span style="color:#059669; font-size:12px; margin-left:6px;" id="jobDisplayCoords">(23.3697, 85.3346)</span>
+                          </div>
+                        </div>
+                        <a id="jobLocMapsLink" href="https://maps.google.com/?q=23.3697,85.3346" target="_blank" rel="noopener noreferrer" style="font-size:11.5px; color:#2563eb; font-weight:700; text-decoration:underline; display:inline-flex; align-items:center; gap:4px;">
+                          <i class="fa-solid fa-map-location-dot"></i> Google Maps ↗
+                        </a>
+                      </div>
+
+                      <!-- Hidden Coordinate & Locality Form Fields -->
+                      <input type="hidden" name="locality" id="jobInputLocality" value="Lalpur, Circular Road">
+                      <input type="hidden" name="latitude" id="jobInputLat" value="23.3697">
+                      <input type="hidden" name="longitude" id="jobInputLon" value="85.3346">
+                      <input type="hidden" name="address" id="jobInputAddress" value="Lalpur, Circular Road, Ranchi">
+                      <input type="hidden" name="pincode" id="jobInputPincode" value="834001">
+                    </div>
+                  </div>
+
+                  <!-- 7. Upload Job Photos / Reference Images (Multiple) -->
+                  <div class="field full">
+                    <label style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                      <span style="font-weight:600; font-size:13px; color:#1e293b; display:inline-flex; align-items:center; gap:6px;">
+                        <i class="fa-solid fa-camera" style="color:#5b5bd6;"></i> Upload Job Photos / Reference Images 
+                        <span style="font-weight:normal; color:#64748b; font-size:12px;">(Optional — Multiple allowed)</span>
+                      </span>
+                      <span style="font-size:11.5px; color:#64748b; font-weight:500;">Up to 8 photos • Max 10MB each</span>
+                    </label>
+
+                    <!-- Dropzone Container -->
+                    <div id="jobImageDropzone" 
+                         style="border:2px dashed #cbd5e1; border-radius:12px; background:#f8fafc; padding:22px 16px; text-align:center; cursor:pointer; transition:all 0.2s;"
+                         onclick="document.getElementById('jobImageInput').click()"
+                         ondragover="handleJobImageDragOver(event)"
+                         ondragleave="handleJobImageDragLeave(event)"
+                         ondrop="handleJobImageDrop(event)">
+                      <div style="width:44px; height:44px; border-radius:50%; background:#e0e7ff; color:#4f46e5; display:inline-flex; align-items:center; justify-content:center; margin-bottom:8px; font-size:18px;">
+                        <i class="fa-solid fa-images"></i>
+                      </div>
+                      <div style="font-size:13.5px; font-weight:700; color:#1e293b;">
+                        Click to upload photos <span style="font-weight:400; color:#64748b;">or drag & drop</span>
+                      </div>
+                      <p style="font-size:12px; color:#64748b; margin:4px 0 0;">
+                        Attach multiple angles, room photos, or reference designs to get accurate bids.
+                      </p>
+                      <input type="file" name="images" id="jobImageInput" accept="image/*" multiple style="display:none;" onchange="handleJobImageSelect(this)">
+                    </div>
+
+                    <!-- Multi-Image Preview Container (Hidden when empty) -->
+                    <div id="jobMultiPreviewWrap" style="display:none; margin-top:14px; border:1px solid #e2e8f0; border-radius:12px; padding:16px; background:#fff;">
+                      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid #f1f5f9;">
+                        <div style="font-size:12.5px; font-weight:700; color:#1e293b; display:flex; align-items:center; gap:8px;">
+                          <span id="jobPhotosCountBadge" style="background:#e0e7ff; color:#4338ca; padding:2px 8px; border-radius:99px; font-size:11px;">0 Photos</span>
+                          <span style="color:#64748b; font-weight:400; font-size:12px;">First photo will be used as cover</span>
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('jobImageInput').click()" style="padding:4px 10px; font-size:11.5px; display:inline-flex; align-items:center; gap:5px; cursor:pointer;">
+                          <i class="fa-solid fa-plus"></i> Add More
+                        </button>
+                      </div>
+
+                      <!-- Gallery Grid of previews -->
+                      <div id="jobPhotosGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap:12px;"></div>
+                    </div>
+                  </div>
+
+                  <input type="hidden" name="contact_name" value="{{ request.user.get_full_name|default:request.user.username }}">
+                  <input type="hidden" name="budget_type" value="Fixed Price">
+                </div>
+              </div>
+
+              <!-- Form Actions -->
+              <div class="form-actions" style="padding:16px 24px;">
+                <a class="btn btn-secondary" href="index.html">Cancel</a>
+                <button type="submit" class="btn btn-primary" style="padding:10px 24px;">
+                  <i class="fa-solid fa-paper-plane"></i> Publish Job & Receive Quotations
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <!-- Sidebar Tips -->
+          <aside class="stack">
+            <section class="card">
+              <div class="card-head">
+                <h3 style="font-size:14px; font-weight:700;"><i class="fa-solid fa-lightbulb" style="color:#f59e0b; margin-right:6px;"></i> How it works</h3>
+              </div>
+              <div class="card-body">
+                <div class="stack small">
+
+                  <div class="cell-user">
+                    <span class="stat-icon teal"><i class="fa-solid fa-comments-dollar"></i></span>
+                    <div>
+                      <strong>Compare Quotations</strong>
+                      <div class="muted">Local vendors review your scope and submit their best proposals.</div>
+                    </div>
+                  </div>
+                  <div class="cell-user">
+                    <span class="stat-icon green"><i class="fa-solid fa-circle-check"></i></span>
+                    <div>
+                      <strong>Select & Coordinate</strong>
+                      <div class="muted">Accept the vendor you like and pay directly upon satisfactory completion.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div class="callout neutral">
+              <i class="fa-solid fa-shield-halved" style="color:#5b5bd6;"></i>
+              <div>
+                <strong>Zero Commission for Customers</strong>
+                Posting jobs on Sugu is completely free.
+              </div>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    function selectJobLocality(name, lat, lon) {
+      document.getElementById('jobInputLocality').value = name;
+      document.getElementById('jobInputLat').value = lat;
+      document.getElementById('jobInputLon').value = lon;
+      const mapsUrl = `https://maps.google.com/?q=${lat},${lon}`;
+      document.getElementById('jobInputAddress').value = `${name}, Ranchi [GPS: ${lat}, ${lon} | Maps: ${mapsUrl}]`;
+
+      document.getElementById('jobDisplayLocName').textContent = name;
+      document.getElementById('jobDisplayCoords').textContent = `(${parseFloat(lat).toFixed(4)}, ${parseFloat(lon).toFixed(4)})`;
+      const mapsLink = document.getElementById('jobLocMapsLink');
+      if (mapsLink) mapsLink.href = mapsUrl;
+
+      const searchInput = document.getElementById('jobLocSearchInput');
+      if (searchInput) searchInput.value = '';
+      const searchRes = document.getElementById('jobLocSearchResults');
+      if (searchRes) searchRes.style.display = 'none';
+
+      // Synchronize with site-wide location storage
+      try {
+        localStorage.setItem('suggu_user_location', name);
+        localStorage.setItem('suggu_user_lat', lat);
+        localStorage.setItem('suggu_user_lon', lon);
+        localStorage.setItem('sugu_selected_location', JSON.stringify({
+          name: name,
+          primary: name,
+          lat: lat,
+          lon: lon,
+          is_live: true
+        }));
+      } catch(e) {}
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check for pending requirement from landing page wizard
+      try {
+        const pending = localStorage.getItem('suggu_pending_requirement');
+        if (pending) {
+          const req = JSON.parse(pending);
+          if (req.budget) {
+            const bInput = document.querySelector('input[name="budget"]');
+            if (bInput) bInput.value = req.budget;
+          }
+          if (req.start) {
+            const dInput = document.querySelector('input[name="preferred_start_date"]');
+            if (dInput) dInput.value = req.start;
+          }
+          if (req.phone) {
+            const pInput = document.querySelector('input[name="contact_mobile"]');
+            if (pInput) pInput.value = req.phone;
+          }
+          if (req.category || req.work_type) {
+            const tInput = document.querySelector('input[name="title"]');
+            if (tInput && !tInput.value) {
+              tInput.value = (req.work_type || req.category) + ' Service Requirement';
+            }
+          }
+          if (req.latitude && req.longitude) {
+            const addrName = (req.address || 'Live Worksite').split(' [GPS:')[0];
+            selectJobLocality(addrName, req.latitude, req.longitude);
+            return;
+          }
+        }
+      } catch(e) {}
+
+      const savedLoc = localStorage.getItem('suggu_user_location');
+      const savedLat = parseFloat(localStorage.getItem('suggu_user_lat'));
+      const savedLon = parseFloat(localStorage.getItem('suggu_user_lon'));
+      if (savedLoc && !isNaN(savedLat) && !isNaN(savedLon) && !savedLoc.toLowerCase().includes('cantonment')) {
+        selectJobLocality(savedLoc, savedLat, savedLon);
+      }
+    });
+
+    // HTML5 High Accuracy Device Geolocation for Job Worksite
+    function detectUserJobGps() {
+      const icon = document.getElementById('userGpsIcon');
+      const text = document.getElementById('userGpsText');
+
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser. Please select an area from the popular list.");
+        return;
+      }
+
+      if (icon) icon.className = "fa-solid fa-circle-notch fa-spin";
+      if (text) text.textContent = "Detecting GPS...";
+
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+
+          try {
+            const res = await fetch(`/api/detect-location/?lat=${lat}&lon=${lon}`);
+            const data = await res.json();
+            const locName = data.primary ? `${data.primary}, ${data.city || 'Ranchi'}` : `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+
+            selectJobLocality(locName, lat, lon);
+
+            if (icon) icon.className = "fa-solid fa-check";
+            if (text) text.textContent = "Live Location Set!";
+            setTimeout(() => {
+              if (icon) icon.className = "fa-solid fa-crosshairs";
+              if (text) text.textContent = "Use My Live Location";
+            }, 2000);
+          } catch(e) {
+            selectJobLocality("Current Live Worksite", lat, lon);
+            if (icon) icon.className = "fa-solid fa-check";
+            if (text) text.textContent = "GPS Set!";
+          }
+        },
+        (err) => {
+          if (icon) icon.className = "fa-solid fa-crosshairs";
+          if (text) text.textContent = "Use My Live Location";
+          alert("Could not retrieve GPS position. Please allow browser location access or choose a locality below.");
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    }
+
+    // Autocomplete for Job Worksite search
+    let jobLocTimer = null;
+    function handleJobLocSearch(query) {
+      clearTimeout(jobLocTimer);
+      const spinner = document.getElementById('jobLocSearchSpinner');
+      const resultsBox = document.getElementById('jobLocSearchResults');
+
+      if (!query || query.length < 2) {
+        if (spinner) spinner.style.display = 'none';
+        if (resultsBox) resultsBox.style.display = 'none';
+        return;
+      }
+
+      if (spinner) spinner.style.display = 'block';
+
+      jobLocTimer = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/search-locations/?q=${encodeURIComponent(query)}`);
+          const data = await res.json();
+          if (spinner) spinner.style.display = 'none';
+
+          if (data && data.results && data.results.length > 0) {
+            resultsBox.innerHTML = data.results.map(r => `
+              <div style="padding:10px 14px; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:12.5px; transition:background 0.15s;"
+                   onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'"
+                   onclick="selectJobLocality('${r.primary || r.name}', ${r.lat || 23.3697}, ${r.lon || 85.3346})">
+                <strong style="color:#0f172a; display:block;">${r.primary || r.name}</strong>
+                <span style="color:#64748b; font-size:11px;">${r.secondary || ''}</span>
+              </div>
+            `).join('');
+            resultsBox.style.display = 'block';
+          } else {
+            resultsBox.innerHTML = `
+              <div style="padding:12px; color:#64748b; font-size:12px; text-align:center;"
+                   onclick="selectJobLocality('${query}, Ranchi', 23.3697, 85.3346)">
+                Use "<strong>${query}</strong>" as worksite
+              </div>
+            `;
+            resultsBox.style.display = 'block';
+          }
+        } catch(e) {
+          if (spinner) spinner.style.display = 'none';
+        }
+      }, 300);
+    }
+
+    // ==========================================
+    // MULTI-IMAGE UPLOAD & GALLERY HANDLERS
+    // ==========================================
+    let selectedJobFiles = [];
+
+    function handleJobImageSelect(input) {
+      if (input.files && input.files.length > 0) {
+        appendJobFiles(Array.from(input.files));
+      }
+    }
+
+    function appendJobFiles(newFiles) {
+      for (const f of newFiles) {
+        if (!f.type.startsWith('image/')) {
+          alert(`"${f.name}" is not an image file.`);
+          continue;
+        }
+        if (f.size > 10 * 1024 * 1024) {
+          alert(`"${f.name}" exceeds 10MB limit.`);
+          continue;
+        }
+        if (selectedJobFiles.length >= 8) {
+          alert("Maximum 8 photos allowed.");
+          break;
+        }
+        // Deduplicate by name and size
+        if (!selectedJobFiles.some(existing => existing.name === f.name && existing.size === f.size)) {
+          selectedJobFiles.push(f);
+        }
+      }
+      syncJobFileInput();
+      renderJobPhotosGrid();
+    }
+
+    function removeJobPhoto(idx) {
+      selectedJobFiles.splice(idx, 1);
+      syncJobFileInput();
+      renderJobPhotosGrid();
+    }
+
+    function syncJobFileInput() {
+      const dt = new DataTransfer();
+      for (const f of selectedJobFiles) {
+        dt.items.add(f);
+      }
+      const input = document.getElementById('jobImageInput');
+      if (input) input.files = dt.files;
+    }
+
+    function renderJobPhotosGrid() {
+      const wrap = document.getElementById('jobMultiPreviewWrap');
+      const grid = document.getElementById('jobPhotosGrid');
+      const countBadge = document.getElementById('jobPhotosCountBadge');
+
+      if (!selectedJobFiles.length) {
+        if (wrap) wrap.style.display = 'none';
+        return;
+      }
+
+      if (wrap) wrap.style.display = 'block';
+      if (countBadge) countBadge.textContent = `${selectedJobFiles.length} Photo${selectedJobFiles.length > 1 ? 's' : ''}`;
+
+      if (grid) {
+        grid.innerHTML = '';
+        selectedJobFiles.forEach((file, idx) => {
+          const card = document.createElement('div');
+          card.style.cssText = "position:relative; border-radius:10px; overflow:hidden; border:1.5px solid #cbd5e1; background:#f8fafc; aspect-ratio:1/1;";
+
+          const img = document.createElement('img');
+          img.src = URL.createObjectURL(file);
+          img.style.cssText = "width:100%; height:100%; object-fit:cover; display:block;";
+
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.innerHTML = '×';
+          removeBtn.title = 'Remove photo';
+          removeBtn.style.cssText = "position:absolute; top:4px; right:4px; width:22px; height:22px; border-radius:50%; background:rgba(220,38,38,0.9); color:#fff; border:none; cursor:pointer; font-size:16px; line-height:20px; text-align:center; font-weight:bold; padding:0;";
+          removeBtn.onclick = (e) => {
+            e.stopPropagation();
+            removeJobPhoto(idx);
+          };
+
+          if (idx === 0) {
+            const coverBadge = document.createElement('span');
+            coverBadge.textContent = 'Cover';
+            coverBadge.style.cssText = "position:absolute; bottom:4px; left:4px; background:rgba(79,70,229,0.9); color:#fff; font-size:10px; font-weight:700; padding:1px 6px; border-radius:4px;";
+            card.appendChild(coverBadge);
+          }
+
+          card.appendChild(img);
+          card.appendChild(removeBtn);
+          grid.appendChild(card);
+        });
+
+        if (selectedJobFiles.length < 8) {
+          const addTile = document.createElement('div');
+          addTile.style.cssText = "border:2px dashed #cbd5e1; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; color:#64748b; aspect-ratio:1/1; background:#f8fafc; transition:all 0.15s;";
+          addTile.onmouseover = () => { addTile.style.borderColor = '#5b5bd6'; addTile.style.color = '#5b5bd6'; };
+          addTile.onmouseout = () => { addTile.style.borderColor = '#cbd5e1'; addTile.style.color = '#64748b'; };
+          addTile.onclick = () => document.getElementById('jobImageInput').click();
+          addTile.innerHTML = `<i class="fa-solid fa-plus" style="font-size:18px; margin-bottom:4px;"></i><span style="font-size:11px; font-weight:600;">Add Photo</span>`;
+          grid.appendChild(addTile);
+        }
+      }
+    }
+
+    function handleJobImageDragOver(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dz = document.getElementById('jobImageDropzone');
+      if (dz) {
+        dz.style.borderColor = '#5b5bd6';
+        dz.style.background = '#f0f0ff';
+      }
+    }
+
+    function handleJobImageDragLeave(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dz = document.getElementById('jobImageDropzone');
+      if (dz) {
+        dz.style.borderColor = '#cbd5e1';
+        dz.style.background = '#f8fafc';
+      }
+    }
+
+    function handleJobImageDrop(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dz = document.getElementById('jobImageDropzone');
+      if (dz) {
+        dz.style.borderColor = '#cbd5e1';
+        dz.style.background = '#f8fafc';
+      }
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        appendJobFiles(Array.from(e.dataTransfer.files));
+      }
+    }
+  </script>
+</body>
+</html>

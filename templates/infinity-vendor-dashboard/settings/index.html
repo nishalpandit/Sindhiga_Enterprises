@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Manage your Sugu vendor account settings, business profile, service categories, and contact information.">
+  <title>Settings · Sugu Vendor Portal</title>
+  <link rel="stylesheet" href="/infinity-vendor-dashboard/assets/styles.css">
+  <script>
+    window.VENDOR_INITIALS = "{{ vendor_initials|default:'VN'|escapejs }}";
+    window.VENDOR_NAME = "{{ vendor_name|default:'Vendor'|escapejs }}";
+    window.VENDOR_TYPE = "{{ vendor_type|default:'Vendor'|escapejs }}";
+    window.VENDOR_LOCATION = "{{ vendor_location|default:'Ranchi'|escapejs }}";
+    window.PROFILE_IMAGE_URL = "{{ profile_image_url|default:''|escapejs }}" || null;
+    window.VENDOR_WALLET_BALANCE = "{{ wallet_balance|default:'0.00'|escapejs }}";
+    window.VENDOR_CREDITS = {{ available_bids|default:0 }};
+  </script>
+  <script defer src="/infinity-vendor-dashboard/assets/app.js"></script>
+  <style>
+    .settings-hero {
+      background: linear-gradient(135deg, #ffffff 0%, #f4f4ff 100%);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .avatar-upload-card {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      padding: 20px;
+      background: #fafbff;
+      border: 1.5px dashed #c7c8f4;
+      border-radius: 14px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+    .avatar-preview-box {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 6px 18px rgba(91,91,214,0.18);
+      border: 3px solid #fff;
+      outline: 2px solid var(--primary);
+      background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .avatar-preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      inset: 0;
+    }
+    .avatar-preview-box span {
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .badge-kyc-approved {
+      background: #ecfdf3;
+      color: #067647;
+      border: 1px solid #abefc6;
+    }
+    .badge-kyc-pending {
+      background: #fffaeb;
+      color: #b54708;
+      border: 1px solid #fedf89;
+    }
+    .badge-kyc-rejected {
+      background: #fef3f2;
+      color: #b42318;
+      border: 1px solid #fecdca;
+    }
+    .badge-kyc-unverified {
+      background: #f2f4f7;
+      color: #475467;
+      border: 1px solid #eaecf0;
+    }
+    .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #475569;
+    }
+
+    /* Tab Switcher Navigation Styles */
+    .settings-nav-group-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      padding: 10px 14px 6px;
+    }
+    .settings-tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 8px;
+      color: #475467;
+      font-size: 13.5px;
+      font-weight: 500;
+      text-decoration: none;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .settings-tab-btn:hover {
+      background: #f1f5f9;
+      color: var(--primary);
+    }
+    .settings-tab-btn.active {
+      background: #eef2ff;
+      color: var(--primary);
+      font-weight: 700;
+      border-left: 3px solid var(--primary);
+      border-radius: 0 8px 8px 0;
+    }
+    .settings-tab-btn [data-icon] {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+    
+    /* Panel Visibility Animation */
+    .settings-tab-panel {
+      display: none;
+    }
+    .settings-tab-panel.active {
+      display: block;
+      animation: tabFadeIn 0.2s ease-in-out;
+    }
+    @keyframes tabFadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body data-page="settings" data-title="Settings" data-root="../">
+<div class="app-shell">
+  <div id="sidebar-root"></div>
+  <div class="workspace">
+    <div id="topbar-root"></div>
+    <main class="page">
+
+      <!-- Settings Header Banner -->
+      <section class="settings-hero">
+        <div>
+          <div class="eyebrow"><span data-icon="settings"></span> Vendor Settings</div>
+          <h1 style="margin:4px 0 6px; font-size:24px; font-weight:800; color:var(--ink);">{{ vendor_name }}</h1>
+          <p class="muted" style="margin:0; font-size:13px;">Manage your profile, service location, and security settings.</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span class="badge badge-kyc-approved" style="padding:6px 12px; font-size:11px; font-weight:700;">
+            <span data-icon="award"></span> Verified Pro Vendor
+          </span>
+
+          <span class="meta-pill">
+            <span data-icon="user"></span> ID: {{ vendor_profile.vendor_code|default:"Not Assigned" }}
+          </span>
+
+          <span class="meta-pill">
+            <span data-icon="award"></span> {{ vendor_type }}
+          </span>
+        </div>
+      </section>
+
+      <!-- Main Layout with Subnav -->
+      <div class="layout-main" style="grid-template-columns:250px minmax(0,1fr); align-items:start;">
+        
+        <!-- Left Settings Tabs & Navigation -->
+        <aside class="card" style="padding:10px 8px; position:sticky; top:80px;">
+          <div class="settings-nav-group-title">SETTINGS SECTIONS</div>
+          <nav style="display:flex; flex-direction:column; gap:3px;">
+            <button type="button" class="settings-tab-btn active" data-tab="profile" onclick="switchSettingsTab('profile')">
+              <span data-icon="edit"></span> Edit Profile &amp; Location
+            </button>
+            <button type="button" class="settings-tab-btn" data-tab="security" onclick="switchSettingsTab('security')">
+              <span data-icon="shield"></span> Security &amp; Password
+            </button>
+          </nav>
+
+          <div class="settings-nav-group-title" style="margin-top:16px; padding-top:12px; border-top:1px solid var(--line);">QUICK PORTALS</div>
+          <nav style="display:flex; flex-direction:column; gap:3px;">
+            <a class="settings-tab-btn" href="/vendor/bid-credits/packages.html" title="Bid Credits">
+              <span data-icon="bolt"></span> Bid Credits
+            </a>
+          </nav>
+        </aside>
+
+        <!-- Right Content Panels (Only Active Panel is Shown) -->
+        <div class="settings-content-wrapper">
+
+          <!-- TAB PANEL 2: EDIT PROFILE & LOCATION -->
+          <div class="settings-tab-panel active" id="panel-profile">
+            <form method="POST" action="/vendor/settings/index.html" enctype="multipart/form-data" id="vendor-profile-form">
+              {% csrf_token %}
+              <input type="hidden" name="active_tab" value="profile">
+              <input type="hidden" name="remove_profile_image" id="remove_profile_image" value="0">
+              <input type="hidden" name="profile_image_base64" id="profile_image_base64" value="">
+
+              <section class="card">
+                <div class="card-head">
+                  <div>
+                    <h2>Edit Profile &amp; Location</h2>
+                    <p>Business identity, company logo, bio, and autofetched GPS location for job matching.</p>
+                  </div>
+                  <div>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                      <span data-icon="check"></span> Save Profile Changes
+                    </button>
+                  </div>
+                </div>
+
+                <div class="card-body">
+                  <!-- Avatar Upload Box -->
+                  <div class="avatar-upload-card">
+                    <div class="avatar-preview-box" id="avatar-preview-box">
+                      {% if profile_image_url %}
+                        <img id="avatar-img" src="{{ profile_image_url }}" alt="{{ vendor_name }}" onerror="this.style.display='none'; document.getElementById('avatar-initials').style.display='flex';">
+                      {% endif %}
+                      <span id="avatar-initials" style="{% if profile_image_url %}display:none;{% else %}display:flex;{% endif %}">{{ vendor_initials }}</span>
+                    </div>
+
+                    <div style="flex:1; min-width:240px;">
+                      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap;">
+                        <label class="btn btn-primary btn-sm" style="cursor:pointer;">
+                          <span data-icon="camera"></span> Upload New Photo
+                          <input type="file" id="profile_image_file" name="profile_image" accept="image/png,image/jpeg,image/webp,image/jpg" style="display:none;">
+                        </label>
+                        
+                        <button type="button" class="btn btn-secondary btn-sm" id="remove-photo-btn" style="color:var(--red); border-color:#fecdca;">
+                          <span data-icon="trash"></span> Remove Photo
+                        </button>
+                      </div>
+                      
+                      <div id="avatar-status-badge" class="muted small" style="margin-top:6px;">
+                        Supported formats: <strong>JPG, PNG, WEBP</strong>. Max size: <strong>5MB</strong>. High-resolution square image recommended.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-grid">
+                    <div class="field">
+                      <label for="company_name">Business / Trade / Shop Name</label>
+                      <input class="input" type="text" id="company_name" name="company_name" value="{% if vendor_profile.company_name and vendor_profile.company_name != user.first_name %}{{ vendor_profile.company_name }}{% endif %}" placeholder="e.g. Sugu Electrical Services (optional for individuals)">
+                      <div class="field-hint">Leave blank if operating under your individual name ({{ user.first_name|default:user.username }}).</div>
+                    </div>
+
+
+                    <div class="field">
+                      <label for="city">Service City <span style="font-size:11px; font-weight:400; color:#64748b;">(Autofetched)</span></label>
+                      <input class="input" type="text" id="city" name="city" readonly value="{{ vendor_profile.city|default:'Ranchi' }}" style="background:#f8fafc; color:#334155; cursor:not-allowed; border-color:#cbd5e1;">
+                      <div class="field-hint">City territory autofetched from device GPS.</div>
+                    </div>
+
+                    <div class="field">
+                      <label for="location">Locality / Area <span style="font-size:11px; font-weight:400; color:#64748b;">(Autofetched)</span></label>
+                      <input class="input" type="text" id="location" name="location" readonly value="{{ vendor_profile.location|default:'' }}" style="background:#f8fafc; color:#334155; cursor:not-allowed; border-color:#cbd5e1;">
+                      <div class="field-hint">Neighborhood / area base of operations.</div>
+                    </div>
+
+                    <div class="field">
+                      <label for="latitude">Latitude <span style="font-size:11px; font-weight:400; color:#64748b;">(Autofetched)</span></label>
+                      <input class="input" type="text" id="latitude" name="latitude" readonly value="{{ vendor_profile.latitude|default:'' }}" style="background:#f8fafc; color:#334155; cursor:not-allowed; border-color:#cbd5e1;">
+                      <div class="field-hint">Autofetched via device GPS.</div>
+                    </div>
+
+                    <div class="field">
+                      <label for="longitude">Longitude <span style="font-size:11px; font-weight:400; color:#64748b;">(Autofetched)</span></label>
+                      <input class="input" type="text" id="longitude" name="longitude" readonly value="{{ vendor_profile.longitude|default:'' }}" style="background:#f8fafc; color:#334155; cursor:not-allowed; border-color:#cbd5e1;">
+                      <div class="field-hint">Autofetched via device GPS.</div>
+                    </div>
+
+                    <div class="field full" style="grid-column:1/-1;">
+                      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                        <div>
+                          <div style="font-weight:700; font-size:13px; color:#0f172a;">📍 Device Location Autofetch</div>
+                          <div style="font-size:12px; color:#64748b;" id="settings-gps-status">Location is autofetched from your current device GPS and cannot be edited manually.</div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-secondary" id="btn-settings-gps">
+                          <span data-icon="map"></span> Re-fetch Location
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="field">
+                      <label for="experience">Years of Professional Experience</label>
+                      <input class="input" type="number" id="experience" name="experience" min="0" max="60" value="{{ vendor_profile.experience|default:1 }}" placeholder="e.g. 5">
+                      <div class="field-hint">Number of years in this trade.</div>
+                    </div>
+
+                    <div class="field full">
+                      <label for="about">About Your Business / Company Bio</label>
+                      <textarea class="textarea" id="about" name="about" style="min-height:90px;" placeholder="Describe your team, specialties, equipment, and why customers should choose you...">{{ vendor_profile.about|default:'' }}</textarea>
+                      <div class="field-hint">Displayed on your public profile to prospective customers.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <a href="/vendor/settings/index.html#profile" class="btn btn-secondary">Discard</a>
+                  <button type="submit" class="btn btn-primary">
+                    <span data-icon="check"></span> Save Profile &amp; Branding
+                  </button>
+                </div>
+              </section>
+            </form>
+          </div>
+
+          <!-- TAB PANEL 3: SECURITY & PASSWORD -->
+          <div class="settings-tab-panel" id="panel-security">
+            <div class="stack">
+              <!-- Password Change Card -->
+              <section class="card">
+                <div class="card-head">
+                  <div>
+                    <h2>Change Password</h2>
+                    <p>Use a strong password unique to your business account to protect your earnings and customer bids.</p>
+                  </div>
+                  <span data-icon="shield"></span>
+                </div>
+
+                <form method="POST" action="/vendor/settings/index.html">
+                  {% csrf_token %}
+                  <input type="hidden" name="active_tab" value="security">
+                  <div class="card-body">
+                    <div class="form-grid">
+                      <div class="field full">
+                        <label for="current_password">Current Password <span class="required">*</span></label>
+                        <input class="input" type="password" id="current_password" name="current_password" required autocomplete="current-password" placeholder="Enter current password">
+                      </div>
+
+                      <div class="field">
+                        <label for="new_password">New Password <span class="required">*</span></label>
+                        <input class="input" type="password" id="new_password" name="new_password" required minlength="8" autocomplete="new-password" placeholder="At least 8 characters">
+                        <div class="strength weak" id="password-strength"><span></span><span></span><span></span></div>
+                        <div class="field-hint">Strength: <strong id="strength-label">Weak</strong></div>
+                      </div>
+
+                      <div class="field">
+                        <label for="confirm_password">Confirm New Password <span class="required">*</span></label>
+                        <input class="input" type="password" id="confirm_password" name="confirm_password" required minlength="8" autocomplete="new-password" placeholder="Repeat new password">
+                      </div>
+                    </div>
+
+                    <div class="callout neutral" style="margin-top:18px">
+                      <span data-icon="shield"></span>
+                      <div>
+                        <strong>Password Security Recommendation</strong>
+                        Include at least 8 characters, with letters, numbers, and special symbols for maximum security.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-actions">
+                    <button class="btn btn-primary" type="submit" id="btn-update-password">
+                      <span data-icon="lock"></span> Update Password
+                    </button>
+                  </div>
+                </form>
+              </section>
+
+              <!-- Session Overview -->
+              <section class="card">
+                <div class="card-head">
+                  <h2>Login &amp; Session Security</h2>
+                </div>
+                <div class="card-body">
+                  <div class="setting-row">
+                    <div>
+                      <h4>Current Active Session</h4>
+                      <p>Logged in as <strong>{{ user.username }}</strong> ({{ user.role }})</p>
+                    </div>
+                    <span class="badge badge-success">Active Now</span>
+                  </div>
+
+                  <div class="setting-row">
+                    <div>
+                      <h4>Two-Step OTP Authentication</h4>
+                      <p>Phone OTP verification enabled for login authentication.</p>
+                    </div>
+                    <span class="badge badge-purple">Enabled</span>
+                  </div>
+
+                  <div class="setting-row">
+                    <div>
+                      <h4>End Session</h4>
+                      <p>Safely log out of your Sugu vendor portal session on this device.</p>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" data-confirm="logout">
+                      <span data-icon="logout"></span> Log Out
+                    </button>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Tab Switching & Interactive Scripts -->
+<script>
+  function switchSettingsTab(tabName, updateHash = true) {
+    const validTabs = ['profile', 'security'];
+    if (!validTabs.includes(tabName)) tabName = 'profile';
+
+    // Hide all tab panels
+    document.querySelectorAll('.settings-tab-panel').forEach(function(panel) {
+      panel.style.display = 'none';
+      panel.classList.remove('active');
+    });
+
+    // Deactivate all tab buttons
+    document.querySelectorAll('.settings-tab-btn[data-tab]').forEach(function(btn) {
+      btn.classList.remove('active');
+    });
+
+    // Activate the targeted panel
+    const targetPanel = document.getElementById('panel-' + tabName);
+    if (targetPanel) {
+      targetPanel.style.display = 'block';
+      targetPanel.classList.add('active');
+    }
+
+    // Activate the targeted button
+    const targetBtn = document.querySelector('.settings-tab-btn[data-tab="' + tabName + '"]');
+    if (targetBtn) {
+      targetBtn.classList.add('active');
+    }
+
+    // Sync window hash
+    if (updateHash && window.location.hash !== '#' + tabName) {
+      history.replaceState(null, null, '#' + tabName);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // 1. Initial tab selection based on URL hash (defaults to Edit Profile & Location)
+    let initialTab = 'profile';
+    if (window.location.hash) {
+      const hashTab = window.location.hash.replace('#', '').toLowerCase();
+      if (['profile', 'security'].includes(hashTab)) {
+        initialTab = hashTab;
+      }
+    }
+    switchSettingsTab(initialTab, false);
+
+    // 2. React to browser back/forward buttons
+    window.addEventListener('hashchange', function() {
+      if (window.location.hash) {
+        const hashTab = window.location.hash.replace('#', '').toLowerCase();
+        if (['profile', 'security'].includes(hashTab)) {
+          switchSettingsTab(hashTab, false);
+        }
+      }
+    });
+
+    // 3. Live Instant Profile Picture Preview & Base64 compression
+    const fileInput = document.getElementById('profile_image_file');
+    const removeBtn = document.getElementById('remove-photo-btn');
+    const removeInput = document.getElementById('remove_profile_image');
+    const base64Input = document.getElementById('profile_image_base64');
+    const avatarImg = document.getElementById('avatar-img');
+    const avatarInitials = document.getElementById('avatar-initials');
+    const avatarStatus = document.getElementById('avatar-status-badge');
+    const previewBox = document.getElementById('avatar-preview-box');
+
+    if (fileInput) {
+      fileInput.addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+          const file = e.target.files[0];
+          
+          if (!file.type.startsWith('image/')) {
+            if (window.showToast) window.showToast('Invalid File Type', 'Please choose a JPG, PNG, or WEBP image file.', 'error');
+            fileInput.value = '';
+            return;
+          }
+
+          if (file.size > 5 * 1024 * 1024) {
+            if (window.showToast) window.showToast('File Too Large', 'Selected image exceeds 5MB limit. Please pick a smaller image.', 'error');
+            fileInput.value = '';
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+            const dataUrl = evt.target.result;
+            if (removeInput) removeInput.value = '0';
+            if (base64Input) base64Input.value = dataUrl;
+
+            let img = document.getElementById('avatar-img');
+            if (!img) {
+              img = document.createElement('img');
+              img.id = 'avatar-img';
+              img.alt = 'Profile Preview';
+              previewBox.appendChild(img);
+            }
+            img.src = dataUrl;
+            img.style.display = 'block';
+            if (avatarInitials) avatarInitials.style.display = 'none';
+
+            if (avatarStatus) {
+              avatarStatus.innerHTML = '<strong style="color:var(--green);">✓ New photo selected. Click "Save Profile &amp; Branding" below to apply across your portal.</strong>';
+            }
+
+            if (window.showToast) {
+              window.showToast('Photo Selected', 'Click "Save Profile & Branding" to confirm.', 'success');
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    // 4. Remove Profile Picture Handler
+    if (removeBtn) {
+      removeBtn.addEventListener('click', function() {
+        if (removeInput) removeInput.value = '1';
+        if (base64Input) base64Input.value = '';
+        if (fileInput) fileInput.value = '';
+
+        const img = document.getElementById('avatar-img');
+        if (img) img.style.display = 'none';
+        if (avatarInitials) avatarInitials.style.display = 'flex';
+
+        if (avatarStatus) {
+          avatarStatus.innerHTML = '<strong style="color:var(--red);">Photo marked for removal. Click "Save Profile &amp; Branding" to confirm.</strong>';
+        }
+
+        if (window.showToast) {
+          window.showToast('Photo Marked for Removal', 'Click "Save Profile & Branding" to confirm.', 'info');
+        }
+      });
+    }
+
+    // 5. Password Strength Meter
+    const newPwdInput = document.getElementById('new_password');
+    const strengthBox = document.getElementById('password-strength');
+    const strengthLabel = document.getElementById('strength-label');
+    if (newPwdInput && strengthBox && strengthLabel) {
+      newPwdInput.addEventListener('input', function() {
+        const val = newPwdInput.value;
+        let score = 0;
+        if (val.length >= 8) score++;
+        if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+        if (/[0-9]/.test(val) || /[^A-Za-z0-9]/.test(val)) score++;
+
+        strengthBox.className = 'strength';
+        if (val.length === 0) {
+          strengthBox.classList.add('weak');
+          strengthLabel.textContent = 'Weak';
+          strengthLabel.style.color = 'var(--red)';
+        } else if (score <= 1) {
+          strengthBox.classList.add('weak');
+          strengthLabel.textContent = 'Weak';
+          strengthLabel.style.color = 'var(--red)';
+        } else if (score === 2) {
+          strengthBox.classList.add('medium');
+          strengthLabel.textContent = 'Medium';
+          strengthLabel.style.color = 'var(--orange)';
+        } else {
+          strengthBox.classList.add('strong');
+          strengthLabel.textContent = 'Strong';
+          strengthLabel.style.color = 'var(--green)';
+        }
+      });
+    }
+
+    // 5b. Settings GPS Detector
+    const btnSettingsGps = document.getElementById('btn-settings-gps');
+    const settingsGpsStatus = document.getElementById('settings-gps-status');
+    const setLatInput = document.getElementById('latitude');
+    const setLonInput = document.getElementById('longitude');
+    const setCityInput = document.getElementById('city');
+    const setLocInput = document.getElementById('location');
+
+    function fetchSettingsGps() {
+      if (!navigator.geolocation) {
+        if (settingsGpsStatus) settingsGpsStatus.textContent = "Geolocation is not supported by your browser.";
+        return;
+      }
+      if (btnSettingsGps) {
+        btnSettingsGps.disabled = true;
+        btnSettingsGps.textContent = "Autofetching GPS...";
+      }
+      if (settingsGpsStatus) settingsGpsStatus.textContent = "Querying device GPS sensors...";
+
+      navigator.geolocation.getCurrentPosition(
+        async function(pos) {
+          const lat = pos.coords.latitude.toFixed(6);
+          const lon = pos.coords.longitude.toFixed(6);
+          if (setLatInput) setLatInput.value = lat;
+          if (setLonInput) setLonInput.value = lon;
+          if (settingsGpsStatus) settingsGpsStatus.textContent = `📍 Captured: ${lat}, ${lon}`;
+
+          try {
+            const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+            if (resp.ok) {
+              const data = await resp.json();
+              if (data && data.address) {
+                const detectedCity = data.address.city || data.address.town || data.address.district;
+                const detectedArea = data.address.suburb || data.address.neighbourhood || data.address.road || '';
+                if (detectedCity && setCityInput) setCityInput.value = detectedCity;
+                if (detectedArea && setLocInput) setLocInput.value = detectedArea + (detectedCity ? ', ' + detectedCity : '');
+                if (settingsGpsStatus) settingsGpsStatus.textContent = `📍 Captured: ${lat}, ${lon} (${detectedCity || 'Coordinates locked'})`;
+              }
+            }
+          } catch(e) {
+            console.warn(e);
+          }
+
+          if (btnSettingsGps) {
+            btnSettingsGps.disabled = false;
+            btnSettingsGps.textContent = "Re-fetch Location";
+          }
+          if (window.showToast) window.showToast('Location Autofetched', `Coordinates: ${lat}, ${lon}`, 'success');
+        },
+        function(err) {
+          if (btnSettingsGps) {
+            btnSettingsGps.disabled = false;
+            btnSettingsGps.textContent = "Re-fetch Location";
+          }
+          if (settingsGpsStatus) settingsGpsStatus.textContent = "Could not access location. Please check browser permissions.";
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
+    }
+
+    if (btnSettingsGps) {
+      btnSettingsGps.addEventListener('click', fetchSettingsGps);
+    }
+    // Auto-fetch if not already calibrated
+    if (!setLatInput?.value || !setLonInput?.value) {
+      fetchSettingsGps();
+    }
+
+    // 6. Render server Django messages as toasts
+    {% if messages %}
+      {% for message in messages %}
+        if (window.showToast) {
+          window.showToast("{{ message.tags|capfirst }}", "{{ message|escapejs }}", "{{ message.tags }}");
+        }
+      {% endfor %}
+    {% endif %}
+  });
+</script>
+</body>
+</html>

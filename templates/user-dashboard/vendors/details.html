@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Sugu User Portal - Vendor Profile">
+  <title>Vendor Profile · Sugu User</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+  <script defer src="../assets/app.js"></script>
+</head>
+<body data-page="vendor-details" data-title="Vendor Profile" data-root="../">
+  <div class="app-shell">
+    <div id="sidebar-root"></div>
+    <div class="workspace">
+      <div id="topbar-root"></div>
+      <main class="page">
+        <div class="page-head">
+          <div class="actions">
+            <a class="btn btn-secondary" href="index.html"><span data-icon="chevron"></span> Back to Vendors</a>
+          </div>
+        </div>
+
+        {% if vendor_profile %}
+        <section class="card profile-hero">
+          <span class="avatar xl vendor">{{ vendor_profile.company_name|slice:":2"|upper|default:"VN" }}</span>
+          <div class="profile-main">
+            <div class="eyebrow">Verified {{ vendor_profile.vendor_type|title }}</div>
+            <h1>{{ vendor_profile.company_name|default:vendor_profile.user.get_full_name|default:vendor_profile.user.username }} <span class="verified"><span data-icon="check"></span></span></h1>
+            <div class="profile-meta">
+              <span><span data-icon="building"></span> {{ vendor_profile.category }}</span>
+              <span><span data-icon="map"></span> {{ vendor_profile.location }}</span>
+              <span><span data-icon="clock"></span> Verified Member</span>
+            </div>
+            <div class="rating" style="margin-top:8px">
+              <span class="star">★</span>{{ vendor_profile.rating|default:"4.8" }} <span class="small muted">Verified rating</span>
+            </div>
+          </div>
+          <div class="profile-actions">
+            <a class="btn btn-primary" href="../messages/chat.html?vendor_id={{ vendor_profile.user.id }}"><span data-icon="chat"></span> Chat</a>
+          </div>
+        </section>
+
+        <div class="stats" style="grid-template-columns:repeat(4,1fr)">
+          <article class="card stat-card">
+            <div class="stat-label">Experience</div>
+            <div class="stat-value">{{ vendor_profile.experience|default:5 }} yrs</div>
+          </article>
+          <article class="card stat-card">
+            <div class="stat-label">Completed jobs</div>
+            <div class="stat-value">{{ vendor_jobs_count|default:12 }}</div>
+          </article>
+          <article class="card stat-card">
+            <div class="stat-label">Rating</div>
+            <div class="stat-value">★ {{ vendor_profile.rating|default:"4.8" }}</div>
+          </article>
+          <article class="card stat-card">
+            <div class="stat-label">Verification</div>
+            <div class="stat-value" style="font-size:16px;">Verified</div>
+          </article>
+        </div>
+
+        <div class="layout-main">
+          <div class="stack">
+            <section class="card">
+              <div class="card-head">
+                <h2>About</h2>
+              </div>
+              <div class="card-body">
+                <p class="muted">{{ vendor_profile.about|default:"Professional contractor certified and verified on Sugu." }}</p>
+                <h3 class="section-title">Specialization</h3>
+                <div class="chips">
+                  <span class="chip">{{ vendor_profile.category }}</span>
+                  <span class="chip">Quotation</span>
+                  <span class="chip">Quality Guarantee</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card-head">
+                <h2>Customer Reviews &amp; Testimonials ({{ vendor_reviews|length }})</h2>
+              </div>
+              <div class="card-body">
+                {% for r in vendor_reviews %}
+                <div style="padding:14px 16px; background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:12px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span class="avatar sm teal">{{ r.customer.first_name|slice:":2"|upper|default:"CU" }}</span>
+                      <div>
+                        <strong>{{ r.customer.get_full_name|default:r.customer.username }}</strong>
+                        <div class="small muted">{{ r.created_at|date:"d M Y" }}</div>
+                      </div>
+                    </div>
+                    <span style="color:#f59e0b; font-weight:700; font-size:15px;">★ {{ r.rating }}.0</span>
+                  </div>
+                  {% if r.review_title %}
+                  <h4 style="margin:4px 0 6px 0; font-size:14px; color:#111827;">{{ r.review_title }}</h4>
+                  {% endif %}
+                  <p class="muted" style="margin:0 0 8px 0; font-size:13px; line-height:1.5;">{{ r.comment }}</p>
+                  {% if r.review_image %}
+                  <a href="{{ r.review_image.url }}" target="_blank">
+                    <img src="{{ r.review_image.url }}" alt="Review photo" style="max-height:100px; border-radius:6px; border:1px solid #e5e7eb; object-fit:cover;">
+                  </a>
+                  {% endif %}
+                </div>
+                {% empty %}
+                <p class="muted" style="text-align:center; padding:20px;">No published customer reviews yet for this vendor.</p>
+                {% endfor %}
+              </div>
+            </section>
+          </div>
+
+          <aside class="stack">
+            <section class="card">
+              <div class="card-head">
+                <h3>Business details</h3>
+              </div>
+              <div class="card-body">
+                <div class="info-item">
+                  <div class="info-label">Vendor type</div>
+                  <div class="info-value">{{ vendor_profile.vendor_type|title }}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Service area</div>
+                  <div class="info-value">{{ vendor_profile.location }}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Address</div>
+                  <div class="info-value">{{ vendor_profile.address|default:"Commercial office registered" }}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Joined</div>
+                  <div class="info-value">{{ vendor_profile.registered_date|date:"F Y" }}</div>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
+        {% else %}
+        <div class="card" style="padding: 32px; text-align:center;">
+          <p class="muted">Vendor not found. Please browse all <a href="index.html">available vendors</a>.</p>
+        </div>
+        {% endif %}
+      </main>
+    </div>
+  </div>
+</body>
+</html>

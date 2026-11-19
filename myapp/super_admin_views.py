@@ -1,0 +1,3356 @@
+import json
+from decimal import Decimal
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages as django_messages
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.db.models import Q, Sum, Count
+from django.utils import timezone
+from .models import (
+    CustomUser, VendorProfile, UserProfile, Job, QuickService, 
+    Category, SubCategory, GlobalSettings, Location, State, Bid, Subscription, Message,
+    SiteBranding, HeroSection, QuickServiceCard, FeaturedProjectCard,
+    PackageCard, Testimonial, TrustMetric, VendorKYC,
+    VendorWallet, WalletTransaction, PayoutRequest,
+    DisputeTicket, DisputeMessage, BidPlan,
+    WhyChooseSection, WhyChooseFeature, TransformVideoSection, TransformVideo
+)
+from .wallet_services import (
+    settle_job_completion, approve_payout, reject_payout, get_or_create_wallet
+)
+from .cms_forms import (
+    SiteBrandingForm, HeroSectionForm, QuickServiceCardForm,
+    FeaturedProjectCardForm, PackageCardForm, TestimonialForm,
+    TrustMetricForm, WhyChooseSectionForm, WhyChooseFeatureForm,
+    TransformVideoSectionForm, TransformVideoForm
+)
+
+LOGIN_URL = '/super-admin/login/'
+
+def super_admin_check(user):
+    return user.is_authenticated and user.is_superuser
+
+def sa_required(view_func):
+    """Decorator combining login_required + superuser check."""
+    from functools import wraps
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            return redirect(f'{LOGIN_URL}?next={request.path}')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+# ─────────────────────────────────────────────
+# LOGIN
+# ─────────────────────────────────────────────
+def super_admin_login_view(request):
+    if request.user.is_authenticated and request.user.is_superuser:
+        return redirect('/super-admin/')
+    error = None
+    next_url = request.GET.get('next', '/super-admin/')
+    if request.method == 'POST':
+        u = request.POST.get('username')
+        p = request.POST.get('password')
+        next_val = request.POST.get('next', '/super-admin/')
+        user = authenticate(request, username=u, password=p)
+        if user is not None and user.is_superuser:
+            login(request, user)
+            return redirect(next_val)
+        else:
+            error = "Invalid credentials or insufficient privileges."
+    return render(request, 'superadmin/login.html', {'error': error, 'next': next_url})
+
+# ─────────────────────────────────────────────
+# DASHBOARD
+# ─────────────────────────────────────────────
+@sa_required
+def super_admin_dashboard(request):
+    total_users = CustomUser.objects.filter(role__in=['USER', 'CUSTOMER']).count()
+    total_vendors = VendorProfile.objects.count()
+    total_admins = CustomUser.objects.filter(role='ADMIN').count()
+    active_jobs = Job.objects.filter(status__in=['open', 'progress']).count()
+    total_jobs = Job.objects.count()
+    total_qs = QuickService.objects.count()
+    total_bids = Bid.objects.count()
+    total_categories = Category.objects.count()
+    total_locations = Location.objects.count()
+    settings_obj = GlobalSettings.objects.first()
+
+    # Dynamic Category Distribution from live Jobs
+    job_cats = list(Job.objects.exclude(category__isnull=True).values('category__name').annotate(cnt=Count('id')).order_by('-cnt')[:5])
+    if job_cats:
+        category_chart_labels = [jc['category__name'] for jc in job_cats]
+        category_chart_data = [jc['cnt'] for jc in job_cats]
+    else:
+        vendor_cats = list(VendorProfile.objects.exclude(category='').values('category').annotate(cnt=Count('id')).order_by('-cnt')[:5])
+        category_chart_labels = [vc['category'] for vc in vendor_cats] if vendor_cats else []
+        category_chart_data = [vc['cnt'] for vc in vendor_cats] if vendor_cats else []
+
+    # Platform Role Breakdown for growth / distribution visualization
+    growth_labels = ['Total Users', 'Vendors', 'Area Admins', 'Active Jobs']
+    growth_data = [total_users, total_vendors, total_admins, active_jobs]
+
+    # Dynamic Recent Users (with profile images) & Recent Jobs
+    recent_users = CustomUser.objects.select_related('user_profile', 'vendor_profile').order_by('-date_joined')[:5]
+    recent_jobs = Job.objects.select_related('user', 'category').order_by('-created_at')[:5]
+
+    context = {
+        'total_users': total_users,
+        'total_vendors': total_vendors,
+        'total_admins': total_admins,
+        'active_jobs': active_jobs,
+        'total_jobs': total_jobs,
+        'total_qs': total_qs,
+        'total_bids': total_bids,
+        'total_categories': total_categories,
+        'total_locations': total_locations,
+        'settings': settings_obj,
+        'category_chart_labels': json.dumps(category_chart_labels),
+        'category_chart_data': json.dumps(category_chart_data),
+        'growth_labels': json.dumps(growth_labels),
+        'growth_data': json.dumps(growth_data),
+        'recent_users': recent_users,
+        'recent_jobs': recent_jobs,
+    }
+    return render(request, 'superadmin/dashboard.html', context)
+
+from django.db.models import Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+# ─────────────────────────────────────────────
+# USERS  (List + Filter + Paginate + Create + Edit + Delete + Toggle)
+# ─────────────────────────────────────────────
+@sa_required
+def super_admin_users(request):
+    q = request.GET.get('q', '').strip()
+    role_filter = request.GET.get('role', '').strip()
+    state_filter = request.GET.get('state', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+    sort = request.GET.get('sort', 'newest').strip()
+    page = request.GET.get('page', 1)
+
+    users_qs = CustomUser.objects.all().select_related('user_profile', 'vendor_profile', 'wallet', 'kyc_document')
+
+    # 1. Search Query (q)
+    if q:
+        users_qs = users_qs.filter(
+            Q(username__icontains=q) |
+            Q(email__icontains=q) |
+            Q(first_name__icontains=q) |
+            Q(last_name__icontains=q) |
+            Q(assigned_state__icontains=q) |
+            Q(user_profile__phone_number__icontains=q) |
+            Q(vendor_profile__company_name__icontains=q) |
+            Q(vendor_profile__location__icontains=q)
+        ).distinct()
+
+    # 2. Role Filter
+    if role_filter and role_filter != 'all':
+        if role_filter == 'superuser':
+            users_qs = users_qs.filter(is_superuser=True)
+        elif role_filter == 'ADMIN':
+            users_qs = users_qs.filter(role='ADMIN', is_superuser=False)
+        elif role_filter in ['USER', 'CUSTOMER']:
+            users_qs = users_qs.filter(role__in=['USER', 'CUSTOMER'])
+        elif role_filter == 'VENDOR':
+            users_qs = users_qs.filter(role='VENDOR')
+        elif role_filter == 'company':
+            users_qs = users_qs.filter(role='VENDOR', vendor_profile__vendor_type='company')
+        elif role_filter in ['outside', 'individual']:
+            users_qs = users_qs.filter(role='VENDOR', vendor_profile__vendor_type='vendor')
+
+    # 3. State / Territory Filter
+    if state_filter and state_filter != 'all':
+        users_qs = users_qs.filter(
+            Q(assigned_state__iexact=state_filter) |
+            Q(vendor_profile__location__icontains=state_filter)
+        ).distinct()
+
+    # 4. Status Filter (Active / Disabled)
+    if status_filter and status_filter != 'all':
+        if status_filter == 'active':
+            users_qs = users_qs.filter(is_active=True)
+        elif status_filter == 'inactive':
+            users_qs = users_qs.filter(is_active=False)
+
+    # 5. Sorting
+    if sort == 'oldest':
+        users_qs = users_qs.order_by('date_joined')
+    elif sort == 'name_asc':
+        users_qs = users_qs.order_by('username')
+    elif sort == 'name_desc':
+        users_qs = users_qs.order_by('-username')
+    else:  # newest
+        users_qs = users_qs.order_by('-date_joined')
+
+    # Total matching count before pagination
+    total_matching_users = users_qs.count()
+
+    # Available states for territory dropdown
+    active_states = list(Location.objects.values_list('state', flat=True).distinct().order_by('state'))
+    default_states = ['Jharkhand', 'Maharashtra', 'Delhi', 'Karnataka', 'Tamil Nadu', 'Uttar Pradesh', 'West Bengal', 'Gujarat', 'Bihar', 'Rajasthan', 'Madhya Pradesh', 'Telangana', 'Andhra Pradesh', 'Kerala', 'Punjab', 'Haryana', 'Odisha']
+    states = sorted(list(set([s for s in (active_states + default_states) if s])))
+
+    # Pagination (10 users per page)
+    paginator = Paginator(users_qs, 10)
+    try:
+        users = paginator.page(page)
+    except (EmptyPage, PageNotAnInteger):
+        users = paginator.page(1)
+
+    # Construct extra query string for pagination links (preserves all filters)
+    get_copy = request.GET.copy()
+    if 'page' in get_copy:
+        del get_copy['page']
+    extra_query_params = get_copy.urlencode()
+
+    # Quick overview counters
+    all_count = CustomUser.objects.count()
+    admin_count = CustomUser.objects.filter(role='ADMIN', is_superuser=False).count()
+    customer_count = CustomUser.objects.filter(role__in=['USER', 'CUSTOMER']).count()
+    vendor_count = CustomUser.objects.filter(role='VENDOR').count()
+
+    # Check if any active filters are applied
+    has_active_filters = bool(q or (role_filter and role_filter != 'all') or (state_filter and state_filter != 'all') or (status_filter and status_filter != 'all') or (sort and sort != 'newest'))
+
+    # Elided page range for pagination controls
+    page_range = paginator.get_elided_page_range(users.number, on_each_side=2, on_ends=1)
+
+    context = {
+        'users': users,
+        'page_range': page_range,
+        'q': q,
+        'role_filter': role_filter,
+        'state_filter': state_filter,
+        'status_filter': status_filter,
+        'sort': sort,
+        'states': states,
+        'total_matching_users': total_matching_users,
+        'all_count': all_count,
+        'admin_count': admin_count,
+        'customer_count': customer_count,
+        'vendor_count': vendor_count,
+        'extra_query_params': extra_query_params,
+        'has_active_filters': has_active_filters,
+    }
+    return render(request, 'superadmin/user_manager.html', context)
+
+@sa_required
+def super_admin_user_create(request):
+    active_states = list(Location.objects.values_list('state', flat=True).distinct().order_by('state'))
+    default_states = ['Jharkhand', 'Maharashtra', 'Delhi', 'Karnataka', 'Tamil Nadu', 'Uttar Pradesh', 'West Bengal', 'Gujarat', 'Bihar', 'Rajasthan', 'Madhya Pradesh', 'Telangana', 'Andhra Pradesh', 'Kerala', 'Punjab', 'Haryana', 'Odisha']
+    states = sorted(list(set([s for s in (active_states + default_states) if s])))
+    categories = Category.objects.all().order_by('name')
+
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '').strip()
+        role = request.POST.get('role', 'USER').strip()
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        assigned_state = request.POST.get('assigned_state', '').strip()
+        assigned_city = request.POST.get('assigned_city', '').strip()
+        phone_number = request.POST.get('phone_number', '').strip()
+        
+        if not username:
+            django_messages.error(request, 'Username is required.')
+            return redirect('super_admin_user_create')
+
+        if CustomUser.objects.filter(username=username).exists():
+            django_messages.error(request, f'Username "{username}" already exists.')
+            return redirect('super_admin_user_create')
+        
+        user = CustomUser.objects.create_user(
+            username=username, email=email, password=password,
+            role=role, first_name=first_name, last_name=last_name
+        )
+        user.assigned_state = assigned_state
+        user.assigned_city = assigned_city
+        if role == 'ADMIN':
+            user.is_staff = True
+        user.save()
+
+        # UserProfile save
+        up, _ = UserProfile.objects.get_or_create(user=user)
+        if phone_number:
+            up.phone_number = phone_number
+        if 'profile_image' in request.FILES:
+            up.profile_image = request.FILES['profile_image']
+        up.save()
+
+        # VendorProfile save if role is VENDOR
+        if role == 'VENDOR':
+            company_name = request.POST.get('company_name', '').strip() or f"{first_name} {last_name}".strip() or username
+            category = request.POST.get('category', '').strip()
+            loc = request.POST.get('location', '').strip() or f"{assigned_city}, {assigned_state}".strip(', ')
+            vendor_type = request.POST.get('vendor_type', 'vendor').strip()
+            experience = int(request.POST.get('experience', 0) or 0)
+            about = request.POST.get('about', '').strip()
+            dob_str = request.POST.get('dob', '').strip()
+            dob_val = dob_str if dob_str else None
+            gender = request.POST.get('gender', '').strip()
+            address = request.POST.get('address', '').strip()
+            id_proof = request.POST.get('id_proof', '').strip()
+            employee_code = request.POST.get('employee_code', '').strip()
+            employee_details = request.POST.get('employee_details', '').strip()
+
+            vp, created = VendorProfile.objects.get_or_create(user=user)
+            vp.company_name = company_name
+            vp.category = category
+            vp.location = loc
+            vp.vendor_type = vendor_type
+            vp.experience = experience
+            if created:
+                vp.rating = Decimal('0.0')
+            vp.about = about
+            vp.dob = dob_val
+            vp.gender = gender
+            vp.address = address
+            vp.id_proof = id_proof
+            vp.employee_code = employee_code
+            vp.employee_details = employee_details
+            if 'vendor_image' in request.FILES:
+                vp.profile_image = request.FILES['vendor_image']
+            vp.save()
+
+            VendorWallet.objects.get_or_create(vendor=user, defaults={'available_balance': Decimal('10000.00'), 'total_earned': Decimal('10000.00')})
+            VendorKYC.objects.get_or_create(vendor=user, defaults={'status': 'approved', 'id_type': 'aadhaar', 'id_number': id_proof or 'KYC-PENDING'})
+
+        django_messages.success(request, f'User "{username}" created successfully.')
+        return redirect('super_admin_users')
+
+    return render(request, 'superadmin/user_form.html', {
+        'mode': 'create',
+        'states': states,
+        'categories': categories,
+    })
+
+@sa_required
+def super_admin_user_edit(request, user_id):
+    user_obj = get_object_or_404(CustomUser.objects.select_related('user_profile', 'vendor_profile'), pk=user_id)
+    active_states = list(Location.objects.values_list('state', flat=True).distinct().order_by('state'))
+    default_states = ['Jharkhand', 'Maharashtra', 'Delhi', 'Karnataka', 'Tamil Nadu', 'Uttar Pradesh', 'West Bengal', 'Gujarat', 'Bihar', 'Rajasthan', 'Madhya Pradesh', 'Telangana', 'Andhra Pradesh', 'Kerala', 'Punjab', 'Haryana', 'Odisha']
+    states = sorted(list(set([s for s in (active_states + default_states) if s])))
+    categories = Category.objects.all().order_by('name')
+
+    if request.method == 'POST':
+        user_obj.first_name = request.POST.get('first_name', '').strip()
+        user_obj.last_name = request.POST.get('last_name', '').strip()
+        user_obj.email = request.POST.get('email', '').strip()
+        # Note: Account role is immutable on edit
+        user_obj.assigned_state = request.POST.get('assigned_state', '').strip()
+        user_obj.assigned_city = request.POST.get('assigned_city', '').strip()
+        user_obj.is_active = request.POST.get('is_active') == 'on'
+        
+        new_pass = request.POST.get('password', '').strip()
+        if new_pass:
+            user_obj.set_password(new_pass)
+        if user_obj.role == 'ADMIN':
+            user_obj.is_staff = True
+        user_obj.save()
+
+        # UserProfile save
+        phone_number = request.POST.get('phone_number', '').strip()
+        user_profile, _ = UserProfile.objects.get_or_create(user=user_obj)
+        if phone_number:
+            user_profile.phone_number = phone_number
+        if 'profile_image' in request.FILES:
+            uploaded_img = request.FILES['profile_image']
+            user_profile.profile_image = uploaded_img
+            if user_obj.role == 'VENDOR' or hasattr(user_obj, 'vendor_profile'):
+                vp_rec, _ = VendorProfile.objects.get_or_create(user=user_obj)
+                vp_rec.profile_image = uploaded_img
+                vp_rec.save()
+        user_profile.save()
+
+        # If role is VENDOR (or user already has a vendor profile), update vendor details
+        if user_obj.role == 'VENDOR' or hasattr(user_obj, 'vendor_profile'):
+            vp, _ = VendorProfile.objects.get_or_create(user=user_obj)
+            company_name = request.POST.get('company_name', '').strip()
+            if company_name:
+                vp.company_name = company_name
+            vp.category = request.POST.get('category', '').strip() or vp.category
+            loc = request.POST.get('location', '').strip()
+            if not loc and (user_obj.assigned_city or user_obj.assigned_state):
+                loc = f"{user_obj.assigned_city}, {user_obj.assigned_state}".strip(', ')
+            if loc:
+                vp.location = loc
+            vp.vendor_type = request.POST.get('vendor_type', vp.vendor_type or 'vendor').strip()
+            
+            exp_val = request.POST.get('experience', '').strip()
+            if exp_val.isdigit():
+                vp.experience = int(exp_val)
+            
+            vp.about = request.POST.get('about', vp.about).strip()
+            vp.gender = request.POST.get('gender', vp.gender).strip()
+            vp.address = request.POST.get('address', vp.address).strip()
+            vp.id_proof = request.POST.get('id_proof', vp.id_proof).strip()
+            vp.employee_code = request.POST.get('employee_code', vp.employee_code).strip()
+            vp.employee_details = request.POST.get('employee_details', vp.employee_details).strip()
+            
+            dob_str = request.POST.get('dob', '').strip()
+            if dob_str:
+                try:
+                    vp.dob = dob_str
+                except Exception:
+                    pass
+            if 'vendor_image' in request.FILES:
+                vp.profile_image = request.FILES['vendor_image']
+            vp.save()
+
+        django_messages.success(request, f'User "{user_obj.username}" updated successfully.')
+        return redirect('super_admin_users')
+
+    return render(request, 'superadmin/user_form.html', {
+        'mode': 'edit',
+        'user_obj': user_obj,
+        'states': states,
+        'categories': categories,
+    })
+
+@sa_required
+def super_admin_user_delete(request, user_id):
+    user_obj = get_object_or_404(CustomUser, pk=user_id)
+    if user_obj == request.user:
+        django_messages.error(request, "You cannot delete yourself.")
+        return redirect('super_admin_users')
+    username = user_obj.username
+    user_obj.delete()
+    django_messages.success(request, f'User "{username}" deleted.')
+    return redirect('super_admin_users')
+
+@sa_required
+def super_admin_user_toggle(request, user_id):
+    user_obj = get_object_or_404(CustomUser, pk=user_id)
+    user_obj.is_active = not user_obj.is_active
+    user_obj.save()
+    status = "activated" if user_obj.is_active else "deactivated"
+    django_messages.success(request, f'User "{user_obj.username}" {status}.')
+    return redirect('super_admin_users')
+
+# ─────────────────────────────────────────────
+# AREA ADMINS (List + Create + Edit + Delete + Toggle)
+# ─────────────────────────────────────────────
+
+def _get_area_admin_states():
+    db_states = list(State.objects.filter(status='active').values_list('name', flat=True).order_by('name'))
+    if not db_states:
+        db_states = list(Location.objects.values_list('state', flat=True).distinct().order_by('state'))
+    default_states = ['Jharkhand', 'Maharashtra', 'Delhi', 'Karnataka', 'Tamil Nadu', 'Uttar Pradesh', 'West Bengal', 'Gujarat', 'Bihar', 'Rajasthan', 'Madhya Pradesh', 'Telangana', 'Andhra Pradesh', 'Kerala', 'Punjab', 'Haryana', 'Odisha']
+    return sorted(list(set([s for s in (db_states + default_states) if s])))
+
+@sa_required
+def super_admin_area_admins(request):
+    q = request.GET.get('q', '').strip()
+    state_filter = request.GET.get('state', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+    sort = request.GET.get('sort', 'newest').strip()
+    page = request.GET.get('page', 1)
+
+    admins_qs = CustomUser.objects.filter(role='ADMIN', is_superuser=False).select_related('user_profile')
+
+    if q:
+        admins_qs = admins_qs.filter(
+            Q(username__icontains=q) |
+            Q(email__icontains=q) |
+            Q(first_name__icontains=q) |
+            Q(last_name__icontains=q) |
+            Q(assigned_state__icontains=q) |
+            Q(assigned_city__icontains=q) |
+            Q(user_profile__phone_number__icontains=q)
+        ).distinct()
+
+    if state_filter and state_filter != 'all':
+        admins_qs = admins_qs.filter(assigned_state__iexact=state_filter)
+
+    if status_filter and status_filter != 'all':
+        if status_filter == 'active':
+            admins_qs = admins_qs.filter(is_active=True)
+        elif status_filter == 'inactive':
+            admins_qs = admins_qs.filter(is_active=False)
+
+    if sort == 'oldest':
+        admins_qs = admins_qs.order_by('date_joined')
+    elif sort == 'name_asc':
+        admins_qs = admins_qs.order_by('username')
+    elif sort == 'name_desc':
+        admins_qs = admins_qs.order_by('-username')
+    elif sort == 'state_asc':
+        admins_qs = admins_qs.order_by('assigned_state', 'username')
+    else:
+        admins_qs = admins_qs.order_by('-date_joined')
+
+    # Overall counter metrics
+    base_admins = CustomUser.objects.filter(role='ADMIN', is_superuser=False)
+    total_admins = base_admins.count()
+    active_admins = base_admins.filter(is_active=True).count()
+    inactive_admins = base_admins.filter(is_active=False).count()
+    states_covered = base_admins.exclude(assigned_state__isnull=True).exclude(assigned_state='').values('assigned_state').distinct().count()
+
+    states = _get_area_admin_states()
+
+    paginator = Paginator(admins_qs, 10)
+    try:
+        admins = paginator.page(page)
+    except (EmptyPage, PageNotAnInteger):
+        admins = paginator.page(1)
+
+    get_copy = request.GET.copy()
+    if 'page' in get_copy:
+        del get_copy['page']
+    extra_query_params = get_copy.urlencode()
+
+    has_active_filters = bool(q or (state_filter and state_filter != 'all') or (status_filter and status_filter != 'all') or (sort and sort != 'newest'))
+    page_range = paginator.get_elided_page_range(admins.number, on_each_side=2, on_ends=1)
+
+    context = {
+        'admins': admins,
+        'page_range': page_range,
+        'q': q,
+        'state_filter': state_filter,
+        'status_filter': status_filter,
+        'sort': sort,
+        'states': states,
+        'total_admins': total_admins,
+        'active_admins': active_admins,
+        'inactive_admins': inactive_admins,
+        'states_covered': states_covered,
+        'extra_query_params': extra_query_params,
+        'has_active_filters': has_active_filters,
+    }
+    return render(request, 'superadmin/area_admins.html', context)
+
+
+@sa_required
+def super_admin_area_admin_create(request):
+    states = _get_area_admin_states()
+    locations = Location.objects.filter(status='active').values('city', 'state').order_by('city')
+    cities_by_state = {}
+    for loc in locations:
+        st = loc['state']
+        ct = loc['city']
+        if st and ct:
+            cities_by_state.setdefault(st, []).append(ct)
+
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '').strip()
+        confirm_password = request.POST.get('confirm_password', '').strip()
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        assigned_state = request.POST.get('assigned_state', '').strip()
+        assigned_city = request.POST.get('assigned_city', '').strip()
+        phone_number = request.POST.get('phone_number', '').strip()
+        is_active = request.POST.get('is_active') == 'on'
+
+        errors = []
+        if not username:
+            errors.append('Username is required.')
+        elif CustomUser.objects.filter(username=username).exists():
+            errors.append(f'Username "{username}" is already in use.')
+
+        if not email:
+            errors.append('Email address is required.')
+        elif CustomUser.objects.filter(email=email).exists():
+            errors.append(f'Email "{email}" is already registered.')
+
+        if not assigned_state:
+            errors.append('Assigned State / Operational Territory is mandatory for Area Admins.')
+
+        if not password:
+            errors.append('Password is required.')
+        elif len(password) < 6:
+            errors.append('Password must be at least 6 characters long.')
+        elif password != confirm_password:
+            errors.append('Passwords do not match.')
+
+        if errors:
+            for err in errors:
+                django_messages.error(request, err)
+            return render(request, 'superadmin/area_admin_form.html', {
+                'mode': 'create',
+                'states': states,
+                'cities_by_state': json.dumps(cities_by_state),
+                'form_data': request.POST,
+            })
+
+        user = CustomUser.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            role='ADMIN',
+            first_name=first_name,
+            last_name=last_name,
+            is_staff=True,
+            is_superuser=False,
+        )
+        user.assigned_state = assigned_state
+        user.assigned_city = assigned_city
+        user.is_active = is_active
+        user.save()
+
+        up, _ = UserProfile.objects.get_or_create(user=user)
+        if phone_number:
+            up.phone_number = phone_number
+        up.state = assigned_state
+        up.city = assigned_city
+        if 'profile_image' in request.FILES:
+            up.profile_image = request.FILES['profile_image']
+        up.save()
+
+        django_messages.success(request, f'Area Admin "{username}" successfully provisioned for {assigned_state}.')
+        return redirect('super_admin_area_admins')
+
+    return render(request, 'superadmin/area_admin_form.html', {
+        'mode': 'create',
+        'states': states,
+        'cities_by_state': json.dumps(cities_by_state),
+        'form_data': {'is_active': 'on'},
+    })
+
+
+@sa_required
+def super_admin_area_admin_edit(request, admin_id):
+    admin_obj = get_object_or_404(CustomUser.objects.select_related('user_profile'), pk=admin_id, role='ADMIN', is_superuser=False)
+    states = _get_area_admin_states()
+    locations = Location.objects.filter(status='active').values('city', 'state').order_by('city')
+    cities_by_state = {}
+    for loc in locations:
+        st = loc['state']
+        ct = loc['city']
+        if st and ct:
+            cities_by_state.setdefault(st, []).append(ct)
+
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        assigned_state = request.POST.get('assigned_state', '').strip()
+        assigned_city = request.POST.get('assigned_city', '').strip()
+        phone_number = request.POST.get('phone_number', '').strip()
+        is_active = request.POST.get('is_active') == 'on'
+        new_password = request.POST.get('password', '').strip()
+        confirm_password = request.POST.get('confirm_password', '').strip()
+
+        errors = []
+        if not email:
+            errors.append('Email address is required.')
+        elif CustomUser.objects.filter(email=email).exclude(pk=admin_obj.pk).exists():
+            errors.append(f'Email "{email}" is already registered to another user.')
+
+        if not assigned_state:
+            errors.append('Assigned State / Operational Territory cannot be empty.')
+
+        if new_password:
+            if len(new_password) < 6:
+                errors.append('New password must be at least 6 characters.')
+            elif new_password != confirm_password:
+                errors.append('New passwords do not match.')
+
+        if errors:
+            for err in errors:
+                django_messages.error(request, err)
+            return render(request, 'superadmin/area_admin_form.html', {
+                'mode': 'edit',
+                'admin_obj': admin_obj,
+                'states': states,
+                'cities_by_state': json.dumps(cities_by_state),
+            })
+
+        admin_obj.first_name = first_name
+        admin_obj.last_name = last_name
+        admin_obj.email = email
+        admin_obj.assigned_state = assigned_state
+        admin_obj.assigned_city = assigned_city
+        admin_obj.is_active = is_active
+        admin_obj.is_staff = True
+        if new_password:
+            admin_obj.set_password(new_password)
+        admin_obj.save()
+
+        up, _ = UserProfile.objects.get_or_create(user=admin_obj)
+        if phone_number:
+            up.phone_number = phone_number
+        up.state = assigned_state
+        up.city = assigned_city
+        if 'profile_image' in request.FILES:
+            up.profile_image = request.FILES['profile_image']
+        up.save()
+
+        django_messages.success(request, f'Area Admin "{admin_obj.username}" successfully updated.')
+        return redirect('super_admin_area_admins')
+
+    return render(request, 'superadmin/area_admin_form.html', {
+        'mode': 'edit',
+        'admin_obj': admin_obj,
+        'states': states,
+        'cities_by_state': json.dumps(cities_by_state),
+    })
+
+
+@sa_required
+def super_admin_area_admin_toggle(request, admin_id):
+    admin_obj = get_object_or_404(CustomUser, pk=admin_id, role='ADMIN', is_superuser=False)
+    admin_obj.is_active = not admin_obj.is_active
+    admin_obj.save()
+    status_label = "activated" if admin_obj.is_active else "deactivated"
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET.get('ajax') == '1':
+        return JsonResponse({'success': True, 'is_active': admin_obj.is_active, 'status': status_label})
+    django_messages.success(request, f'Area Admin "{admin_obj.username}" {status_label}.')
+    return redirect('super_admin_area_admins')
+
+
+@sa_required
+def super_admin_area_admin_delete(request, admin_id):
+    admin_obj = get_object_or_404(CustomUser, pk=admin_id, role='ADMIN', is_superuser=False)
+    if admin_obj == request.user:
+        django_messages.error(request, "You cannot delete your own account.")
+        return redirect('super_admin_area_admins')
+    username = admin_obj.username
+    admin_obj.delete()
+    django_messages.success(request, f'Area Admin "{username}" has been permanently removed.')
+    return redirect('super_admin_area_admins')
+
+# ─────────────────────────────────────────────
+# VENDORS (List + Create + Edit + Delete + Toggle)
+@sa_required
+def super_admin_vendors(request):
+    q = request.GET.get('q', '').strip()
+    vendor_type = request.GET.get('type', '').strip()
+    category = request.GET.get('category', '').strip()
+
+    vendors_qs = VendorProfile.objects.all().select_related(
+        'user', 'user__user_profile', 'user__wallet', 'user__kyc_document'
+    ).order_by('-registered_date')
+
+    if q:
+        vendors_qs = vendors_qs.filter(
+            Q(company_name__icontains=q) |
+            Q(user__username__icontains=q) |
+            Q(user__first_name__icontains=q) |
+            Q(user__last_name__icontains=q) |
+            Q(user__email__icontains=q) |
+            Q(location__icontains=q)
+        )
+    if vendor_type:
+        vendors_qs = vendors_qs.filter(vendor_type=vendor_type)
+    if category:
+        vendors_qs = vendors_qs.filter(category=category)
+
+    categories = Category.objects.all().order_by('name')
+    paginator = Paginator(vendors_qs, 10)
+    page_num = request.GET.get('page', 1)
+    try:
+        vendors = paginator.page(page_num)
+    except (EmptyPage, PageNotAnInteger):
+        vendors = paginator.page(1)
+    page_range = paginator.get_elided_page_range(vendors.number, on_each_side=2, on_ends=1)
+    return render(request, 'superadmin/vendors.html', {
+        'vendors': vendors, 
+        'page_range': page_range,
+        'q': q,
+        'vendor_type': vendor_type,
+        'category': category,
+        'categories': categories,
+    })
+
+@sa_required
+def super_admin_vendor_create(request):
+    active_states = list(Location.objects.values_list('state', flat=True).distinct().order_by('state'))
+    default_states = ['Jharkhand', 'Maharashtra', 'Delhi', 'Karnataka', 'Tamil Nadu', 'Uttar Pradesh', 'West Bengal', 'Gujarat', 'Bihar', 'Rajasthan', 'Madhya Pradesh', 'Telangana', 'Andhra Pradesh', 'Kerala', 'Punjab', 'Haryana', 'Odisha']
+    states = sorted(list(set([s for s in (active_states + default_states) if s])))
+    categories = Category.objects.all().order_by('name')
+
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '').strip()
+        vendor_type = request.POST.get('vendor_type', 'vendor')
+        category = request.POST.get('category', '').strip()
+        state = request.POST.get('state', '').strip()
+        city = request.POST.get('city', '').strip()
+        location = f"{city}, {state}".strip(', ') if (city or state) else request.POST.get('location', '').strip()
+        experience = request.POST.get('experience', 0) or 0
+        about = request.POST.get('about', '').strip()
+
+        # Differentiate between Company and Individual/Outside Vendor
+        if vendor_type == 'company':
+            company_name = request.POST.get('company_name', '').strip()
+            contact_person = request.POST.get('contact_person', '').strip()
+            phone = request.POST.get('phone', '').strip()
+            id_proof = request.POST.get('company_id_proof', '').strip() or request.POST.get('id_proof', '').strip()
+            employee_code = request.POST.get('employee_code', '').strip()
+            employee_details = request.POST.get('employee_details', '').strip()
+            address = request.POST.get('company_address', '').strip() or request.POST.get('address', '').strip()
+            dob = None
+            gender = ''
+        else:
+            company_name = request.POST.get('individual_name', '').strip() or request.POST.get('company_name', '').strip()
+            contact_person = company_name
+            phone = request.POST.get('individual_phone', '').strip() or request.POST.get('phone', '').strip()
+            id_proof = request.POST.get('individual_id_proof', '').strip() or request.POST.get('id_proof', '').strip()
+            employee_code = ''
+            employee_details = ''
+            address = request.POST.get('individual_address', '').strip() or request.POST.get('address', '').strip()
+            dob = request.POST.get('dob') or None
+            gender = request.POST.get('gender', '').strip()
+
+        if not username:
+            username = email if email else company_name.replace(" ", "").lower() + str(CustomUser.objects.count())
+
+        if CustomUser.objects.filter(username=username).exists():
+            django_messages.error(request, f'Username "{username}" is already taken.')
+            return redirect('super_admin_vendor_create')
+
+        user = CustomUser.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            role='VENDOR',
+            first_name=contact_person or company_name
+        )
+        user.assigned_state = state
+        user.assigned_city = city
+        user.save()
+
+        profile_img = request.FILES.get('profile_image')
+        VendorProfile.objects.create(
+            user=user,
+            vendor_type=vendor_type,
+            company_name=company_name,
+            category=category,
+            location=location,
+            experience=experience,
+            rating=Decimal('0.0'),
+            about=about,
+            employee_code=employee_code,
+            employee_details=employee_details,
+            dob=dob,
+            gender=gender,
+            address=address,
+            id_proof=id_proof,
+            profile_image=profile_img
+        )
+
+        user_prof, _ = UserProfile.objects.get_or_create(user=user)
+        if phone:
+            user_prof.phone_number = phone
+        if profile_img:
+            user_prof.profile_image = profile_img
+        user_prof.save()
+
+        from .models import VendorKYC
+        from django.utils import timezone
+        VendorKYC.objects.create(
+            vendor=user,
+            id_type='aadhaar',
+            id_number='Admin Created',
+            status='approved',
+            reviewed_by=request.user,
+            reviewed_at=timezone.now()
+        )
+
+        django_messages.success(request, f'Vendor "{company_name or username}" created successfully.')
+        return redirect('super_admin_vendors')
+
+    return render(request, 'superadmin/vendor_form.html', {
+        'mode': 'create',
+        'states': states,
+        'categories': categories,
+        'current_state': '',
+        'current_city': '',
+        'phone': '',
+        'contact_person': '',
+        'individual_name': '',
+        'vendor': None,
+    })
+
+@sa_required
+def super_admin_vendor_edit(request, vendor_id):
+    vendor = get_object_or_404(VendorProfile.objects.select_related('user'), pk=vendor_id)
+    categories = Category.objects.all().order_by('name')
+    active_states = list(Location.objects.values_list('state', flat=True).distinct().order_by('state'))
+    default_states = ['Jharkhand', 'Maharashtra', 'Delhi', 'Karnataka', 'Tamil Nadu', 'Uttar Pradesh', 'West Bengal', 'Gujarat', 'Bihar', 'Rajasthan', 'Madhya Pradesh', 'Telangana', 'Andhra Pradesh', 'Kerala', 'Punjab', 'Haryana', 'Odisha']
+    states = sorted(list(set([s for s in (active_states + default_states) if s])))
+
+    current_state = vendor.user.assigned_state or ''
+    current_city = vendor.user.assigned_city or ''
+    if not current_state and vendor.location:
+        if ',' in vendor.location:
+            parts = [p.strip() for p in vendor.location.split(',', 1)]
+            if not current_city and len(parts) >= 1:
+                current_city = parts[0]
+            if not current_state and len(parts) >= 2:
+                current_state = parts[1]
+        else:
+            current_state = vendor.location.strip()
+
+    phone = ''
+    if hasattr(vendor.user, 'user_profile') and vendor.user.user_profile.phone_number:
+        phone = vendor.user.user_profile.phone_number
+
+    contact_person = vendor.user.first_name or ''
+    individual_name = vendor.company_name or vendor.user.first_name or vendor.user.username
+
+    if request.method == 'POST':
+        vendor_type = request.POST.get('vendor_type', 'vendor')
+        state = request.POST.get('state', '').strip()
+        city = request.POST.get('city', '').strip()
+        location = f"{city}, {state}".strip(', ') if (city or state) else request.POST.get('location', '').strip()
+
+        # Differentiate between Company and Individual/Outside Vendor
+        if vendor_type == 'company':
+            company_name = request.POST.get('company_name', '').strip()
+            contact_person = request.POST.get('contact_person', '').strip()
+            phone_val = request.POST.get('phone', '').strip()
+            id_proof = request.POST.get('company_id_proof', '').strip() or request.POST.get('id_proof', '').strip()
+            employee_code = request.POST.get('employee_code', '').strip()
+            employee_details = request.POST.get('employee_details', '').strip()
+            address = request.POST.get('company_address', '').strip() or request.POST.get('address', '').strip()
+            dob = None
+            gender = ''
+        else:
+            company_name = request.POST.get('individual_name', '').strip() or request.POST.get('company_name', '').strip()
+            contact_person = company_name
+            phone_val = request.POST.get('individual_phone', '').strip() or request.POST.get('phone', '').strip()
+            id_proof = request.POST.get('individual_id_proof', '').strip() or request.POST.get('id_proof', '').strip()
+            employee_code = ''
+            employee_details = ''
+            address = request.POST.get('individual_address', '').strip() or request.POST.get('address', '').strip()
+            dob = request.POST.get('dob') or None
+            gender = request.POST.get('gender', '').strip()
+
+        vendor.company_name = company_name
+        vendor.category = request.POST.get('category', '').strip()
+        vendor.location = location
+        vendor.vendor_type = vendor_type
+        vendor.experience = request.POST.get('experience', 0) or 0
+        vendor.about = request.POST.get('about', '').strip()
+        vendor.employee_code = employee_code
+        vendor.employee_details = employee_details
+        vendor.address = address
+        vendor.id_proof = id_proof
+        vendor.dob = dob
+        vendor.gender = gender
+
+        profile_img = request.FILES.get('profile_image')
+        if profile_img:
+            vendor.profile_image = profile_img
+        vendor.save()
+
+        vendor.user.assigned_state = state
+        vendor.user.assigned_city = city
+        if contact_person:
+            vendor.user.first_name = contact_person
+        vendor.user.save(update_fields=['assigned_state', 'assigned_city', 'first_name'])
+
+        if phone_val or profile_img:
+            user_prof, _ = UserProfile.objects.get_or_create(user=vendor.user)
+            if phone_val:
+                user_prof.phone_number = phone_val
+            if profile_img:
+                user_prof.profile_image = profile_img
+            user_prof.save()
+
+        django_messages.success(request, f'Vendor "{vendor}" updated.')
+        return redirect('super_admin_vendors')
+
+    return render(request, 'superadmin/vendor_form.html', {
+        'mode': 'edit',
+        'vendor': vendor,
+        'categories': categories,
+        'states': states,
+        'current_state': current_state,
+        'current_city': current_city,
+        'phone': phone,
+        'contact_person': contact_person,
+        'individual_name': individual_name,
+    })
+
+@sa_required
+def super_admin_vendor_delete(request, vendor_id):
+    vendor = get_object_or_404(VendorProfile, pk=vendor_id)
+    name = str(vendor)
+    vendor.user.delete()  # cascade deletes the vendor profile too
+    django_messages.success(request, f'Vendor "{name}" and their account deleted.')
+    return redirect('super_admin_vendors')
+
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+# ─────────────────────────────────────────────
+# CMS: CATEGORIES (List + Create + Edit + Delete)
+# ─────────────────────────────────────────────
+# CMS: CATEGORIES, STATES & LOCATIONS
+# ─────────────────────────────────────────────
+@sa_required
+def super_admin_categories(request):
+    cat_queryset = Category.objects.all().order_by('-created_at')
+    cat_paginator = Paginator(cat_queryset, 8)
+    cat_page = request.GET.get('cat_page', 1)
+    try:
+        categories = cat_paginator.page(cat_page)
+    except (EmptyPage, PageNotAnInteger):
+        categories = cat_paginator.page(1)
+    
+    total_categories = cat_paginator.count
+    
+    # SubCategories
+    try:
+        from .models import SubCategory
+        sub_queryset = SubCategory.objects.all().order_by('-created_at')
+        sub_paginator = Paginator(sub_queryset, 8)
+        sub_page = request.GET.get('sub_page', 1)
+        subcategories = sub_paginator.page(sub_page)
+        total_subcategories = sub_paginator.count
+    except Exception:
+        subcategories = []
+        total_subcategories = 0
+        
+    context = {
+        'categories': categories,
+        'cat_page': cat_page,
+        'total_categories': total_categories,
+        'subcategories': subcategories,
+        'total_subcategories': total_subcategories,
+    }
+    return render(request, 'superadmin/cms_categories.html', context)
+
+@sa_required
+def super_admin_locations(request):
+    loc_queryset = Location.objects.all().order_by('-created_at')
+    state_queryset = State.objects.all().order_by('-created_at')
+    
+    loc_paginator = Paginator(loc_queryset, 8)
+    loc_page = request.GET.get('loc_page', 1)
+    try:
+        locations = loc_paginator.page(loc_page)
+    except (EmptyPage, PageNotAnInteger):
+        locations = loc_paginator.page(1)
+        
+    state_paginator = Paginator(state_queryset, 8)
+    state_page = request.GET.get('state_page', 1)
+    try:
+        states = state_paginator.page(state_page)
+    except (EmptyPage, PageNotAnInteger):
+        states = state_paginator.page(1)
+        
+    for st in states:
+        st.state_cities = Location.objects.filter(state=st.name)
+        st.cities_count = st.state_cities.count()
+        
+    context = {
+        'states': states,
+        'state_page': state_page,
+        'total_states': state_paginator.count,
+    }
+    return render(request, 'superadmin/cms_locations.html', context)
+
+@sa_required
+def super_admin_category_create(request):
+    from .models import SubCategory
+    if request.method == 'POST':
+        cat = Category.objects.create(
+            name=request.POST.get('name'),
+            service_type=request.POST.get('service_type', 'both'),
+            status=request.POST.get('status', 'active'),
+            image=request.FILES.get('image'),
+        )
+        # Handle inline subcategories
+        subcat_names = request.POST.getlist('subcat_name[]')
+        subcat_statuses = request.POST.getlist('subcat_status[]')
+        subcat_genders = request.POST.getlist('subcat_gender[]')
+        for i, sname in enumerate(subcat_names):
+            sname = sname.strip()
+            if sname:
+                s_gender = subcat_genders[i] if i < len(subcat_genders) else 'all'
+                if cat.is_beauty:
+                    s_gender = s_gender if s_gender in ['women', 'men'] else 'women'
+                else:
+                    s_gender = 'all'
+                SubCategory.objects.create(
+                    category=cat,
+                    name=sname,
+                    gender=s_gender,
+                    status=subcat_statuses[i] if i < len(subcat_statuses) else 'active',
+                )
+        django_messages.success(request, 'Category created.')
+        return redirect('super_admin_categories')
+    return render(request, 'superadmin/category_form.html', {'mode': 'create'})
+
+@sa_required
+def super_admin_category_edit(request, cat_id):
+    from .models import SubCategory
+    cat = get_object_or_404(Category, pk=cat_id)
+    if request.method == 'POST':
+        cat.name = request.POST.get('name', cat.name)
+        cat.service_type = request.POST.get('service_type', cat.service_type)
+        cat.status = request.POST.get('status', cat.status)
+        if 'image' in request.FILES:
+            cat.image = request.FILES['image']
+        elif request.POST.get('clear_image') == '1':
+            cat.image = None
+        cat.save()
+        # Handle inline subcategories
+        subcat_ids = request.POST.getlist('subcat_id[]')
+        subcat_names = request.POST.getlist('subcat_name[]')
+        subcat_statuses = request.POST.getlist('subcat_status[]')
+        subcat_genders = request.POST.getlist('subcat_gender[]')
+        # Track which existing subcategory IDs are still present
+        kept_ids = set()
+        for i, sname in enumerate(subcat_names):
+            sname = sname.strip()
+            if not sname:
+                continue
+            sid = subcat_ids[i] if i < len(subcat_ids) else ''
+            s_status = subcat_statuses[i] if i < len(subcat_statuses) else 'active'
+            s_gender = subcat_genders[i] if i < len(subcat_genders) else 'all'
+            if cat.is_beauty:
+                s_gender = s_gender if s_gender in ['women', 'men'] else 'women'
+            else:
+                s_gender = 'all'
+            if sid:
+                # Update existing
+                try:
+                    sub = SubCategory.objects.get(pk=int(sid), category=cat)
+                    sub.name = sname
+                    sub.gender = s_gender
+                    sub.status = s_status
+                    sub.save()
+                    kept_ids.add(sub.id)
+                except SubCategory.DoesNotExist:
+                    pass
+            else:
+                # Create new
+                new_sub = SubCategory.objects.create(category=cat, name=sname, gender=s_gender, status=s_status)
+                kept_ids.add(new_sub.id)
+        # Delete subcategories that were removed from the form
+        cat.subcategories.exclude(id__in=kept_ids).delete()
+        django_messages.success(request, f'Category "{cat.name}" updated.')
+        return redirect('super_admin_categories')
+    subcategories = cat.subcategories.all().order_by('id')
+    return render(request, 'superadmin/category_form.html', {'mode': 'edit', 'cat': cat, 'subcategories': subcategories})
+
+@sa_required
+def super_admin_category_delete(request, cat_id):
+    cat = get_object_or_404(Category, pk=cat_id)
+    cat.delete()
+    django_messages.success(request, 'Category deleted.')
+    return redirect('super_admin_categories')
+
+
+# ─────────────────────────────────────────────
+# CMS: SUBCATEGORIES
+# ─────────────────────────────────────────────
+@sa_required
+def super_admin_subcategory_create(request):
+    from .models import SubCategory, Category
+    cats = Category.objects.filter(status='active').order_by('name')
+    selected_cat_id = request.GET.get('category_id')
+    if request.method == 'POST':
+        cat_id = request.POST.get('category')
+        cat = Category.objects.filter(id=cat_id).first()
+        raw_gender = request.POST.get('gender', '').strip().lower()
+        if cat and cat.is_beauty:
+            gender = raw_gender if raw_gender in ['women', 'men'] else 'women'
+        else:
+            gender = 'all'
+
+        SubCategory.objects.create(
+            category_id=cat_id,
+            name=request.POST.get('name', '').strip(),
+            gender=gender,
+            status=request.POST.get('status', 'active'),
+        )
+        django_messages.success(request, 'SubCategory created.')
+        return redirect('super_admin_categories')
+    return render(request, 'superadmin/subcategory_form.html', {
+        'mode': 'create',
+        'categories': cats,
+        'selected_cat_id': int(selected_cat_id) if selected_cat_id and selected_cat_id.isdigit() else None
+    })
+
+@sa_required
+def super_admin_subcategory_edit(request, sub_id):
+    from .models import SubCategory, Category
+    subcat = get_object_or_404(SubCategory, pk=sub_id)
+    cats = Category.objects.filter(status='active').order_by('name')
+    if request.method == 'POST':
+        cat_id = request.POST.get('category', subcat.category_id)
+        cat = Category.objects.filter(id=cat_id).first()
+        raw_gender = request.POST.get('gender', subcat.gender).strip().lower()
+        if cat and cat.is_beauty:
+            gender = raw_gender if raw_gender in ['women', 'men'] else 'women'
+        else:
+            gender = 'all'
+
+        subcat.category_id = cat_id
+        subcat.name = request.POST.get('name', subcat.name).strip()
+        subcat.gender = gender
+        subcat.status = request.POST.get('status', subcat.status)
+        subcat.save()
+        django_messages.success(request, f'SubCategory "{subcat.name}" updated.')
+        return redirect('super_admin_categories')
+    return render(request, 'superadmin/subcategory_form.html', {'mode': 'edit', 'subcat': subcat, 'categories': cats})
+
+@sa_required
+def super_admin_subcategory_delete(request, sub_id):
+    from .models import SubCategory
+    subcat = get_object_or_404(SubCategory, pk=sub_id)
+    subcat.delete()
+    django_messages.success(request, 'SubCategory deleted.')
+    return redirect('super_admin_categories')
+
+# ─────────────────────────────────────────────
+# CMS: STATES (Create + Edit + Delete)
+# ─────────────────────────────────────────────
+@sa_required
+def super_admin_state_create(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        status = request.POST.get('status', 'active')
+        if not name:
+            django_messages.error(request, 'State name is required.')
+        elif State.objects.filter(name__iexact=name).exists():
+            django_messages.error(request, f'State "{name}" already exists.')
+        else:
+            State.objects.create(name=name, status=status)
+            django_messages.success(request, f'State "{name}" created successfully. You can now create cities under this state.')
+            return redirect('super_admin_locations')
+    return render(request, 'superadmin/state_form.html', {'mode': 'create'})
+
+@sa_required
+def super_admin_state_edit(request, state_id):
+    st = get_object_or_404(State, pk=state_id)
+    old_name = st.name
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        status = request.POST.get('status', 'active')
+        if not name:
+            django_messages.error(request, 'State name is required.')
+        else:
+            st.name = name
+            st.status = status
+            st.save()
+            if old_name != name:
+                Location.objects.filter(state__iexact=old_name).update(state=name)
+            django_messages.success(request, f'State "{st.name}" updated.')
+            return redirect('super_admin_locations')
+    return render(request, 'superadmin/state_form.html', {'mode': 'edit', 'state': st})
+
+@sa_required
+def super_admin_state_delete(request, state_id):
+    st = get_object_or_404(State, pk=state_id)
+    st_name = st.name
+    st.delete()
+    django_messages.success(request, f'State "{st_name}" deleted.')
+    return redirect('super_admin_locations')
+
+# ─────────────────────────────────────────────
+# CMS: CITIES / LOCATIONS (Create + Edit + Delete)
+# ─────────────────────────────────────────────
+@sa_required
+def super_admin_location_create(request):
+    states = State.objects.filter(status='active').order_by('name')
+    if not states.exists():
+        for s_name in Location.objects.values_list('state', flat=True).distinct():
+            if s_name and s_name.strip():
+                State.objects.get_or_create(name=s_name.strip(), defaults={'status': 'active'})
+        states = State.objects.filter(status='active').order_by('name')
+
+    preselected_state = request.GET.get('state', '')
+
+    if request.method == 'POST':
+        state = request.POST.get('state', '').strip()
+        city = request.POST.get('city', '').strip()
+        status = request.POST.get('status', 'active')
+
+        if not state:
+            django_messages.error(request, 'Please select a state. Create a state first if none is listed.')
+        elif not city:
+            django_messages.error(request, 'Please enter a city name.')
+        elif Location.objects.filter(state__iexact=state, city__iexact=city).exists():
+            django_messages.error(request, f'City "{city}" in state "{state}" already exists.')
+        else:
+            Location.objects.create(
+                state=state,
+                city=city,
+                status=status,
+            )
+            django_messages.success(request, f'City "{city}, {state}" created successfully.')
+            return redirect('super_admin_locations')
+
+    return render(request, 'superadmin/location_form.html', {
+        'mode': 'create',
+        'states': states,
+        'preselected_state': preselected_state,
+    })
+
+@sa_required
+def super_admin_location_edit(request, loc_id):
+    loc = get_object_or_404(Location, pk=loc_id)
+    states = State.objects.order_by('name')
+    if request.method == 'POST':
+        state = request.POST.get('state', loc.state).strip()
+        city = request.POST.get('city', loc.city).strip()
+        status = request.POST.get('status', loc.status)
+        if not state:
+            django_messages.error(request, 'Please select a state.')
+        elif not city:
+            django_messages.error(request, 'City name is required.')
+        else:
+            loc.state = state
+            loc.city = city
+            loc.status = status
+            loc.save()
+            django_messages.success(request, f'City "{loc.city}, {loc.state}" updated.')
+            return redirect('super_admin_locations')
+    return render(request, 'superadmin/location_form.html', {
+        'mode': 'edit',
+        'loc': loc,
+        'states': states,
+    })
+
+@sa_required
+def super_admin_location_delete(request, loc_id):
+    loc = get_object_or_404(Location, pk=loc_id)
+    loc_str = str(loc)
+    loc.delete()
+    django_messages.success(request, f'City "{loc_str}" deleted.')
+    return redirect('super_admin_locations')
+
+# ─────────────────────────────────────────────
+# JOBS (List + Create + Edit + Delete + Bids Management & Vendor Assignment)
+# ─────────────────────────────────────────────
+@sa_required
+def super_admin_jobs(request):
+    jobs_qs = Job.objects.all().select_related('user', 'category', 'location', 'assigned_vendor').prefetch_related('bids').order_by('-created_at')
+    paginator = Paginator(jobs_qs, 10)
+    page_num = request.GET.get('page', 1)
+    try:
+        jobs = paginator.page(page_num)
+    except (EmptyPage, PageNotAnInteger):
+        jobs = paginator.page(1)
+    page_range = paginator.get_elided_page_range(jobs.number, on_each_side=2, on_ends=1)
+    return render(request, 'superadmin/jobs.html', {'jobs': jobs, 'page_range': page_range})
+
+@sa_required
+def super_admin_job_create(request):
+    users = CustomUser.objects.filter(role__in=['USER', 'CUSTOMER']).select_related('user_profile').order_by('username')
+    vendors = CustomUser.objects.filter(role='VENDOR').select_related('vendor_profile').order_by('username')
+    categories = Category.objects.filter(status='active').prefetch_related('subcategories').order_by('name')
+    locations = Location.objects.filter(status='active').order_by('state', 'city')
+    today_str = timezone.now().strftime('%Y-%m-%d')
+
+    if request.method == 'POST':
+        user_id = request.POST.get('user')
+        title = request.POST.get('title', '').strip()
+        cat_id = request.POST.get('category')
+        subcat_id = request.POST.get('subcategory')
+        loc_id = request.POST.get('location')
+        budget = request.POST.get('budget', 0) or 0
+        preferred_start_date = request.POST.get('preferred_start_date') or None
+        contact_mobile = request.POST.get('contact_mobile', '').strip()
+        contact_name = request.POST.get('contact_name', '').strip()
+        locality = request.POST.get('locality', '').strip()
+        address = request.POST.get('address', '').strip() or locality
+        pincode = request.POST.get('pincode', '').strip() or '834001'
+        
+        lat_val = request.POST.get('latitude')
+        lon_val = request.POST.get('longitude')
+        lat = None
+        lon = None
+        if lat_val:
+            try: lat = float(lat_val)
+            except (ValueError, TypeError): pass
+        if lon_val:
+            try: lon = float(lon_val)
+            except (ValueError, TypeError): pass
+
+        max_bids = request.POST.get('max_bids')
+        min_bid_amount = request.POST.get('min_bid_amount')
+        max_bid_amount = request.POST.get('max_bid_amount')
+        assigned_vendor_id = request.POST.get('assigned_vendor')
+        status = request.POST.get('status', 'open')
+        description = request.POST.get('description', '').strip()
+
+        customer = get_object_or_404(CustomUser, pk=user_id) if user_id else users.first()
+        cat_obj = Category.objects.filter(id=cat_id).first() if cat_id else None
+        
+        # Determine location
+        loc_obj = Location.objects.filter(id=loc_id).first() if loc_id else None
+        if not loc_obj:
+            loc_obj = Location.objects.filter(status='active').first()
+
+        assigned_v = CustomUser.objects.filter(id=assigned_vendor_id, role='VENDOR').first() if assigned_vendor_id else None
+
+        # Build subcategory text / work requirements
+        subcat_name = None
+        if subcat_id:
+            subcat_obj = SubCategory.objects.filter(id=subcat_id).first()
+            if subcat_obj:
+                subcat_name = subcat_obj.name
+
+        c_name = contact_name or customer.get_full_name() or customer.username
+        c_mobile = contact_mobile or getattr(customer, 'mobile', '') or getattr(getattr(customer, 'user_profile', None), 'phone_number', '')
+
+        job = Job.objects.create(
+            user=customer,
+            title=title or (subcat_name or "Home Service Job"),
+            category=cat_obj,
+            location=loc_obj,
+            budget=budget,
+            budget_type='Fixed Price',
+            preferred_start_date=preferred_start_date,
+            contact_name=c_name,
+            contact_mobile=c_mobile,
+            locality=locality,
+            latitude=lat,
+            longitude=lon,
+            address=address,
+            pincode=pincode,
+            max_bids=int(max_bids) if max_bids else 10,
+            min_bid_amount=float(min_bid_amount) if min_bid_amount else None,
+            max_bid_amount=float(max_bid_amount) if max_bid_amount else None,
+            assigned_vendor=assigned_v,
+            status=status if not assigned_v else ('selected' if status == 'open' else status),
+            description=description or f"Requirement for {title}",
+            required_work=[subcat_name] if subcat_name else ([title] if title else [])
+        )
+        if 'image' in request.FILES and request.FILES['image']:
+            job.image = request.FILES['image']
+            job.save(update_fields=['image'])
+        django_messages.success(request, f'Job "{job.title}" created successfully.')
+        return redirect('super_admin_jobs')
+
+    return render(request, 'superadmin/job_form.html', {
+        'mode': 'create',
+        'users': users,
+        'vendors': vendors,
+        'categories': categories,
+        'locations': locations,
+        'today_str': today_str
+    })
+
+@sa_required
+def super_admin_job_edit(request, job_id):
+    job = get_object_or_404(Job.objects.select_related('assigned_vendor', 'category', 'location', 'user'), pk=job_id)
+    categories = Category.objects.filter(status='active').prefetch_related('subcategories').order_by('name')
+    locations = Location.objects.filter(status='active').order_by('state', 'city')
+    users = CustomUser.objects.filter(role__in=['USER', 'CUSTOMER']).select_related('user_profile').order_by('username')
+    vendors = CustomUser.objects.filter(role='VENDOR').select_related('vendor_profile').order_by('username')
+    today_str = timezone.now().strftime('%Y-%m-%d')
+    
+    if request.method == 'POST':
+        old_status = job.status
+        job.title = request.POST.get('title', job.title).strip()
+        job.status = request.POST.get('status', job.status)
+        job.budget = request.POST.get('budget', job.budget)
+        
+        pref_date = request.POST.get('preferred_start_date')
+        if pref_date:
+            job.preferred_start_date = pref_date
+            
+        c_mobile = request.POST.get('contact_mobile')
+        if c_mobile:
+            job.contact_mobile = c_mobile.strip()
+            
+        c_name = request.POST.get('contact_name')
+        if c_name:
+            job.contact_name = c_name.strip()
+
+        loc_text = request.POST.get('locality')
+        if loc_text:
+            job.locality = loc_text.strip()
+
+        addr_text = request.POST.get('address')
+        if addr_text:
+            job.address = addr_text.strip()
+
+        pin_text = request.POST.get('pincode')
+        if pin_text:
+            job.pincode = pin_text.strip()
+
+        lat_val = request.POST.get('latitude')
+        if lat_val:
+            try: job.latitude = float(lat_val)
+            except: pass
+
+        lon_val = request.POST.get('longitude')
+        if lon_val:
+            try: job.longitude = float(lon_val)
+            except: pass
+
+        max_bids = request.POST.get('max_bids')
+        job.max_bids = int(max_bids) if max_bids else None
+        
+        min_bid_amount = request.POST.get('min_bid_amount')
+        job.min_bid_amount = float(min_bid_amount) if min_bid_amount else None
+        
+        max_bid_amount = request.POST.get('max_bid_amount')
+        job.max_bid_amount = float(max_bid_amount) if max_bid_amount else None
+        
+        assigned_vendor_id = request.POST.get('assigned_vendor')
+        if assigned_vendor_id:
+            job.assigned_vendor = CustomUser.objects.filter(id=assigned_vendor_id, role='VENDOR').first()
+            if job.status == 'open':
+                job.status = 'selected'
+        else:
+            job.assigned_vendor = None
+
+        cat_id = request.POST.get('category')
+        if cat_id:
+            job.category = Category.objects.filter(pk=cat_id).first()
+            
+        subcat_id = request.POST.get('subcategory')
+        if subcat_id:
+            sub_obj = SubCategory.objects.filter(pk=subcat_id).first()
+            if sub_obj:
+                job.required_work = [sub_obj.name]
+
+        loc_id = request.POST.get('location')
+        if loc_id:
+            job.location = Location.objects.filter(id=loc_id).first()
+
+        job.description = request.POST.get('description', job.description).strip()
+        if 'image' in request.FILES and request.FILES['image']:
+            job.image = request.FILES['image']
+        job.save()
+        if job.status == 'completed' and old_status != 'completed':
+            settled, msg = settle_job_completion(job=job)
+            if settled:
+                django_messages.info(request, msg)
+        django_messages.success(request, f'Job "{job.title}" updated.')
+        return redirect('super_admin_jobs')
+        
+    return render(request, 'superadmin/job_form.html', {
+        'mode': 'edit',
+        'job': job,
+        'categories': categories,
+        'locations': locations,
+        'users': users,
+        'vendors': vendors,
+        'today_str': today_str
+    })
+
+@sa_required
+def super_admin_job_delete(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    job.delete()
+    django_messages.success(request, 'Job deleted.')
+    return redirect('super_admin_jobs')
+
+@sa_required
+def super_admin_job_bids(request, job_id):
+    """
+    Dedicated view for Super Admin to:
+    1. See all vendor bids submitted for this job.
+    2. Manage bidding limit (max_bids) and pricing boundaries (min_bid_amount, max_bid_amount, budget).
+    3. Assign/Select a vendor directly or select from submitted bids.
+    4. Create a manual bid on behalf of a vendor.
+    """
+    job = get_object_or_404(
+        Job.objects.select_related('user', 'category', 'location', 'assigned_vendor'),
+        pk=job_id
+    )
+    vendors = CustomUser.objects.filter(role='VENDOR').select_related('vendor_profile').order_by('username')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'update_limits':
+            max_bids_val = request.POST.get('max_bids', '').strip()
+            min_bid_val = request.POST.get('min_bid_amount', '').strip()
+            max_bid_val = request.POST.get('max_bid_amount', '').strip()
+            budget_val = request.POST.get('budget', '').strip()
+            status_val = request.POST.get('status', '').strip()
+
+            if max_bids_val:
+                try:
+                    job.max_bids = max(1, int(max_bids_val))
+                except (ValueError, TypeError):
+                    pass
+            else:
+                job.max_bids = None
+
+            if min_bid_val:
+                try:
+                    job.min_bid_amount = float(min_bid_val)
+                except (ValueError, TypeError):
+                    pass
+            else:
+                job.min_bid_amount = None
+
+            if max_bid_val:
+                try:
+                    job.max_bid_amount = float(max_bid_val)
+                except (ValueError, TypeError):
+                    pass
+            else:
+                job.max_bid_amount = None
+
+            if budget_val:
+                try:
+                    job.budget = float(budget_val)
+                except (ValueError, TypeError):
+                    pass
+
+            if status_val:
+                old_status = job.status
+                job.status = status_val
+                job.save()
+                if status_val == 'completed' and old_status != 'completed':
+                    settled, msg = settle_job_completion(job=job)
+                    if settled:
+                        django_messages.info(request, msg)
+            django_messages.success(request, 'Bidding parameters & limits updated successfully.')
+            return redirect('super_admin_job_bids', job_id=job.id)
+
+        elif action == 'assign_vendor':
+            vendor_id = request.POST.get('vendor_id')
+            if vendor_id:
+                vendor = get_object_or_404(CustomUser, pk=vendor_id, role='VENDOR')
+                job.assigned_vendor = vendor
+                if job.status in ['open', 'cancelled']:
+                    job.status = 'selected'
+                job.save()
+                # Mark existing bid if any as selected
+                Bid.objects.filter(job=job, vendor=vendor).update(status='selected')
+                django_messages.success(request, f'Vendor "{vendor.get_full_name() or vendor.username}" assigned to Job #{job.id}.')
+            else:
+                job.assigned_vendor = None
+                job.save()
+                django_messages.success(request, 'Vendor assignment removed.')
+            return redirect('super_admin_job_bids', job_id=job.id)
+
+        elif action == 'select_bid':
+            bid_id = request.POST.get('bid_id')
+            bid = get_object_or_404(Bid, pk=bid_id, job=job)
+            Bid.objects.filter(job=job).exclude(id=bid.id).filter(status='selected').update(status='submitted')
+            bid.status = 'selected'
+            bid.save()
+            job.assigned_vendor = bid.vendor
+            job.status = 'selected'
+            job.save()
+            django_messages.success(request, f'Bid from "{bid.vendor.username}" for ₹{bid.amount} accepted & vendor assigned!')
+            return redirect('super_admin_job_bids', job_id=job.id)
+
+        elif action == 'reject_bid':
+            bid_id = request.POST.get('bid_id')
+            bid = get_object_or_404(Bid, pk=bid_id, job=job)
+            bid.status = 'rejected'
+            bid.save()
+            if job.assigned_vendor == bid.vendor:
+                job.assigned_vendor = None
+                job.status = 'open'
+                job.save()
+            django_messages.success(request, f'Bid from "{bid.vendor.username}" rejected.')
+            return redirect('super_admin_job_bids', job_id=job.id)
+
+        elif action == 'delete_bid':
+            bid_id = request.POST.get('bid_id')
+            bid = get_object_or_404(Bid, pk=bid_id, job=job)
+            if job.assigned_vendor == bid.vendor:
+                job.assigned_vendor = None
+                job.save()
+            bid.delete()
+            django_messages.success(request, 'Bid deleted successfully.')
+            return redirect('super_admin_job_bids', job_id=job.id)
+
+        elif action == 'create_bid':
+            vendor_id = request.POST.get('vendor_id')
+            amount = request.POST.get('amount')
+            estimated_time = request.POST.get('estimated_time', '').strip()
+            proposal = request.POST.get('proposal', '').strip()
+            status_bid = request.POST.get('bid_status', 'submitted')
+
+            if vendor_id and amount:
+                vendor = get_object_or_404(CustomUser, pk=vendor_id, role='VENDOR')
+                if job.max_bids and job.bids.count() >= job.max_bids:
+                    django_messages.error(request, f'Job has reached the maximum limit of {job.max_bids} bids.')
+                    return redirect('super_admin_job_bids', job_id=job.id)
+
+                gs_obj = GlobalSettings.objects.first()
+                c_pct = Decimal(str(gs_obj.platform_commission_percent if gs_obj and gs_obj.platform_commission_percent is not None else '10.00'))
+                cg_pct = Decimal(str(gs_obj.cgst_percent if gs_obj and gs_obj.cgst_percent is not None else '9.00'))
+                sg_pct = Decimal(str(gs_obj.sgst_percent if gs_obj and gs_obj.sgst_percent is not None else '9.00'))
+                f_fee = Decimal(str(gs_obj.platform_flat_fee if gs_obj and gs_obj.platform_flat_fee is not None else '0.00'))
+                t_mode = gs_obj.tax_calculation_mode if gs_obj and gs_obj.tax_calculation_mode else 'commission_only'
+
+                v_base = Decimal(str(amount)).quantize(Decimal('0.01'))
+                c_amt = ((v_base * c_pct) / Decimal('100.00') + f_fee).quantize(Decimal('0.01'))
+                if t_mode == 'commission_only':
+                    cg_amt = ((c_amt * cg_pct) / Decimal('100.00')).quantize(Decimal('0.01'))
+                    sg_amt = ((c_amt * sg_pct) / Decimal('100.00')).quantize(Decimal('0.01'))
+                else:
+                    taxable_b = v_base + c_amt
+                    cg_amt = ((taxable_b * cg_pct) / Decimal('100.00')).quantize(Decimal('0.01'))
+                    sg_amt = ((taxable_b * sg_pct) / Decimal('100.00')).quantize(Decimal('0.01'))
+                tot_cust = (v_base + c_amt + cg_amt + sg_amt).quantize(Decimal('0.01'))
+
+                bid = Bid.objects.create(
+                    vendor=vendor,
+                    job=job,
+                    amount=tot_cust,
+                    vendor_base_amount=v_base,
+                    commission_percent_applied=c_pct,
+                    commission_amount=c_amt,
+                    cgst_percent_applied=cg_pct,
+                    cgst_amount=cg_amt,
+                    sgst_percent_applied=sg_pct,
+                    sgst_amount=sg_amt,
+                    flat_fee_amount=f_fee,
+                    total_customer_amount=tot_cust,
+                    estimated_time=estimated_time,
+                    proposal=proposal,
+                    status=status_bid
+                )
+                if status_bid == 'selected':
+                    job.assigned_vendor = vendor
+                    job.status = 'selected'
+                    job.save()
+                django_messages.success(request, f'Bid of ₹{bid.amount} recorded for {vendor.username}.')
+            return redirect('super_admin_job_bids', job_id=job.id)
+
+    bids = job.bids.all().select_related('vendor', 'vendor__vendor_profile').order_by('-created_at')
+    bids_count = bids.count()
+    is_limit_reached = bool(job.max_bids and bids_count >= job.max_bids)
+
+    context = {
+        'job': job,
+        'bids': bids,
+        'bids_count': bids_count,
+        'is_limit_reached': is_limit_reached,
+        'vendors': vendors,
+    }
+    return render(request, 'superadmin/job_bids.html', context)
+
+# ─────────────────────────────────────────────
+# QUICK SERVICES (List + Create + Edit + Delete)
+# ─────────────────────────────────────────────
+@sa_required
+def super_admin_quick_services(request):
+    qs_list = QuickService.objects.all().select_related('vendor', 'vendor__vendor_profile', 'category', 'subcategory', 'location').order_by('-created_at')
+    
+    total_count = qs_list.count()
+    active_count = qs_list.filter(status='active').count()
+    draft_count = qs_list.filter(status='draft').count()
+    paused_count = qs_list.filter(status='paused').count()
+
+    categories = Category.objects.all().order_by('name')
+
+    search_query = request.GET.get('search', '').strip()
+    category_id = request.GET.get('category', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+
+    if search_query:
+        from django.db.models import Q
+        qs_list = qs_list.filter(
+            Q(title__icontains=search_query) |
+            Q(vendor__username__icontains=search_query) |
+            Q(vendor__first_name__icontains=search_query) |
+            Q(vendor__last_name__icontains=search_query) |
+            Q(locality__icontains=search_query)
+        )
+    if category_id and category_id.isdigit():
+        qs_list = qs_list.filter(category_id=int(category_id))
+    if status_filter and status_filter != 'all':
+        qs_list = qs_list.filter(status=status_filter)
+
+    paginator = Paginator(qs_list, 12)
+    page_num = request.GET.get('page', 1)
+    try:
+        qservices = paginator.page(page_num)
+    except (EmptyPage, PageNotAnInteger):
+        qservices = paginator.page(1)
+    page_range = paginator.get_elided_page_range(qservices.number, on_each_side=2, on_ends=1)
+    
+    context = {
+        'qservices': qservices,
+        'page_range': page_range,
+        'categories': categories,
+        'total_count': total_count,
+        'active_count': active_count,
+        'draft_count': draft_count,
+        'paused_count': paused_count,
+        'search_query': search_query,
+        'selected_category': category_id,
+        'selected_status': status_filter,
+    }
+    return render(request, 'superadmin/quick_services.html', context)
+
+def _build_vendors_metadata_map(vendors, locations, categories):
+    from .views import resolve_coordinates_for_location
+    locs = list(locations)
+    cats = list(categories)
+    vendors_map = {}
+
+    for u in vendors:
+        vp = getattr(u, 'vendor_profile', None)
+        loc_text = (vp.location if vp and vp.location else '').strip()
+        addr_text = (vp.address if vp and vp.address else '').strip()
+        city = (vp.city if vp and vp.city else '') or u.assigned_city or ''
+        if not city and loc_text:
+            city = loc_text.split(',')[0].strip()
+        state = u.assigned_state or ''
+        if not state and loc_text and ',' in loc_text:
+            state = loc_text.split(',')[-1].strip()
+
+        # Match Location object
+        matched_loc_id = None
+        for l in locs:
+            l_city = (l.city or '').strip().lower()
+            if city and l_city == city.lower():
+                matched_loc_id = l.id
+                break
+            if loc_text and (l_city in loc_text.lower()):
+                matched_loc_id = l.id
+                break
+
+        # Resolve Lat & Lon
+        lat = float(vp.latitude) if (vp and vp.latitude is not None) else None
+        lon = float(vp.longitude) if (vp and vp.longitude is not None) else None
+        if lat is None or lon is None:
+            for cand in [loc_text, city, state, 'Ranchi']:
+                if cand:
+                    coords = resolve_coordinates_for_location(cand, default_coords=None)
+                    if coords:
+                        lat, lon = coords
+                        break
+            if lat is None or lon is None:
+                lat, lon = 23.369700, 85.334600
+
+        # Match Category
+        matched_cat_id = None
+        if vp and vp.category:
+            v_cat_lower = str(vp.category).strip().lower()
+            for c in cats:
+                c_name_lower = c.name.strip().lower()
+                if c_name_lower in v_cat_lower or v_cat_lower in c_name_lower:
+                    matched_cat_id = c.id
+                    break
+
+        locality_val = loc_text or addr_text or city
+        if matched_loc_id and not locality_val:
+            for l in locs:
+                if l.id == matched_loc_id:
+                    locality_val = f"{l.city}, {l.state}"
+                    break
+
+        vendors_map[u.id] = {
+            'id': u.id,
+            'name': u.get_full_name() or u.username,
+            'username': u.username,
+            'company_name': vp.company_name if vp and vp.company_name else '',
+            'mobile': vp.mobile if vp and vp.mobile else '',
+            'category': vp.category if vp and vp.category else '',
+            'category_id': matched_cat_id,
+            'location_id': matched_loc_id,
+            'city': city,
+            'state': state,
+            'locality': locality_val or 'Ranchi, Jharkhand',
+            'latitude': round(lat, 6) if lat is not None else 23.369700,
+            'longitude': round(lon, 6) if lon is not None else 85.334600,
+            'service_radius_km': 10.0,
+            'is_online': vp.is_online if vp else True,
+        }
+
+    return vendors_map
+
+@sa_required
+def super_admin_qs_create(request):
+    vendors = CustomUser.objects.filter(role='VENDOR').select_related('vendor_profile').order_by('username')
+    categories = Category.objects.all().prefetch_related('subcategories').order_by('name')
+    locations = Location.objects.all().order_by('state', 'city')
+    gs = GlobalSettings.objects.first()
+
+    if request.method == 'POST':
+        vendor_id = request.POST.get('vendor') or request.POST.get('user')
+        title = request.POST.get('title', '').strip()
+        cat_id = request.POST.get('category')
+        subcat_id = request.POST.get('subcategory')
+        loc_id = request.POST.get('location')
+        status = request.POST.get('status', 'active')
+        if status not in ['active', 'paused', 'draft']:
+            status = 'active'
+        description = request.POST.get('description', '').strip()
+        locality = request.POST.get('locality', '').strip()
+        image_preset = request.POST.get('image_url', '').strip()
+
+        vendor = get_object_or_404(CustomUser, pk=vendor_id)
+        cat_obj = Category.objects.filter(id=cat_id).first() if cat_id else None
+        subcat_obj = SubCategory.objects.filter(id=subcat_id).first() if subcat_id else None
+        loc_obj = Location.objects.filter(id=loc_id).first() if loc_id else None
+
+        radius_val = request.POST.get('service_radius_km', 10.0)
+        try: radius = float(radius_val) if radius_val else 10.0
+        except (ValueError, TypeError): radius = 10.0
+
+        lat_val = request.POST.get('latitude')
+        lon_val = request.POST.get('longitude')
+        try: lat = float(lat_val) if lat_val else None
+        except (ValueError, TypeError): lat = None
+        try: lon = float(lon_val) if lon_val else None
+        except (ValueError, TypeError): lon = None
+
+        # Parse Packages
+        packages_json = request.POST.get('packages_json')
+        service_packages = []
+        if packages_json:
+            try:
+                parsed_pkgs = json.loads(packages_json)
+                if isinstance(parsed_pkgs, list):
+                    for p in parsed_pkgs:
+                        if isinstance(p, dict) and p.get('name'):
+                            p_raw = float(p.get('price', 0))
+                            calc = gs.calculate_qs_customer_price(p_raw) if gs else {'customer_price': round(p_raw), 'vendor_payout': p_raw, 'commission': 0, 'total_tax': 0}
+                            service_packages.append({
+                                'name': str(p.get('name')).strip(),
+                                'price': calc['customer_price'],
+                                'vendor_payout': calc['vendor_payout'],
+                                'commission': calc.get('commission', 0),
+                                'tax': calc.get('total_tax', 0),
+                                'desc': str(p.get('desc', '')).strip(),
+                                'duration': str(p.get('duration', '45 mins')).strip() or '45 mins'
+                            })
+            except Exception: pass
+
+        if not service_packages:
+            pkg_names = request.POST.getlist('package_name[]')
+            pkg_prices = request.POST.getlist('package_price[]')
+            pkg_descs = request.POST.getlist('package_desc[]')
+            for i, name in enumerate(pkg_names):
+                if not name.strip():
+                    continue
+                try: p_val = float(pkg_prices[i]) if i < len(pkg_prices) else 0.0
+                except (ValueError, TypeError): p_val = 0.0
+                calc = gs.calculate_qs_customer_price(p_val) if gs else {'customer_price': round(p_val), 'vendor_payout': p_val, 'commission': 0, 'total_tax': 0}
+                d_val = pkg_descs[i].strip() if i < len(pkg_descs) else ""
+                service_packages.append({
+                    'name': name.strip(),
+                    'price': calc['customer_price'],
+                    'vendor_payout': calc['vendor_payout'],
+                    'commission': calc.get('commission', 0),
+                    'tax': calc.get('total_tax', 0),
+                    'desc': d_val
+                })
+
+        base_price_val = request.POST.get('base_price', 0)
+        try: default_price = float(base_price_val) if base_price_val else 199.0
+        except: default_price = 199.0
+
+        if not service_packages:
+            calc = gs.calculate_qs_customer_price(default_price) if gs else {'customer_price': round(default_price), 'vendor_payout': default_price, 'commission': 0, 'total_tax': 0}
+            service_packages = [{
+                'name': 'Standard Service',
+                'price': calc['customer_price'],
+                'vendor_payout': calc['vendor_payout'],
+                'commission': calc.get('commission', 0),
+                'tax': calc.get('total_tax', 0),
+                'desc': description or f"Full {title} service by verified professional."
+            }]
+
+        min_price = min(p['price'] for p in service_packages)
+
+        # Inclusions & Exclusions
+        inclusions = [str(x).strip() for x in request.POST.getlist('inclusions[]') if str(x).strip()]
+        if not inclusions:
+            inclusions_json = request.POST.get('inclusions_json')
+            if inclusions_json:
+                try:
+                    p_inc = json.loads(inclusions_json)
+                    if isinstance(p_inc, list):
+                        inclusions = [str(x).strip() for x in p_inc if str(x).strip()]
+                except Exception: pass
+        if not inclusions:
+            inclusions = [
+                "Complete diagnostic inspection of existing fittings & components",
+                "Execution by certified, background-checked professional",
+                "Post-service sanitization and thorough debris cleanup",
+                "30 days Sugu protection warranty on all workmanship"
+            ]
+
+        exclusions = [str(x).strip() for x in request.POST.getlist('exclusions[]') if str(x).strip()]
+        if not exclusions:
+            exclusions_json = request.POST.get('exclusions_json')
+            if exclusions_json:
+                try:
+                    p_exc = json.loads(exclusions_json)
+                    if isinstance(p_exc, list):
+                        exclusions = [str(x).strip() for x in p_exc if str(x).strip()]
+                except Exception: pass
+        if not exclusions:
+            exclusions = [
+                "Major civil masonry, pipe embedding or wall tearing excluded",
+                "Spare parts / extra hardware to be purchased or charged separately"
+            ]
+
+        gender_val = request.POST.get('gender', 'all').strip().lower() or 'all'
+        delivery_mode_val = request.POST.get('delivery_mode', 'both').strip().lower() or 'both'
+        duration_val = request.POST.get('duration', '45 mins').strip() or '45 mins'
+        brand_name_val = request.POST.get('brand_name', '').strip() or None
+        is_mono_pack_val = bool(request.POST.get('is_mono_pack') in ['1', 'true', 'on', True])
+        parlour_name_val = request.POST.get('parlour_name', '').strip() or None
+
+        qs = QuickService(
+            vendor=vendor,
+            title=title,
+            category=cat_obj,
+            subcategory=subcat_obj,
+            tags=subcat_obj.name if subcat_obj else '',
+            location=loc_obj,
+            base_price=min_price,
+            service_packages=service_packages,
+            inclusions=inclusions,
+            exclusions=exclusions,
+            image_url=image_preset or None,
+            locality=locality,
+            latitude=lat,
+            longitude=lon,
+            service_radius_km=radius,
+            status=status,
+            gender=gender_val,
+            delivery_mode=delivery_mode_val,
+            duration=duration_val,
+            brand_name=brand_name_val,
+            is_mono_pack=is_mono_pack_val,
+            parlour_name=parlour_name_val,
+            description=description or f"Quality {title} service at your doorstep."
+        )
+        image_file = request.FILES.get('image')
+        if image_file:
+            qs.image = image_file
+        qs.save()
+
+        django_messages.success(request, f'Quick Service "{qs.title}" created successfully.')
+        return redirect('super_admin_quick_services')
+
+    vendors_map = _build_vendors_metadata_map(vendors, locations, categories)
+    return render(request, 'superadmin/qs_form.html', {
+        'mode': 'create',
+        'vendors': vendors,
+        'users': vendors,
+        'categories': categories,
+        'locations': locations,
+        'global_settings': gs,
+        'packages_json': json.dumps([]),
+        'inclusions_json': json.dumps([]),
+        'exclusions_json': json.dumps([]),
+        'vendors_json': json.dumps(vendors_map),
+    })
+
+@sa_required
+def super_admin_qs_edit(request, qs_id):
+    qs = get_object_or_404(QuickService, pk=qs_id)
+    categories = Category.objects.all().prefetch_related('subcategories').order_by('name')
+    locations = Location.objects.all().order_by('state', 'city')
+    vendors = CustomUser.objects.filter(role='VENDOR').select_related('vendor_profile').order_by('username')
+    gs = GlobalSettings.objects.first()
+
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        if title:
+            qs.title = title
+
+        status = request.POST.get('status')
+        if status in ['active', 'paused', 'draft']:
+            qs.status = status
+
+        cat_id = request.POST.get('category')
+        if cat_id:
+            qs.category = Category.objects.filter(id=cat_id).first()
+        else:
+            qs.category = None
+
+        subcat_id = request.POST.get('subcategory')
+        if subcat_id:
+            qs.subcategory = SubCategory.objects.filter(id=subcat_id).first()
+            if qs.subcategory:
+                qs.tags = qs.subcategory.name
+        else:
+            qs.subcategory = None
+
+        loc_id = request.POST.get('location')
+        if loc_id:
+            qs.location = Location.objects.filter(id=loc_id).first()
+
+        vendor_id = request.POST.get('vendor') or request.POST.get('user')
+        if vendor_id:
+            qs.vendor = CustomUser.objects.filter(id=vendor_id).first() or qs.vendor
+
+        qs.description = request.POST.get('description', qs.description).strip()
+        qs.locality = request.POST.get('locality', qs.locality or '').strip()
+        if request.POST.get('gender'):
+            qs.gender = request.POST.get('gender').strip().lower()
+        if request.POST.get('delivery_mode'):
+            qs.delivery_mode = request.POST.get('delivery_mode').strip().lower()
+        if request.POST.get('duration'):
+            qs.duration = request.POST.get('duration').strip()
+        if request.POST.get('brand_name') is not None:
+            qs.brand_name = request.POST.get('brand_name').strip() or None
+        if 'is_mono_pack' in request.POST:
+            qs.is_mono_pack = bool(request.POST.get('is_mono_pack') in ['1', 'true', 'on', True])
+        if request.POST.get('parlour_name') is not None:
+            qs.parlour_name = request.POST.get('parlour_name').strip() or None
+
+        radius_val = request.POST.get('service_radius_km')
+        if radius_val:
+            try: qs.service_radius_km = float(radius_val)
+            except (ValueError, TypeError): pass
+
+        lat_val = request.POST.get('latitude')
+        if lat_val:
+            try: qs.latitude = float(lat_val)
+            except (ValueError, TypeError): pass
+
+        lon_val = request.POST.get('longitude')
+        if lon_val:
+            try: qs.longitude = float(lon_val)
+            except (ValueError, TypeError): pass
+
+        image_file = request.FILES.get('image')
+        if image_file:
+            qs.image = image_file
+
+        image_url = request.POST.get('image_url')
+        if image_url is not None:
+            qs.image_url = image_url.strip() or None
+
+        # Parse Packages
+        packages_json = request.POST.get('packages_json')
+        service_packages = []
+        if packages_json:
+            try:
+                parsed_pkgs = json.loads(packages_json)
+                if isinstance(parsed_pkgs, list):
+                    for p in parsed_pkgs:
+                        if isinstance(p, dict) and p.get('name'):
+                            p_raw = float(p.get('price', 0))
+                            calc = gs.calculate_qs_customer_price(p_raw) if gs else {'customer_price': round(p_raw), 'vendor_payout': p_raw, 'commission': 0, 'total_tax': 0}
+                            service_packages.append({
+                                'name': str(p.get('name')).strip(),
+                                'price': calc['customer_price'],
+                                'vendor_payout': calc['vendor_payout'],
+                                'commission': calc.get('commission', 0),
+                                'tax': calc.get('total_tax', 0),
+                                'desc': str(p.get('desc', '')).strip(),
+                                'duration': str(p.get('duration', '45 mins')).strip() or '45 mins'
+                            })
+            except Exception: pass
+
+        if not service_packages:
+            pkg_names = request.POST.getlist('package_name[]')
+            pkg_prices = request.POST.getlist('package_price[]')
+            pkg_descs = request.POST.getlist('package_desc[]')
+            for i, name in enumerate(pkg_names):
+                if not name.strip():
+                    continue
+                try: p_val = float(pkg_prices[i]) if i < len(pkg_prices) else 0.0
+                except (ValueError, TypeError): p_val = 0.0
+                calc = gs.calculate_qs_customer_price(p_val) if gs else {'customer_price': round(p_val), 'vendor_payout': p_val, 'commission': 0, 'total_tax': 0}
+                d_val = pkg_descs[i].strip() if i < len(pkg_descs) else ""
+                service_packages.append({
+                    'name': name.strip(),
+                    'price': calc['customer_price'],
+                    'vendor_payout': calc['vendor_payout'],
+                    'commission': calc.get('commission', 0),
+                    'tax': calc.get('total_tax', 0),
+                    'desc': d_val
+                })
+
+        if service_packages:
+            qs.service_packages = service_packages
+            qs.base_price = min(p['price'] for p in service_packages)
+        else:
+            base_price_val = request.POST.get('base_price')
+            if base_price_val:
+                try:
+                    p_val = float(base_price_val)
+                    calc = gs.calculate_qs_customer_price(p_val) if gs else {'customer_price': round(p_val), 'vendor_payout': p_val, 'commission': 0, 'total_tax': 0}
+                    qs.base_price = calc['customer_price']
+                    if not qs.service_packages:
+                        qs.service_packages = [{
+                            'name': 'Standard Service',
+                            'price': calc['customer_price'],
+                            'vendor_payout': calc['vendor_payout'],
+                            'commission': calc.get('commission', 0),
+                            'tax': calc.get('total_tax', 0),
+                            'desc': qs.description or "Full service by verified expert."
+                        }]
+                except (ValueError, TypeError): pass
+
+        # Inclusions & Exclusions
+        inclusions_json = request.POST.get('inclusions_json')
+        if inclusions_json:
+            try:
+                p_inc = json.loads(inclusions_json)
+                if isinstance(p_inc, list):
+                    qs.inclusions = [str(x).strip() for x in p_inc if str(x).strip()]
+            except Exception: pass
+        else:
+            inc_list = [str(x).strip() for x in request.POST.getlist('inclusions[]') if str(x).strip()]
+            if inc_list:
+                qs.inclusions = inc_list
+
+        exclusions_json = request.POST.get('exclusions_json')
+        if exclusions_json:
+            try:
+                p_exc = json.loads(exclusions_json)
+                if isinstance(p_exc, list):
+                    qs.exclusions = [str(x).strip() for x in p_exc if str(x).strip()]
+            except Exception: pass
+        else:
+            exc_list = [str(x).strip() for x in request.POST.getlist('exclusions[]') if str(x).strip()]
+            if exc_list:
+                qs.exclusions = exc_list
+
+        qs.save()
+        django_messages.success(request, f'Quick Service "{qs.title}" updated successfully.')
+        return redirect('super_admin_quick_services')
+
+    packages_json = json.dumps(qs.service_packages or [])
+    inclusions_json = json.dumps(qs.inclusions or [])
+    exclusions_json = json.dumps(qs.exclusions or [])
+
+    vendors_map = _build_vendors_metadata_map(vendors, locations, categories)
+    return render(request, 'superadmin/qs_form.html', {
+        'mode': 'edit',
+        'qs': qs,
+        'categories': categories,
+        'locations': locations,
+        'vendors': vendors,
+        'users': vendors,
+        'global_settings': gs,
+        'packages_json': packages_json,
+        'inclusions_json': inclusions_json,
+        'exclusions_json': exclusions_json,
+        'vendors_json': json.dumps(vendors_map),
+    })
+
+@sa_required
+def super_admin_qs_delete(request, qs_id):
+    qs = get_object_or_404(QuickService, pk=qs_id)
+    qs.delete()
+    django_messages.success(request, 'Quick Service deleted.')
+    return redirect('super_admin_quick_services')
+
+# ─────────────────────────────────────────────
+# BIDS (List + Create + Edit + Delete)
+# ─────────────────────────────────────────────
+@sa_required
+def super_admin_bids(request):
+    bids_qs = Bid.objects.all().select_related('vendor', 'job', 'quick_service').order_by('-created_at')
+    paginator = Paginator(bids_qs, 10)
+    page_num = request.GET.get('page', 1)
+    try:
+        bids = paginator.page(page_num)
+    except (EmptyPage, PageNotAnInteger):
+        bids = paginator.page(1)
+    page_range = paginator.get_elided_page_range(bids.number, on_each_side=2, on_ends=1)
+    return render(request, 'superadmin/bids.html', {'bids': bids, 'page_range': page_range})
+
+@sa_required
+def super_admin_bid_create(request):
+    vendors = CustomUser.objects.filter(role='VENDOR').order_by('username')
+    jobs = Job.objects.filter(status__in=['open', 'progress']).order_by('-created_at')
+    qservices = QuickService.objects.filter(status='active').order_by('-created_at')
+
+    if request.method == 'POST':
+        vendor_id = request.POST.get('vendor')
+        target_type = request.POST.get('target_type', 'job')
+        target_id = request.POST.get('target_id')
+        amount = request.POST.get('amount', 0) or 0
+        status = request.POST.get('status', 'pending')
+        proposal = request.POST.get('proposal', '').strip()
+
+        vendor = get_object_or_404(CustomUser, pk=vendor_id)
+        job_obj = None
+        qs_obj = None
+
+        if target_type == 'job' and target_id:
+            job_obj = get_object_or_404(Job, pk=target_id)
+        elif target_type == 'quick_service' and target_id:
+            qs_obj = get_object_or_404(QuickService, pk=target_id)
+
+        gs_obj = GlobalSettings.objects.first()
+        c_pct = Decimal(str(gs_obj.platform_commission_percent if gs_obj and gs_obj.platform_commission_percent is not None else '10.00'))
+        cg_pct = Decimal(str(gs_obj.cgst_percent if gs_obj and gs_obj.cgst_percent is not None else '9.00'))
+        sg_pct = Decimal(str(gs_obj.sgst_percent if gs_obj and gs_obj.sgst_percent is not None else '9.00'))
+        f_fee = Decimal(str(gs_obj.platform_flat_fee if gs_obj and gs_obj.platform_flat_fee is not None else '0.00'))
+        t_mode = gs_obj.tax_calculation_mode if gs_obj and gs_obj.tax_calculation_mode else 'commission_only'
+
+        v_base = Decimal(str(amount)).quantize(Decimal('0.01'))
+        c_amt = ((v_base * c_pct) / Decimal('100.00') + f_fee).quantize(Decimal('0.01'))
+        if t_mode == 'commission_only':
+            cg_amt = ((c_amt * cg_pct) / Decimal('100.00')).quantize(Decimal('0.01'))
+            sg_amt = ((c_amt * sg_pct) / Decimal('100.00')).quantize(Decimal('0.01'))
+        else:
+            taxable_b = v_base + c_amt
+            cg_amt = ((taxable_b * cg_pct) / Decimal('100.00')).quantize(Decimal('0.01'))
+            sg_amt = ((taxable_b * sg_pct) / Decimal('100.00')).quantize(Decimal('0.01'))
+        tot_cust = (v_base + c_amt + cg_amt + sg_amt).quantize(Decimal('0.01'))
+
+        bid = Bid.objects.create(
+            vendor=vendor,
+            job=job_obj,
+            quick_service=qs_obj,
+            amount=tot_cust,
+            vendor_base_amount=v_base,
+            commission_percent_applied=c_pct,
+            commission_amount=c_amt,
+            cgst_percent_applied=cg_pct,
+            cgst_amount=cg_amt,
+            sgst_percent_applied=sg_pct,
+            sgst_amount=sg_amt,
+            flat_fee_amount=f_fee,
+            total_customer_amount=tot_cust,
+            status=status,
+            proposal=proposal
+        )
+        django_messages.success(request, f'Bid of ₹{bid.amount} created successfully for {vendor.username}.')
+        return redirect('super_admin_bids')
+
+    return render(request, 'superadmin/bid_form.html', {
+        'mode': 'create',
+        'vendors': vendors,
+        'jobs': jobs,
+        'qservices': qservices
+    })
+
+@sa_required
+def super_admin_bid_edit(request, bid_id):
+    bid = get_object_or_404(Bid, pk=bid_id)
+    if request.method == 'POST':
+        bid.status = request.POST.get('status', bid.status)
+        bid.amount = request.POST.get('amount', bid.amount)
+        bid.save()
+        django_messages.success(request, 'Bid updated.')
+        return redirect('super_admin_bids')
+    return render(request, 'superadmin/bid_form.html', {'mode': 'edit', 'bid': bid})
+
+@sa_required
+def super_admin_bid_delete(request, bid_id):
+    bid = get_object_or_404(Bid, pk=bid_id)
+    bid.delete()
+    django_messages.success(request, 'Bid deleted.')
+    return redirect('super_admin_bids')
+
+# ─────────────────────────────────────────────
+# BID PLANS & PRICING MANAGEMENT (Super Admin)
+# ─────────────────────────────────────────────
+@sa_required
+def super_admin_bid_plans(request):
+    """
+    Unified Bid Management page for Super Admin.
+    Replaces old Subscription & Landing Package pages.
+    Allows managing:
+    - Global bid cost (cost of single bid in INR)
+    - Free starter credits on registration
+    - Min bids per job proposal
+    - Create/Edit/Delete/Toggle Bid Plans (e.g. 5 bids for ₹100, 10 for ₹200, 30 for ₹500)
+    - View vendor bid purchases / subscriptions log
+    - Manual credit grants
+    """
+    settings_obj = GlobalSettings.objects.first()
+    if not settings_obj:
+        settings_obj = GlobalSettings.objects.create(single_bid_cost=20.00, free_starter_bids=5, min_bids_per_job=1)
+
+    plans = BidPlan.objects.all().order_by('order', 'price')
+    total_plans = plans.count()
+    active_plans = plans.filter(is_active=True).count()
+
+    # Vendor Bid Purchases / Subscriptions log
+    purchases_qs = Subscription.objects.all().select_related('vendor').order_by('-created_at')
+    total_purchases_count = purchases_qs.count()
+    total_revenue = purchases_qs.aggregate(total=Sum('amount'))['total'] or 0
+    total_credits_sold = purchases_qs.aggregate(total=Sum('credits_added'))['total'] or 0
+
+    paginator = Paginator(purchases_qs, 10)
+    page_num = request.GET.get('page', 1)
+    try:
+        purchases = paginator.page(page_num)
+    except (EmptyPage, PageNotAnInteger):
+        purchases = paginator.page(1)
+    page_range = paginator.get_elided_page_range(purchases.number, on_each_side=2, on_ends=1)
+
+    vendors = CustomUser.objects.filter(role='VENDOR').order_by('username')
+
+    context = {
+        'settings': settings_obj,
+        'plans': plans,
+        'total_plans': total_plans,
+        'active_plans': active_plans,
+        'purchases': purchases,
+        'page_range': page_range,
+        'total_purchases_count': total_purchases_count,
+        'total_revenue': total_revenue,
+        'total_credits_sold': total_credits_sold,
+        'vendors': vendors,
+    }
+    return render(request, 'superadmin/bid_plans.html', context)
+
+
+@sa_required
+def super_admin_bid_settings_update(request):
+    if request.method == 'POST':
+        settings_obj = GlobalSettings.objects.first()
+        if not settings_obj:
+            settings_obj = GlobalSettings.objects.create()
+
+        try:
+            cost = Decimal(request.POST.get('single_bid_cost', '20.00'))
+            if cost > 0:
+                settings_obj.single_bid_cost = cost
+        except Exception:
+            pass
+
+        try:
+            free_bids = int(request.POST.get('free_starter_bids', 5))
+            if free_bids >= 0:
+                settings_obj.free_starter_bids = free_bids
+        except Exception:
+            pass
+
+        try:
+            min_bids = int(request.POST.get('min_bids_per_job', 1))
+            if min_bids > 0:
+                settings_obj.min_bids_per_job = min_bids
+        except Exception:
+            pass
+
+        settings_obj.save()
+        django_messages.success(request, f'Bid settings updated! Single bid cost is now ₹{settings_obj.single_bid_cost}.')
+    return redirect('super_admin_bid_plans')
+
+
+@sa_required
+def super_admin_bid_plan_create(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        tagline = request.POST.get('tagline', '').strip()
+        credits = int(request.POST.get('credits', 10) or 10)
+        price = Decimal(request.POST.get('price', '200.00') or '200.00')
+        original_price = request.POST.get('original_price')
+        orig_dec = Decimal(original_price) if original_price else None
+        is_popular = request.POST.get('is_popular') in ['on', 'true', '1']
+        is_active = request.POST.get('is_active') in ['on', 'true', '1']
+        order = int(request.POST.get('order', 0) or 0)
+
+        if not name:
+            name = f"{credits} Bids Pack"
+
+        plan = BidPlan.objects.create(
+            name=name,
+            tagline=tagline,
+            credits=credits,
+            price=price,
+            original_price=orig_dec,
+            is_popular=is_popular,
+            is_active=is_active,
+            order=order
+        )
+        django_messages.success(request, f'Bid Plan "{plan.name}" ({plan.credits} bids for ₹{plan.price}) created successfully!')
+    return redirect('super_admin_bid_plans')
+
+
+@sa_required
+def super_admin_bid_plan_edit(request, plan_id):
+    plan = get_object_or_404(BidPlan, pk=plan_id)
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        if name:
+            plan.name = name
+        plan.tagline = request.POST.get('tagline', '').strip()
+        plan.credits = int(request.POST.get('credits', plan.credits) or plan.credits)
+        plan.price = Decimal(request.POST.get('price', str(plan.price)) or str(plan.price))
+        original_price = request.POST.get('original_price')
+        plan.original_price = Decimal(original_price) if original_price else None
+        plan.is_popular = request.POST.get('is_popular') in ['on', 'true', '1']
+        plan.is_active = request.POST.get('is_active') in ['on', 'true', '1']
+        plan.order = int(request.POST.get('order', plan.order) or 0)
+        plan.save()
+        django_messages.success(request, f'Bid Plan "{plan.name}" updated successfully!')
+    return redirect('super_admin_bid_plans')
+
+
+@sa_required
+def super_admin_bid_plan_delete(request, plan_id):
+    plan = get_object_or_404(BidPlan, pk=plan_id)
+    name = plan.name
+    plan.delete()
+    django_messages.success(request, f'Bid Plan "{name}" deleted.')
+    return redirect('super_admin_bid_plans')
+
+
+@sa_required
+def super_admin_bid_plan_toggle(request, plan_id):
+    plan = get_object_or_404(BidPlan, pk=plan_id)
+    plan.is_active = not plan.is_active
+    plan.save(update_fields=['is_active'])
+    status_str = "activated" if plan.is_active else "deactivated"
+    django_messages.success(request, f'Bid Plan "{plan.name}" {status_str}.')
+    return redirect('super_admin_bid_plans')
+
+
+@sa_required
+def super_admin_manual_bid_grant(request):
+    """Allows Super Admin to directly grant bid credits to a vendor."""
+    if request.method == 'POST':
+        vendor_id = request.POST.get('vendor_id')
+        credits = int(request.POST.get('credits', 0) or 0)
+        reason = request.POST.get('reason', 'Admin Grant').strip()
+        vendor = get_object_or_404(CustomUser, pk=vendor_id)
+        if hasattr(vendor, 'vendor_profile'):
+            vp = vendor.vendor_profile
+            vp.available_bids = (vp.available_bids or 0) + credits
+            vp.save(update_fields=['available_bids'])
+
+            Subscription.objects.create(
+                vendor=vendor,
+                package_name=f"Admin Grant: {reason}",
+                amount=0,
+                credits_added=credits,
+                status='success'
+            )
+            django_messages.success(request, f'Successfully granted {credits} bid credits to {vendor.username}!')
+    return redirect('super_admin_bid_plans')
+
+
+# Aliases for backward compatibility
+@sa_required
+def super_admin_subscriptions(request):
+    return redirect('super_admin_bid_plans')
+
+@sa_required
+def super_admin_subscription_create(request):
+    return redirect('super_admin_bid_plans')
+
+@sa_required
+def super_admin_subscription_delete(request, sub_id):
+    return redirect('super_admin_bid_plans')
+
+@sa_required
+def super_admin_landing_packages(request):
+    return redirect('super_admin_bid_plans')
+
+@sa_required
+def super_admin_landing_package_create(request):
+    return redirect('super_admin_bid_plans')
+
+@sa_required
+def super_admin_landing_package_edit(request, card_id):
+    return redirect('super_admin_bid_plans')
+
+@sa_required
+def super_admin_landing_package_delete(request, card_id):
+    return redirect('super_admin_bid_plans')
+
+@sa_required
+def super_admin_landing_package_toggle(request, card_id):
+    return redirect('super_admin_bid_plans')
+
+
+# ─────────────────────────────────────────────
+# MESSAGES (List + Delete)
+# ─────────────────────────────────────────────
+@sa_required
+def super_admin_messages(request):
+    msgs_qs = Message.objects.all().select_related('sender', 'receiver').order_by('-created_at')
+    paginator = Paginator(msgs_qs, 10)
+    page_num = request.GET.get('page', 1)
+    try:
+        msgs = paginator.page(page_num)
+    except (EmptyPage, PageNotAnInteger):
+        msgs = paginator.page(1)
+    page_range = paginator.get_elided_page_range(msgs.number, on_each_side=2, on_ends=1)
+    return render(request, 'superadmin/messages.html', {'chat_messages': msgs, 'page_range': page_range})
+
+@sa_required
+def super_admin_message_delete(request, msg_id):
+    msg = get_object_or_404(Message, pk=msg_id)
+    msg.delete()
+    django_messages.success(request, 'Message deleted.')
+    return redirect('super_admin_messages')
+
+# ─────────────────────────────────────────────
+# GLOBAL SETTINGS (Edit)
+# ─────────────────────────────────────────────
+@sa_required
+def super_admin_settings(request):
+    settings_obj, _ = GlobalSettings.objects.get_or_create(pk=1)
+    if request.method == 'POST':
+        settings_obj.site_title = request.POST.get('site_title', settings_obj.site_title)
+        settings_obj.contact_email = request.POST.get('contact_email', settings_obj.contact_email)
+        settings_obj.support_phone = request.POST.get('support_phone', settings_obj.support_phone)
+        settings_obj.maintenance_mode = request.POST.get('maintenance_mode') == 'on'
+        
+        # Financial Levers
+        if 'platform_commission_percent' in request.POST:
+            try:
+                settings_obj.platform_commission_percent = float(request.POST.get('platform_commission_percent', 10.0))
+            except (ValueError, TypeError):
+                pass
+        if 'cgst_percent' in request.POST:
+            try:
+                settings_obj.cgst_percent = float(request.POST.get('cgst_percent', 9.0))
+            except (ValueError, TypeError):
+                pass
+        if 'sgst_percent' in request.POST:
+            try:
+                settings_obj.sgst_percent = float(request.POST.get('sgst_percent', 9.0))
+            except (ValueError, TypeError):
+                pass
+        if 'platform_flat_fee' in request.POST:
+            try:
+                settings_obj.platform_flat_fee = float(request.POST.get('platform_flat_fee', 0.0))
+            except (ValueError, TypeError):
+                pass
+        if 'tax_calculation_mode' in request.POST:
+            settings_obj.tax_calculation_mode = request.POST.get('tax_calculation_mode', 'commission_only')
+            
+        # Quick Services Dedicated Pricing & Tax Levers
+        if 'qs_commission_percent' in request.POST:
+            try:
+                settings_obj.qs_commission_percent = float(request.POST.get('qs_commission_percent', settings_obj.platform_commission_percent))
+            except (ValueError, TypeError):
+                pass
+        elif 'platform_commission_percent' in request.POST:
+            settings_obj.qs_commission_percent = settings_obj.platform_commission_percent
+
+        if 'qs_cgst_percent' in request.POST:
+            try:
+                settings_obj.qs_cgst_percent = float(request.POST.get('qs_cgst_percent', settings_obj.cgst_percent))
+            except (ValueError, TypeError):
+                pass
+        elif 'cgst_percent' in request.POST:
+            settings_obj.qs_cgst_percent = settings_obj.cgst_percent
+
+        if 'qs_sgst_percent' in request.POST:
+            try:
+                settings_obj.qs_sgst_percent = float(request.POST.get('qs_sgst_percent', settings_obj.sgst_percent))
+            except (ValueError, TypeError):
+                pass
+        elif 'sgst_percent' in request.POST:
+            settings_obj.qs_sgst_percent = settings_obj.sgst_percent
+
+        if 'qs_flat_fee' in request.POST:
+            try:
+                settings_obj.qs_flat_fee = float(request.POST.get('qs_flat_fee', settings_obj.platform_flat_fee))
+            except (ValueError, TypeError):
+                pass
+        elif 'platform_flat_fee' in request.POST:
+            settings_obj.qs_flat_fee = settings_obj.platform_flat_fee
+
+        if 'qs_tax_mode' in request.POST:
+            settings_obj.qs_tax_mode = request.POST.get('qs_tax_mode', 'commission_only')
+        elif 'tax_calculation_mode' in request.POST:
+            settings_obj.qs_tax_mode = settings_obj.tax_calculation_mode
+
+        settings_obj.save()
+        django_messages.success(request, 'Global platform & Quick Services financial tax settings saved successfully.')
+        return redirect('super_admin_settings')
+    return render(request, 'superadmin/settings.html', {'settings': settings_obj})
+
+
+# ==============================================================================
+# LANDING PAGE CMS VIEWS
+# ==============================================================================
+
+@sa_required
+def super_admin_landing_overview(request):
+    """Overview hub for managing all Landing Page components."""
+    context = {
+        'branding': SiteBranding.objects.first(),
+        'hero': HeroSection.objects.first(),
+        'why_choose_count': WhyChooseFeature.objects.count(),
+        'transform_videos_count': TransformVideo.objects.count(),
+        'featured_count': FeaturedProjectCard.objects.count(),
+        'packages_count': PackageCard.objects.count(),
+        'testimonials_count': Testimonial.objects.count(),
+    }
+    return render(request, 'superadmin/cms_landing_overview.html', context)
+
+
+# ── BRANDING ──────────────────────────────────────────────────────────────────
+@sa_required
+def super_admin_landing_branding(request):
+    branding_obj, _ = SiteBranding.objects.get_or_create(pk=1)
+    if request.method == 'POST':
+        form = SiteBrandingForm(request.POST, request.FILES, instance=branding_obj)
+        if form.is_valid():
+            form.save()
+            django_messages.success(request, 'Site Branding updated successfully!')
+            return redirect('super_admin_landing_branding')
+    else:
+        form = SiteBrandingForm(instance=branding_obj)
+    return render(request, 'superadmin/cms_branding.html', {'form': form, 'branding': branding_obj})
+
+
+# ── HERO SECTION ──────────────────────────────────────────────────────────────
+@sa_required
+def super_admin_landing_hero(request):
+    hero_obj, _ = HeroSection.objects.get_or_create(pk=1)
+    if request.method == 'POST':
+        form = HeroSectionForm(request.POST, request.FILES, instance=hero_obj)
+        if form.is_valid():
+            form.save()
+            django_messages.success(request, 'Hero Section updated successfully!')
+            return redirect('super_admin_landing_hero')
+    else:
+        form = HeroSectionForm(instance=hero_obj)
+    return render(request, 'superadmin/cms_hero.html', {'form': form, 'hero': hero_obj})
+
+
+# ── WATCH HOW SUGU TRANSFORMS HOMES (VIDEOS CMS) ───────────────────────────
+@sa_required
+def super_admin_landing_transform_videos(request):
+    section_obj, _ = TransformVideoSection.objects.get_or_create(pk=1)
+    
+    # Auto-seed initial 3 video showcase entries if none exist
+    if TransformVideo.objects.count() == 0:
+        TransformVideo.objects.create(
+            title="How Sugu Transformed Our 3BHK Living Room via Bidding",
+            author="Pooja & Sameer Kulkarni",
+            city="Bengaluru",
+            service_tag="Home Renovation & Bidding",
+            rating=5,
+            duration="1:42",
+            quote="We got 4 contractor quotes in 2 hours and saved ₹42,000 on our interior revamp! Milestone payment protection gave us total peace of mind.",
+            video_url="https://assets.mixkit.co/videos/preview/mixkit-living-room-with-decorations-and-furniture-41484-large.mp4",
+            order=1,
+            is_active=True
+        )
+        TransformVideo.objects.create(
+            title="Powerjet AC Deep Clean Review: 15-Min Quick Service",
+            author="Aditya Verma",
+            city="Gurugram",
+            service_tag="AC & Appliance Quick Service",
+            rating=5,
+            duration="1:15",
+            quote="The foam-jet washed out 2 years of trapped dust inside our split AC. Cooling returned like a brand new AC, zero mess left behind.",
+            video_url="https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-man-working-with-a-screwdriver-42611-large.mp4",
+            order=2,
+            is_active=True
+        )
+        TransformVideo.objects.create(
+            title="Salon Luxe At Home: Complete Bridal Glow Routine",
+            author="Sneha Mukherjee",
+            city="Mumbai",
+            service_tag="Women's Salon & Spa",
+            rating=5,
+            duration="2:04",
+            quote="Single-use sealed hygiene kits and salon-grade O3+ products right in my bedroom. Hands down the safest and most relaxing salon experience.",
+            video_url="https://assets.mixkit.co/videos/preview/mixkit-applying-face-cream-at-the-spa-41718-large.mp4",
+            order=3,
+            is_active=True
+        )
+
+    videos_qs = TransformVideo.objects.all().order_by('order', '-created_at')
+    section_form = TransformVideoSectionForm(instance=section_obj)
+    
+    paginator = Paginator(videos_qs, 10)
+    page_num = request.GET.get('page', 1)
+    try:
+        videos = paginator.page(page_num)
+    except (EmptyPage, PageNotAnInteger):
+        videos = paginator.page(1)
+    page_range = paginator.get_elided_page_range(videos.number, on_each_side=2, on_ends=1)
+    
+    return render(request, 'superadmin/cms_transform_videos.html', {
+        'section': section_obj,
+        'section_form': section_form,
+        'videos': videos,
+        'page_range': page_range
+    })
+
+@sa_required
+def super_admin_landing_transform_section_save(request):
+    section_obj, _ = TransformVideoSection.objects.get_or_create(pk=1)
+    if request.method == 'POST':
+        form = TransformVideoSectionForm(request.POST, instance=section_obj)
+        if form.is_valid():
+            form.save()
+            django_messages.success(request, 'Watch How Sugu Transforms Homes section updated successfully!')
+        else:
+            django_messages.error(request, 'Please verify section input values.')
+    return redirect('super_admin_landing_transform_videos')
+
+@sa_required
+def super_admin_landing_transform_video_create(request):
+    if request.method == 'POST':
+        form = TransformVideoForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            django_messages.success(request, 'Video showcase card published successfully!')
+            return redirect('super_admin_landing_transform_videos')
+    else:
+        form = TransformVideoForm()
+    return render(request, 'superadmin/cms_transform_video_form.html', {
+        'form': form,
+        'title': 'Upload / Add Video Showcase Card',
+        'back_url': 'super_admin_landing_transform_videos'
+    })
+
+@sa_required
+def super_admin_landing_transform_video_edit(request, video_id):
+    video = get_object_or_404(TransformVideo, pk=video_id)
+    if request.method == 'POST':
+        form = TransformVideoForm(request.POST, request.FILES, instance=video)
+        if form.is_valid():
+            form.save()
+            django_messages.success(request, 'Video showcase card updated successfully!')
+            return redirect('super_admin_landing_transform_videos')
+    else:
+        form = TransformVideoForm(instance=video)
+    return render(request, 'superadmin/cms_transform_video_form.html', {
+        'form': form,
+        'video': video,
+        'title': f'Edit Video: {video.title}',
+        'back_url': 'super_admin_landing_transform_videos'
+    })
+
+@sa_required
+def super_admin_landing_transform_video_delete(request, video_id):
+    video = get_object_or_404(TransformVideo, pk=video_id)
+    video.delete()
+    django_messages.success(request, 'Video card deleted.')
+    return redirect('super_admin_landing_transform_videos')
+
+@sa_required
+def super_admin_landing_transform_video_toggle(request, video_id):
+    video = get_object_or_404(TransformVideo, pk=video_id)
+    video.is_active = not video.is_active
+    video.save()
+    django_messages.success(request, f'Video "{video.title}" {"activated" if video.is_active else "deactivated"}.')
+    return redirect('super_admin_landing_transform_videos')
+
+
+# ── WHY CHOOSE SUGU SERVICES (COMPARISON CMS) ─────────────────────────────
+@sa_required
+def super_admin_landing_why_choose(request):
+    section_obj, _ = WhyChooseSection.objects.get_or_create(pk=1)
+    
+    # Auto-seed initial 5 comparison items if none exist
+    if WhyChooseFeature.objects.count() == 0:
+        initial_features = [
+            ("Technician Background Check", "✓ 7-Step Police & Skill Verified", "✗ Zero verification or background check", 1),
+            ("Pricing Transparency", "✓ Upfront fixed rate or competitive pro bids", "✗ Random arbitrary pricing & hidden charges", 2),
+            ("Post-Service Warranty", "✓ 30-Day Money-Back & Free Re-work", "✗ No warranty once technician leaves", 3),
+            ("Damage Protection", "✓ Up to ₹10,000 Free Insurance Cover", "✗ Customer bears 100% loss", 4),
+            ("Payment Security", "✓ Pay After Service or Work Satisfaction", "✗ Demands high non-refundable cash advance", 5),
+        ]
+        for name, sugu, others, order in initial_features:
+            WhyChooseFeature.objects.create(
+                feature_name=name,
+                sugu_value=sugu,
+                others_value=others,
+                order=order,
+                is_active=True
+            )
+
+    features_qs = WhyChooseFeature.objects.all().order_by('order', 'id')
+    section_form = WhyChooseSectionForm(instance=section_obj)
+    
+    return render(request, 'superadmin/cms_why_choose.html', {
+        'section': section_obj,
+        'section_form': section_form,
+        'features': features_qs
+    })
+
+@sa_required
+def super_admin_landing_why_choose_section_save(request):
+    section_obj, _ = WhyChooseSection.objects.get_or_create(pk=1)
+    if request.method == 'POST':
+        form = WhyChooseSectionForm(request.POST, instance=section_obj)
+        if form.is_valid():
+            form.save()
+            django_messages.success(request, 'Why Choose Sugu Section Header updated successfully!')
+        else:
+            django_messages.error(request, 'Please verify section header input.')
+    return redirect('super_admin_landing_why_choose')
+
+@sa_required
+def super_admin_landing_why_choose_create(request):
+    if request.method == 'POST':
+        form = WhyChooseFeatureForm(request.POST)
+        if form.is_valid():
+            form.save()
+            django_messages.success(request, 'Comparison feature row added successfully!')
+            return redirect('super_admin_landing_why_choose')
+    else:
+        form = WhyChooseFeatureForm()
+    return render(request, 'superadmin/cms_why_choose_form.html', {
+        'form': form,
+        'title': 'Add Comparison Feature',
+        'back_url': 'super_admin_landing_why_choose'
+    })
+
+@sa_required
+def super_admin_landing_why_choose_edit(request, item_id):
+    item = get_object_or_404(WhyChooseFeature, pk=item_id)
+    if request.method == 'POST':
+        form = WhyChooseFeatureForm(request.POST, instance=item)
+        if form.is_valid():
+            form.save()
+            django_messages.success(request, 'Comparison feature row updated successfully!')
+            return redirect('super_admin_landing_why_choose')
+    else:
+        form = WhyChooseFeatureForm(instance=item)
+    return render(request, 'superadmin/cms_why_choose_form.html', {
+        'form': form,
+        'item': item,
+        'title': f'Edit Feature: {item.feature_name}',
+        'back_url': 'super_admin_landing_why_choose'
+    })
+
+@sa_required
+def super_admin_landing_why_choose_delete(request, item_id):
+    item = get_object_or_404(WhyChooseFeature, pk=item_id)
+    item.delete()
+    django_messages.success(request, 'Comparison feature row deleted.')
+    return redirect('super_admin_landing_why_choose')
+
+@sa_required
+def super_admin_landing_why_choose_toggle(request, item_id):
+    item = get_object_or_404(WhyChooseFeature, pk=item_id)
+    item.is_active = not item.is_active
+    item.save()
+    django_messages.success(request, f'Feature "{item.feature_name}" {"activated" if item.is_active else "deactivated"}.')
+    return redirect('super_admin_landing_why_choose')
+
+
+# ── QUICK SERVICES CARDS (LEGACY REDIRECT) ──────────────────────────────────
+@sa_required
+def super_admin_landing_quick_services(request):
+    return redirect('super_admin_landing_why_choose')
+
+@sa_required
+def super_admin_landing_quick_service_create(request):
+    return redirect('super_admin_landing_why_choose')
+
+@sa_required
+def super_admin_landing_quick_service_edit(request, card_id):
+    return redirect('super_admin_landing_why_choose')
+
+@sa_required
+def super_admin_landing_quick_service_delete(request, card_id):
+    return redirect('super_admin_landing_why_choose')
+
+@sa_required
+def super_admin_landing_quick_service_toggle(request, card_id):
+    return redirect('super_admin_landing_why_choose')
+
+
+# ── FEATURED PROJECTS (BIDDING SHOWCASE) ──────────────────────────────────────
+@sa_required
+def super_admin_landing_featured_projects(request):
+    cards_qs = FeaturedProjectCard.objects.all().order_by('order', '-created_at')
+    paginator = Paginator(cards_qs, 10)
+    page_num = request.GET.get('page', 1)
+    try:
+        cards = paginator.page(page_num)
+    except (EmptyPage, PageNotAnInteger):
+        cards = paginator.page(1)
+    page_range = paginator.get_elided_page_range(cards.number, on_each_side=2, on_ends=1)
+    return render(request, 'superadmin/cms_featured_projects.html', {'cards': cards, 'page_range': page_range})
+
+@sa_required
+def super_admin_landing_featured_project_create(request):
+    if request.method == 'POST':
+        form = FeaturedProjectCardForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            django_messages.success(request, 'Featured Project Card created!')
+            return redirect('super_admin_landing_featured_projects')
+    else:
+        form = FeaturedProjectCardForm()
+    return render(request, 'superadmin/cms_card_form.html', {
+        'form': form,
+        'title': 'Add Featured Project Card',
+        'back_url': 'super_admin_landing_featured_projects'
+    })
+
+@sa_required
+def super_admin_landing_featured_project_edit(request, card_id):
+    card = get_object_or_404(FeaturedProjectCard, pk=card_id)
+    if request.method == 'POST':
+        form = FeaturedProjectCardForm(request.POST, request.FILES, instance=card)
+        if form.is_valid():
+            form.save()
+            django_messages.success(request, 'Featured Project Card updated!')
+            return redirect('super_admin_landing_featured_projects')
+    else:
+        form = FeaturedProjectCardForm(instance=card)
+    return render(request, 'superadmin/cms_card_form.html', {
+        'form': form,
+        'card': card,
+        'title': f'Edit Project: {card.title}',
+        'back_url': 'super_admin_landing_featured_projects'
+    })
+
+@sa_required
+def super_admin_landing_featured_project_delete(request, card_id):
+    card = get_object_or_404(FeaturedProjectCard, pk=card_id)
+    card.delete()
+    django_messages.success(request, 'Featured Project Card deleted.')
+    return redirect('super_admin_landing_featured_projects')
+
+@sa_required
+def super_admin_landing_featured_project_toggle(request, card_id):
+    card = get_object_or_404(FeaturedProjectCard, pk=card_id)
+    card.is_active = not card.is_active
+    card.save()
+    django_messages.success(request, f'Project "{card.title}" status changed.')
+    return redirect('super_admin_landing_featured_projects')
+
+
+# ── PACKAGES & PRICING ────────────────────────────────────────────────────────
+# ── (Service Packages removed - redirects to super_admin_bid_plans) ───────────
+
+
+
+# ── TESTIMONIALS ──────────────────────────────────────────────────────────────
+@sa_required
+def super_admin_landing_testimonials(request):
+    testimonials_qs = Testimonial.objects.all().order_by('order', '-created_at')
+    paginator = Paginator(testimonials_qs, 10)
+    page_num = request.GET.get('page', 1)
+    try:
+        testimonials = paginator.page(page_num)
+    except (EmptyPage, PageNotAnInteger):
+        testimonials = paginator.page(1)
+    page_range = paginator.get_elided_page_range(testimonials.number, on_each_side=2, on_ends=1)
+    return render(request, 'superadmin/cms_testimonials.html', {'testimonials': testimonials, 'page_range': page_range})
+
+@sa_required
+def super_admin_landing_testimonial_create(request):
+    if request.method == 'POST':
+        form = TestimonialForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            django_messages.success(request, 'Testimonial created!')
+            return redirect('super_admin_landing_testimonials')
+    else:
+        form = TestimonialForm()
+    return render(request, 'superadmin/cms_card_form.html', {
+        'form': form,
+        'title': 'Add Testimonial',
+        'back_url': 'super_admin_landing_testimonials'
+    })
+
+@sa_required
+def super_admin_landing_testimonial_edit(request, card_id):
+    item = get_object_or_404(Testimonial, pk=card_id)
+    if request.method == 'POST':
+        form = TestimonialForm(request.POST, request.FILES, instance=item)
+        if form.is_valid():
+            form.save()
+            django_messages.success(request, 'Testimonial updated!')
+            return redirect('super_admin_landing_testimonials')
+    else:
+        form = TestimonialForm(instance=item)
+    return render(request, 'superadmin/cms_card_form.html', {
+        'form': form,
+        'card': item,
+        'title': f'Edit Testimonial: {item.client_name}',
+        'back_url': 'super_admin_landing_testimonials'
+    })
+
+@sa_required
+def super_admin_landing_testimonial_delete(request, card_id):
+    item = get_object_or_404(Testimonial, pk=card_id)
+    item.delete()
+    django_messages.success(request, 'Testimonial deleted.')
+    return redirect('super_admin_landing_testimonials')
+
+@sa_required
+def super_admin_landing_testimonial_toggle(request, card_id):
+    item = get_object_or_404(Testimonial, pk=card_id)
+    item.is_active = not item.is_active
+    item.save()
+    django_messages.success(request, f'Testimonial for "{item.client_name}" status updated.')
+    return redirect('super_admin_landing_testimonials')
+
+# ─────────────────────────────────────────────
+# KYC MANAGEMENT
+# ─────────────────────────────────────────────
+@sa_required
+def super_admin_kyc(request):
+    q = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+    page = request.GET.get('page', 1)
+
+    queryset = VendorKYC.objects.select_related('vendor', 'vendor__vendor_profile', 'vendor__user_profile').all().order_by('-submitted_at')
+
+    if q:
+        queryset = queryset.filter(
+            Q(vendor__username__icontains=q) | 
+            Q(vendor__first_name__icontains=q) | 
+            Q(vendor__vendor_profile__company_name__icontains=q)
+        )
+    if status_filter:
+        queryset = queryset.filter(status=status_filter)
+
+    paginator = Paginator(queryset, 20)
+    try:
+        items = paginator.page(page)
+    except PageNotAnInteger:
+        items = paginator.page(1)
+    except EmptyPage:
+        items = paginator.page(paginator.num_pages)
+
+    context = {
+        'kyc_list': items,
+        'q': q,
+        'status_filter': status_filter,
+    }
+    return render(request, 'superadmin/kyc.html', context)
+
+@sa_required
+@require_POST
+def super_admin_kyc_approve(request, kyc_id):
+    kyc = get_object_or_404(VendorKYC, pk=kyc_id)
+    kyc.status = 'approved'
+    kyc.reviewed_by = request.user
+    from django.utils import timezone
+    kyc.reviewed_at = timezone.now()
+    kyc.save()
+    django_messages.success(request, f'KYC approved for {kyc.vendor.username}.')
+    return redirect('super_admin_kyc')
+
+@sa_required
+@require_POST
+def super_admin_kyc_reject(request, kyc_id):
+    kyc = get_object_or_404(VendorKYC, pk=kyc_id)
+    notes = request.POST.get('admin_notes', '').strip()
+    kyc.status = 'rejected'
+    kyc.admin_notes = notes
+    kyc.reviewed_by = request.user
+    from django.utils import timezone
+    kyc.reviewed_at = timezone.now()
+    kyc.save()
+    django_messages.success(request, f'KYC rejected for {kyc.vendor.username}.')
+    return redirect('super_admin_kyc')
+
+
+# ─────────────────────────────────────────────
+# PAYOUTS & WALLET SETTLEMENTS
+# ─────────────────────────────────────────────
+@sa_required
+def super_admin_payouts(request):
+    q = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+    method_filter = request.GET.get('method', '').strip()
+    page = request.GET.get('page', 1)
+
+    queryset = PayoutRequest.objects.select_related(
+        'vendor', 'vendor__vendor_profile', 'processed_by'
+    ).all().order_by('-requested_at')
+
+    if q:
+        queryset = queryset.filter(
+            Q(vendor__username__icontains=q) |
+            Q(vendor__first_name__icontains=q) |
+            Q(vendor__vendor_profile__company_name__icontains=q) |
+            Q(bank_reference_number__icontains=q) |
+            Q(account_number__icontains=q) |
+            Q(upi_id__icontains=q)
+        )
+    if status_filter:
+        queryset = queryset.filter(status=status_filter)
+    if method_filter:
+        queryset = queryset.filter(payout_method=method_filter)
+
+    # Summary metrics
+    all_payouts = PayoutRequest.objects.all()
+    completed_payouts = all_payouts.filter(status='completed')
+    total_paid_out = completed_payouts.aggregate(total=Sum('amount'))['total'] or 0
+    pending_payouts = all_payouts.filter(status='pending')
+    pending_count = pending_payouts.count()
+    pending_amount = pending_payouts.aggregate(total=Sum('amount'))['total'] or 0
+    rejected_count = all_payouts.filter(status='rejected').count()
+    total_commission_collected = WalletTransaction.objects.filter(
+        transaction_type='commission'
+    ).aggregate(total=Sum('amount'))['total'] or 0
+
+    paginator = Paginator(queryset, 15)
+    try:
+        items = paginator.page(page)
+    except PageNotAnInteger:
+        items = paginator.page(1)
+    except EmptyPage:
+        items = paginator.page(paginator.num_pages)
+
+    context = {
+        'payouts': items,
+        'q': q,
+        'status_filter': status_filter,
+        'method_filter': method_filter,
+        'total_paid_out': total_paid_out,
+        'pending_count': pending_count,
+        'pending_amount': pending_amount,
+        'rejected_count': rejected_count,
+        'total_commission_collected': total_commission_collected,
+    }
+    return render(request, 'superadmin/payouts.html', context)
+
+
+@sa_required
+@require_POST
+def super_admin_payout_approve(request, payout_id):
+    payout = get_object_or_404(PayoutRequest, pk=payout_id)
+    bank_reference_number = request.POST.get('bank_reference_number', '').strip()
+    admin_remarks = request.POST.get('admin_remarks', '').strip()
+    
+    success, msg = approve_payout(payout, request.user, bank_reference_number=bank_reference_number, remarks=admin_remarks)
+    if success:
+        django_messages.success(request, msg)
+    else:
+        django_messages.error(request, msg)
+    return redirect('super_admin_payouts')
+
+
+@sa_required
+@require_POST
+def super_admin_payout_reject(request, payout_id):
+    payout = get_object_or_404(PayoutRequest, pk=payout_id)
+    admin_remarks = request.POST.get('admin_remarks', '').strip() or "Payout request rejected by administration."
+    
+    success, msg = reject_payout(payout, request.user, remarks=admin_remarks)
+    if success:
+        django_messages.success(request, msg)
+    else:
+        django_messages.error(request, msg)
+    return redirect('super_admin_payouts')
+
+
+# ─────────────────────────────────────────────
+# DISPUTES & COMPLAINT RESOLUTION SYSTEM
+# ─────────────────────────────────────────────
+@sa_required
+def super_admin_disputes(request):
+    q = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+    priority_filter = request.GET.get('priority', '').strip()
+    category_filter = request.GET.get('category', '').strip()
+    page = request.GET.get('page', 1)
+
+    queryset = DisputeTicket.objects.select_related(
+        'raised_by', 'against_user', 'job', 'quick_service', 'resolved_by'
+    ).all().order_by('-created_at')
+
+    if q:
+        queryset = queryset.filter(
+            Q(ticket_id__icontains=q) |
+            Q(subject__icontains=q) |
+            Q(description__icontains=q) |
+            Q(raised_by__username__icontains=q) |
+            Q(raised_by__first_name__icontains=q) |
+            Q(against_user__username__icontains=q) |
+            Q(against_user__first_name__icontains=q)
+        )
+    if status_filter:
+        queryset = queryset.filter(status=status_filter)
+    if priority_filter:
+        queryset = queryset.filter(priority=priority_filter)
+    if category_filter:
+        queryset = queryset.filter(category=category_filter)
+
+    # Metrics
+    all_tickets = DisputeTicket.objects.all()
+    total_disputes = all_tickets.count()
+    open_count = all_tickets.filter(status='open').count()
+    investigating_count = all_tickets.filter(status='investigating').count()
+    resolved_count = all_tickets.filter(status='resolved').count()
+    closed_count = all_tickets.filter(status='closed').count()
+    urgent_count = all_tickets.filter(priority__in=['urgent', 'high'], status__in=['open', 'investigating']).count()
+
+    paginator = Paginator(queryset, 15)
+    try:
+        items = paginator.page(page)
+    except PageNotAnInteger:
+        items = paginator.page(1)
+    except EmptyPage:
+        items = paginator.page(paginator.num_pages)
+
+    context = {
+        'disputes_list': items,
+        'q': q,
+        'status_filter': status_filter,
+        'priority_filter': priority_filter,
+        'category_filter': category_filter,
+        'total_disputes': total_disputes,
+        'open_count': open_count,
+        'investigating_count': investigating_count,
+        'resolved_count': resolved_count,
+        'closed_count': closed_count,
+        'urgent_count': urgent_count,
+    }
+    return render(request, 'superadmin/disputes.html', context)
+
+
+@sa_required
+def super_admin_dispute_detail(request, dispute_id):
+    ticket = get_object_or_404(
+        DisputeTicket.objects.select_related('raised_by', 'against_user', 'job', 'quick_service', 'resolved_by'),
+        pk=dispute_id
+    )
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        from django.utils import timezone
+
+        if action == 'send_message':
+            msg_text = request.POST.get('message', '').strip()
+            attachment = request.FILES.get('attachment')
+            if msg_text or attachment:
+                DisputeMessage.objects.create(
+                    ticket=ticket,
+                    sender=request.user,
+                    message=msg_text,
+                    attachment=attachment
+                )
+                if ticket.status == 'open':
+                    ticket.status = 'investigating'
+                    ticket.save()
+                django_messages.success(request, 'Official admin reply posted to the ticket timeline.')
+        elif action == 'update_status':
+            new_status = request.POST.get('status')
+            new_priority = request.POST.get('priority')
+            notes = request.POST.get('resolution_notes', '').strip()
+
+            if new_status in dict(DisputeTicket.STATUS_CHOICES):
+                ticket.status = new_status
+                if new_status in ['resolved', 'closed']:
+                    ticket.resolved_by = request.user
+                    ticket.resolved_at = timezone.now()
+            if new_priority in dict(DisputeTicket.PRIORITY_CHOICES):
+                ticket.priority = new_priority
+            if notes:
+                ticket.resolution_notes = notes
+            ticket.save()
+            django_messages.success(request, f'Ticket {ticket.ticket_id} updated successfully.')
+
+        return redirect('super_admin_dispute_detail', dispute_id=dispute_id)
+
+    messages = ticket.messages.select_related('sender').order_by('created_at')
+
+    # Find if chat history exists between raised_by and against_user
+    chat_messages = []
+    if ticket.against_user:
+        chat_messages = Message.objects.filter(
+            (Q(sender=ticket.raised_by, receiver=ticket.against_user) |
+             Q(sender=ticket.against_user, receiver=ticket.raised_by))
+        ).order_by('-created_at')[:30]
+
+    context = {
+        'ticket': ticket,
+        'messages': messages,
+        'chat_messages': chat_messages,
+    }
+    return render(request, 'superadmin/dispute_detail.html', context)
+

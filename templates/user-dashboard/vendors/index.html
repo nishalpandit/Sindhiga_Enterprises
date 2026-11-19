@@ -1,0 +1,85 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Sugu User Portal - Vendors">
+  <title>Vendors · Sugu User</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+  <script defer src="../assets/app.js"></script>
+</head>
+<body data-page="vendors" data-title="Vendors" data-root="../">
+  <div class="app-shell">
+    <div id="sidebar-root"></div>
+    <div class="workspace">
+      <div id="topbar-root"></div>
+      <main class="page">
+        <div class="page-head">
+          <div class="actions">
+            <span class="badge badge-success">{{ vendors|length }} Verified Vendors Active</span>
+          </div>
+        </div>
+
+        <section class="card" data-filter-scope>
+          <div class="toolbar">
+            <div class="search-box">
+              <span data-icon="search"></span>
+              <input class="input" data-search-input placeholder="Search vendor name, category or city">
+            </div>
+            <select class="select" style="max-width:180px" data-filter="category">
+              <option value="all">All categories</option>
+              {% for v in vendors %}
+              <option>{{ v.category }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="card-body">
+            <div class="grid grid-3" data-rows>
+              {% for v in vendors %}
+              <article class="card vendor-card" data-row data-search="{{ v.company_name }} {{ v.category }} {{ v.location }}">
+                <div class="vendor-top">
+                  <span class="avatar lg vendor">{{ v.company_name|slice:":2"|upper|default:"VN" }}</span>
+                  <div class="vendor-meta">
+                    <h3>{{ v.company_name|default:v.user.get_full_name|default:v.user.username }} <span class="verified"><span data-icon="check"></span></span></h3>
+                    <div class="meta-line">
+                      <span>{{ v.vendor_type|title }}</span>
+                      <span>•</span>
+                      <span class="rating"><span class="star">★</span>{{ v.rating|default:"4.8" }}</span>
+                    </div>
+                    <div class="small muted" style="margin-top:4px"><span data-icon="map"></span> {{ v.location }}</div>
+                  </div>
+                </div>
+
+                <div class="vendor-stats">
+                  <div class="vendor-stat"><strong>{{ v.experience|default:5 }} yrs</strong><span>Experience</span></div>
+                  <div class="vendor-stat"><strong>★ {{ v.rating|default:"4.8" }}</strong><span>Rating</span></div>
+                  <div class="vendor-stat"><strong>Verified</strong><span>Identity</span></div>
+                </div>
+
+                <div class="chips">
+                  <span class="chip">{{ v.category }}</span>
+                  <span class="chip">Inspection</span>
+                  <span class="chip">Quotation</span>
+                </div>
+
+                <p class="small muted">{{ v.about|default:"Professional contractor verified on Sugu."|truncatewords:15 }}</p>
+
+                <div class="vendor-actions">
+                  <a class="btn btn-secondary" href="details.html?id={{ v.id }}">View Details</a>
+                  <a class="btn btn-primary" href="../messages/chat.html?vendor_id={{ v.user.id }}"><span data-icon="chat"></span> Chat</a>
+                </div>
+              </article>
+              {% empty %}
+              <div style="grid-column:1/-1; text-align:center; padding:32px; color:var(--text-muted);">
+                No verified vendors registered in the platform yet.
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Sugu User Portal - Selected Vendors">
+  <title>Selected Vendors · Sugu User</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+  <script defer src="../assets/app.js"></script>
+</head>
+<body data-page="job-selected-vendors" data-title="Selected Vendors" data-root="../">
+  <div class="app-shell">
+    <div id="sidebar-root"></div>
+    <div class="workspace">
+      <div id="topbar-root"></div>
+      <main class="page">
+        <div class="page-head">
+          <div class="actions">
+            <a class="btn btn-primary" href="index.html">My Jobs</a>
+          </div>
+        </div>
+
+        <div class="callout neutral" style="margin-bottom:18px">
+          <span data-icon="info"></span>
+          <div>
+            <strong>Active Assignments</strong>
+            These are the vendors selected for your projects. You can chat and coordinate scheduling directly with each vendor.
+          </div>
+        </div>
+
+        <div class="grid grid-3" style="margin-bottom:18px">
+          <div class="card stat-card">
+            <div class="stat-label">Selected vendors</div>
+            <div class="stat-value">{{ selected_bids|length }}</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-label">Active Scopes</div>
+            <div class="stat-value">{{ selected_bids|length }}</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-label">Status</div>
+            <div class="stat-value" style="font-size:20px">In Progress</div>
+          </div>
+        </div>
+
+        <div class="stack">
+          {% for bid in selected_bids %}
+          <article class="card assignment">
+            <div class="assignment-head">
+              <span class="avatar md vendor">{{ bid.vendor.first_name|slice:":2"|upper|default:"VN" }}</span>
+              <div>
+                <h3 style="display:flex;align-items:center;gap:8px;">
+                  {{ bid.vendor.vendor_profile.company_name|default:bid.vendor.get_full_name|default:bid.vendor.username }}
+                  {% if bid.vendor.kyc_document and bid.vendor.kyc_document.status == 'approved' %}
+                  <span class="badge" style="background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; font-size:10px; padding:2px 7px;" title="KYC Verified Pro Vendor">
+                    <span data-icon="award"></span> Verified Pro
+                  </span>
+                  {% endif %}
+                </h3>
+                <div class="small muted">{{ bid.vendor.vendor_profile.category|default:"Contractor" }} · Quotation: <strong>₹{{ bid.amount|floatformat:0 }}</strong> · ★ {{ bid.vendor.vendor_profile.rating|default:"4.8" }}</div>
+              </div>
+              {% if bid.status == 'completed' %}
+              <span class="badge badge-completed"><span data-icon="check"></span> Completed</span>
+              {% else %}
+              <span class="badge assignment-status badge-selected">Selected</span>
+              {% endif %}
+            </div>
+
+            <div class="assignment-grid" style="padding: 16px 0;">
+              <div class="field">
+                <label>Target Project</label>
+                <input class="input" value="{% if bid.job %}{{ bid.job.title }}{% elif bid.quick_service %}{{ bid.quick_service.title }}{% else %}Project{% endif %}" readonly>
+              </div>
+              <div class="field">
+                <label>Timeline</label>
+                <input class="input" value="{{ bid.estimated_time|default:'As agreed' }}" readonly>
+              </div>
+              <div class="field" style="grid-column:1/-1">
+                <label>Vendor Proposal & Deliverables</label>
+                <textarea class="textarea" readonly>{{ bid.proposal|default:'Standard quotation deliverables.' }}</textarea>
+              </div>
+            </div>
+
+            <div class="actions" style="justify-content:flex-end;margin-top:14px;gap:8px;">
+              {% if bid.status == 'selected' %}
+              <form method="POST" style="display:inline;" onsubmit="return confirm('Confirm project completion and release payment settlement to vendor wallet?');">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="complete_and_settle">
+                {% if bid.job %}<input type="hidden" name="job_id" value="{{ bid.job.id }}">{% endif %}
+                {% if bid.quick_service %}<input type="hidden" name="quick_service_id" value="{{ bid.quick_service.id }}">{% endif %}
+                <button type="submit" class="btn btn-primary" style="background:#059669; border-color:#059669; color:#fff;">
+                  <span data-icon="check"></span> Mark as Completed &amp; Settle Payment
+                </button>
+              </form>
+              {% elif bid.status == 'completed' %}
+              <span class="badge badge-completed" style="background:rgba(16,185,129,0.12); color:#059669; border:1px solid rgba(16,185,129,0.3); padding:7px 14px; border-radius:8px; font-weight:650; display:inline-flex; align-items:center; gap:6px;">
+                <span data-icon="check"></span> Payment Settled via Wallet
+              </span>
+              {% endif %}
+              <a class="btn btn-secondary" href="../messages/chat.html?vendor_id={{ bid.vendor.id }}"><span data-icon="chat"></span> Chat with Vendor</a>
+            </div>
+          </article>
+          {% empty %}
+          <div class="card" style="padding: 32px; text-align:center; color: var(--text-muted);">
+            No vendors selected yet. Review received bids in <a href="index.html">My Jobs</a> and select a contractor.
+          </div>
+          {% endfor %}
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,79 @@
+{% extends 'superadmin/base.html' %}
+{% block title %}Subscriptions{% endblock %}
+{% block header_title %}Subscription Management{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'super_admin_subscription_create' %}" class="btn btn-primary btn-sm">
+  <i class="fa-solid fa-plus"></i>
+  <span>Add Subscription</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="padding: 0;">
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Vendor</th>
+          <th>Package</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Purchased</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sub in subscriptions %}
+        <tr>
+          <td><strong>{{ sub.vendor.username }}</strong></td>
+          <td>{{ sub.package_name }}</td>
+          <td style="color: var(--success); font-weight: 600;">₹{{ sub.amount }}</td>
+          <td><span class="badge {% if sub.status == 'success' %}active{% elif sub.status == 'failed' %}inactive{% else %}warn{% endif %}">{{ sub.get_status_display }}</span></td>
+          <td style="color: var(--text-muted);">{{ sub.created_at|date:"M d, Y" }}</td>
+          <td>
+            <a href="{% url 'super_admin_subscription_delete' sub.id %}" class="btn btn-outline btn-sm" style="border-color: rgba(239,68,68,0.3);" onclick="return confirm('Delete this subscription record?')">
+              <i class="fa-solid fa-trash" style="color: var(--danger);"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">No subscriptions found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if subscriptions.has_other_pages %}
+    <div class="pagination-wrap">
+      <div>Showing <strong>{{ subscriptions.start_index|default:0 }}</strong> to <strong>{{ subscriptions.end_index|default:0 }}</strong> of <strong>{{ subscriptions.paginator.count }}</strong> subscriptions</div>
+      <nav class="pagination-nav" aria-label="Page navigation">
+        {% if subscriptions.has_previous %}
+          <a href="?page=1" class="page-link" title="First Page"><i class="fa-solid fa-angles-left"></i></a>
+          <a href="?page={{ subscriptions.previous_page_number }}" class="page-link" title="Previous Page"><i class="fa-solid fa-chevron-left"></i></a>
+        {% else %}
+          <span class="page-link disabled"><i class="fa-solid fa-angles-left"></i></span>
+          <span class="page-link disabled"><i class="fa-solid fa-chevron-left"></i></span>
+        {% endif %}
+
+        {% for p in page_range %}
+          {% if p == subscriptions.paginator.ELLIPSIS %}
+            <span class="page-link disabled">…</span>
+          {% elif p == subscriptions.number %}
+            <span class="page-link active">{{ p }}</span>
+          {% else %}
+            <a href="?page={{ p }}" class="page-link">{{ p }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if subscriptions.has_next %}
+          <a href="?page={{ subscriptions.next_page_number }}" class="page-link" title="Next Page"><i class="fa-solid fa-chevron-right"></i></a>
+          <a href="?page={{ subscriptions.paginator.num_pages }}" class="page-link" title="Last Page"><i class="fa-solid fa-angles-right"></i></a>
+        {% else %}
+          <span class="page-link disabled"><i class="fa-solid fa-chevron-right"></i></span>
+          <span class="page-link disabled"><i class="fa-solid fa-chevron-right"></i></span>
+        {% endif %}
+      </nav>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

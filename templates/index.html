@@ -1,0 +1,2243 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SUGU Services | India's First Quick-Service Booking & Smart Project Bidding Platform</title>
+  <meta name="description" content="SUGU Services offers dual-engine home solutions: 15-minute quick services booking and smart project bidding for custom renovations." />
+  
+  <!-- Google Fonts: Inter, Outfit, Space Grotesk & Caveat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', 'sans-serif'],
+            display: ['"Outfit"', 'sans-serif'],
+            heading: ['"Space Grotesk"', '"Outfit"', 'sans-serif'],
+            script: ['"Caveat"', 'cursive'],
+          },
+          colors: {
+            sugu: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#1b75d0',
+              600: '#1b75d0',
+              700: '#135cad',
+              800: '#075985',
+              900: '#0c1a30',
+              950: '#081222',
+              blue: '#1b75d0',
+              blueDark: '#135cad',
+              blueLight: '#eef5fd',
+              navy: '#0c1a30',
+              navyDark: '#081222',
+              cardBg: '#f0f4f9',
+              accent: '#f59e0b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons with CDN Fallback & Instant Auto-Init -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    if (typeof lucide === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"><\/script>');
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+      if (window.lucide && typeof lucide.createIcons === 'function') {
+        lucide.createIcons();
+      }
+    });
+  </script>
+  
+  <!-- Three.js CDN for 3D Hero Particles -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- Bootstrap Icons CDN for dynamic category fallback icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="{% static 'styles.css' %}?v=4.2" />
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-blue-600 selection:text-white pb-16 md:pb-0">
+
+  <!-- ================= TOP NOTIFICATION BAR ================= -->
+  <div class="bg-sugu-navy text-slate-300 text-xs py-1.5 sm:py-2 px-3 sm:px-4 border-b border-slate-800">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+      <div class="flex items-center space-x-2 min-w-0">
+        <span class="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-semibold border border-blue-500/30 text-[10px] shrink-0">NEW</span>
+        <span class="text-[11px] sm:text-xs truncate sm:overflow-visible">Dual-Engine Platform: <strong class="text-white">15-Min Quick Service</strong> or <strong class="text-amber-300">Smart Bidding</strong></span>
+      </div>
+      <div class="hidden sm:flex items-center space-x-4 text-slate-400 text-xs shrink-0">
+        <span class="flex items-center"><i data-lucide="shield" class="w-3.5 h-3.5 mr-1 text-emerald-400"></i> ₹25,000 Sugu Cover</span>
+        <span class="flex items-center"><i data-lucide="phone" class="w-3.5 h-3.5 mr-1 text-blue-400"></i> 24/7 Helpline: 1800-SUGU-FIX</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MAIN NAVIGATION BAR (RESPONSIVE DUAL-ENGINE ROUTER) ================= -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between min-h-[64px] sm:min-h-[76px] lg:min-h-[88px] py-1.5 gap-2 sm:gap-4">
+        
+        <!-- Logo & Location Group -->
+        <div class="flex items-center space-x-2 sm:space-x-4 shrink-0 max-w-[70%] sm:max-w-none">
+          <a href="/" class="flex items-center space-x-2 sm:space-x-3.5 group shrink-0" title="{{ branding.site_title|default:'SUGU Services' }}">
+            {% if branding.logo %}
+              <img src="{{ branding.logo.url }}" alt="{{ branding.site_title|default:'SUGU Services' }}" class="h-10 sm:h-12 md:h-16 lg:h-[72px] max-h-[74px] w-auto object-contain transition-transform group-hover:scale-105 drop-shadow-sm">
+            {% else %}
+              <img src="/static/images/logo.png" alt="SUGU Services" class="h-10 sm:h-12 md:h-16 lg:h-[72px] max-h-[74px] w-auto object-contain transition-transform group-hover:scale-105 drop-shadow-sm" onerror="this.src='/media/cms/branding/logo.png'">
+            {% endif %}
+            <div class="hidden sm:block">
+              <span class="text-lg lg:text-2xl font-black font-heading tracking-tight text-sugu-navy block leading-tight">{{ branding.site_title|default:'SUGU' }} <span class="text-sugu-blue">Services</span></span>
+              <span class="text-[10px] sm:text-[11px] uppercase tracking-wider font-extrabold text-sugu-blue block mt-0.5 max-w-sm lg:max-w-md line-clamp-1">{{ branding.tagline|default:'Your Home. Our Priority.' }}</span>
+            </div>
+          </a>
+
+          <!-- Location Selector -->
+          <div class="flex items-center space-x-1.5 sm:space-x-2 pl-2 sm:pl-4 border-l border-slate-200 cursor-pointer min-w-0" onclick="openLocationPicker()" title="Click to change location">
+            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-50 text-sugu-blue flex items-center justify-center shrink-0">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+            </div>
+            <div class="text-left min-w-0">
+              <span class="hidden xs:block text-[10px] sm:text-[11px] text-slate-400 font-medium leading-none">Location</span>
+              <span class="text-xs font-bold text-slate-800 hover:text-sugu-blue transition flex items-center mt-0.5 leading-none">
+                <span id="header-location-text" class="truncate max-w-[85px] xs:max-w-[120px] sm:max-w-[170px] md:max-w-[200px] block">{% if user_city %}{{ user_city }}{% if user_state %}, {{ user_state }}{% endif %}{% else %}Detecting...{% endif %}</span>
+                <i data-lucide="chevron-down" class="w-3 h-3 sm:w-3.5 sm:h-3.5 ml-0.5 text-slate-400 shrink-0"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop Primary Dual Mode Switcher Tabs (Hidden on mobile < md) -->
+        <div class="hidden md:flex items-center space-x-1 p-1 bg-slate-100 rounded-xl border border-slate-200 shadow-inner h-10 shrink-0">
+          <button onclick="switchRoute('home')" data-mode="home" 
+            class="nav-mode-btn h-8 px-3.5 lg:px-4 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1.5 whitespace-nowrap bg-sugu-blue text-white shadow-md">
+            <i data-lucide="home" class="w-3.5 h-3.5"></i>
+            <span>Home</span>
+          </button>
+          
+          <button onclick="switchRoute('quick-service')" data-mode="quick-service" 
+            class="nav-mode-btn h-8 px-3.5 lg:px-4 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1.5 whitespace-nowrap text-slate-600 hover:bg-slate-200">
+            <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-500 fill-amber-500"></i>
+            <span>Quick Service</span>
+          </button>
+
+          <button onclick="switchRoute('bidding')" data-mode="bidding" 
+            class="nav-mode-btn h-8 px-3.5 lg:px-4 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1.5 whitespace-nowrap text-slate-600 hover:bg-slate-200">
+            <i data-lucide="gavel" class="w-3.5 h-3.5 text-sugu-blue"></i>
+            <span>Bidding</span>
+          </button>
+        </div>
+
+        <!-- Right Side: Desktop Profile / Auth AND Mobile Hamburger Button -->
+        <div class="flex items-center space-x-2 shrink-0">
+          
+          <!-- Desktop Auth / Profile Buttons (Hidden on mobile < md) -->
+          <div class="hidden md:flex items-center space-x-2.5">
+            {% if user.is_authenticated %}
+            <div class="relative" id="user-profile-dropdown-wrapper">
+              <button type="button" onclick="toggleUserProfileDropdown(event)" class="h-10 flex items-center space-x-2.5 px-3 rounded-xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition shadow-xs focus:outline-none focus:ring-2 focus:ring-sugu-blue/20">
+                <div class="w-7 h-7 rounded-full bg-sugu-blue text-white font-bold flex items-center justify-center border border-blue-400 shadow-sm text-xs shrink-0">
+                  {{ user.first_name|default:user.username|slice:":1"|upper }}
+                </div>
+                <div class="hidden xl:block text-left">
+                  <span class="block text-xs font-bold text-slate-900 leading-tight max-w-[120px] truncate">{{ user.first_name|default:user.username }}</span>
+                  <span class="block text-[10px] font-semibold text-emerald-600 leading-none">
+                    {% if user.role == 'VENDOR' %}Vendor Partner{% elif user.role == 'ADMIN' or user.is_superuser %}Admin{% else %}Verified Customer{% endif %}
+                  </span>
+                </div>
+                <i data-lucide="chevron-down" id="user-profile-chevron" class="w-3.5 h-3.5 text-slate-400 hidden xl:block transition-transform duration-200"></i>
+              </button>
+
+              <!-- Profile Dropdown Menu -->
+              <div id="user-profile-dropdown-menu" class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2 hidden transition-all z-50">
+                <!-- User Summary Header -->
+                <div class="px-4 py-2.5 border-b border-slate-100 bg-slate-50/70 rounded-t-2xl">
+                  <div class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 rounded-full bg-sugu-blue text-white font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
+                      {{ user.first_name|default:user.username|slice:":1"|upper }}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-xs font-bold text-slate-900 truncate">{{ user.get_full_name|default:user.username }}</p>
+                      <p class="text-[11px] text-slate-500 truncate">{% if user.email %}{{ user.email }}{% elif user.user_profile.phone_number %}{{ user.user_profile.phone_number }}{% else %}Verified Customer{% endif %}</p>
+                    </div>
+                  </div>
+                  <div class="mt-2 flex items-center space-x-1.5">
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200 flex items-center">
+                      <i data-lucide="shield-check" class="w-3 h-3 mr-1 text-emerald-600"></i>
+                      {% if user.role == 'VENDOR' %}Vendor Account{% elif user.role == 'ADMIN' or user.is_superuser %}Admin Account{% else %}Customer Account{% endif %}
+                    </span>
+                  </div>
+                </div>
+
+                {% if user.role == 'ADMIN' or user.is_superuser %}
+                <div class="py-1">
+                  <a href="/admin-dashboard" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 text-sky-600"></i>
+                    <span>Admin Dashboard</span>
+                  </a>
+                  <a href="/super-admin/" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition">
+                    <i data-lucide="shield" class="w-4 h-4 text-purple-600"></i>
+                    <span>Super Admin Panel</span>
+                  </a>
+                </div>
+                {% elif user.role == 'VENDOR' %}
+                <div class="py-1">
+                  <a href="/vendor/dashboard" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 text-sky-600"></i>
+                    <span>Vendor Dashboard</span>
+                  </a>
+                  <a href="/vendor/jobs/available.html" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition">
+                    <i data-lucide="gavel" class="w-4 h-4 text-amber-600"></i>
+                    <span>Available Bids</span>
+                  </a>
+                </div>
+                {% else %}
+                <!-- Customer Direct Navigation Links -->
+                <div class="py-1">
+                  <a href="/user/jobs/index.html" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition group">
+                    <div class="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0 group-hover:bg-sky-600 group-hover:text-white transition">
+                      <i data-lucide="briefcase" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <div>
+                      <span class="block font-bold text-slate-800 group-hover:text-sky-700">My Jobs</span>
+                      <span class="block text-[10px] text-slate-400 font-normal">Track tenders, bids & quotes</span>
+                    </div>
+                  </a>
+
+                  <a href="/user/messages/index.html" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition group">
+                    <div class="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 group-hover:bg-purple-600 group-hover:text-white transition">
+                      <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <div>
+                      <span class="block font-bold text-slate-800 group-hover:text-sky-700">Messages</span>
+                      <span class="block text-[10px] text-slate-400 font-normal">Chat with service professionals</span>
+                    </div>
+                  </a>
+
+                  <a href="/user/profile/index.html" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition group">
+                    <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition">
+                      <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <div>
+                      <span class="block font-bold text-slate-800 group-hover:text-sky-700">My Profile</span>
+                      <span class="block text-[10px] text-slate-400 font-normal">Manage personal details & address</span>
+                    </div>
+                  </a>
+                </div>
+                {% endif %}
+
+                <div class="border-t border-slate-100 pt-1 mt-1">
+                  <a href="/logout/" class="flex items-center space-x-3 px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition">
+                    <i data-lucide="log-out" class="w-4 h-4 text-rose-500"></i>
+                    <span>Log Out</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <a href="/login/" id="header-login-btn" class="h-10 px-3.5 lg:px-4 rounded-xl text-xs font-bold text-slate-700 hover:text-sugu-blue bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 shadow-xs transition-all duration-200 flex items-center justify-center space-x-1.5 whitespace-nowrap">
+              <i data-lucide="user" class="w-4 h-4 text-slate-500"></i>
+              <span>Log In</span>
+            </a>
+            <a href="/register/vendor/" id="header-vendor-btn" class="h-10 px-3.5 lg:px-4 rounded-xl text-xs font-bold bg-sugu-navy hover:bg-slate-800 text-white shadow-xs hover:shadow transition-all duration-200 flex items-center justify-center space-x-1.5 whitespace-nowrap">
+              <i data-lucide="briefcase" class="w-4 h-4 text-amber-400"></i>
+              <span>Become a Vendor</span>
+            </a>
+            {% endif %}
+          </div>
+
+          <!-- Mobile Only Actions (< md): Quick Account Link + Hamburger Menu -->
+          <div class="flex md:hidden items-center space-x-1.5">
+            <button type="button" onclick="toggleMobileNavDrawer()" class="w-9 h-9 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-700 hover:bg-slate-100 transition shadow-xs" title="Account">
+              {% if user.is_authenticated %}
+                <div class="w-6 h-6 rounded-full bg-sugu-blue text-white font-bold flex items-center justify-center text-xs">
+                  {{ user.first_name|default:user.username|slice:":1"|upper }}
+                </div>
+              {% else %}
+                <i data-lucide="user" class="w-4 h-4 text-slate-600"></i>
+              {% endif %}
+            </button>
+            <button id="mobile-menu-toggle-btn" onclick="toggleMobileNavDrawer()" class="w-9 h-9 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-700 hover:bg-slate-100 transition shadow-xs" aria-label="Toggle menu">
+              <i data-lucide="menu" id="mobile-menu-icon" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Mobile Slide-Down Drawer (< md) -->
+    <div id="mobile-nav-drawer" class="hidden md:hidden border-t border-slate-200 bg-white px-4 py-4 shadow-xl transition-all duration-300">
+      <div class="space-y-3">
+        <!-- Dual Engine Mode Selector -->
+        <div class="p-1.5 bg-slate-100 rounded-2xl border border-slate-200/90 grid grid-cols-3 gap-1">
+          <button onclick="switchRoute('home')" class="nav-mode-btn py-2 px-2 rounded-xl text-xs font-bold transition flex flex-col items-center justify-center bg-sugu-blue text-white shadow-xs" data-mode="home">
+            <i data-lucide="home" class="w-4 h-4 mb-0.5"></i>
+            <span>Home</span>
+          </button>
+          <button onclick="switchRoute('quick-service')" class="nav-mode-btn py-2 px-2 rounded-xl text-xs font-bold transition flex flex-col items-center justify-center text-slate-600 hover:bg-slate-200" data-mode="quick-service">
+            <i data-lucide="zap" class="w-4 h-4 mb-0.5 text-amber-500 fill-amber-500"></i>
+            <span>Quick (15m)</span>
+          </button>
+          <button onclick="switchRoute('bidding')" class="nav-mode-btn py-2 px-2 rounded-xl text-xs font-bold transition flex flex-col items-center justify-center text-slate-600 hover:bg-slate-200" data-mode="bidding">
+            <i data-lucide="gavel" class="w-4 h-4 mb-0.5 text-sugu-blue"></i>
+            <span>Bidding</span>
+          </button>
+        </div>
+
+        <!-- Location Trigger in Drawer -->
+        <div onclick="openLocationPicker(); toggleMobileNavDrawer();" class="flex items-center justify-between p-3 rounded-2xl bg-blue-50/70 border border-blue-100 text-xs cursor-pointer">
+          <div class="flex items-center space-x-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-sugu-blue text-white flex items-center justify-center shrink-0">
+              <i data-lucide="map-pin" class="w-4 h-4"></i>
+            </div>
+            <div class="min-w-0">
+              <span class="text-[10px] text-slate-400 font-medium block">Selected Location</span>
+              <span id="drawer-location-text" class="font-bold text-slate-900 truncate block">{% if user_city %}{{ user_city }}{% if user_state %}, {{ user_state }}{% endif %}{% else %}Detecting location...{% endif %}</span>
+            </div>
+          </div>
+          <span class="text-[11px] font-bold text-sugu-blue shrink-0">Change &rarr;</span>
+        </div>
+
+        <!-- Auth Actions in Drawer -->
+        {% if user.is_authenticated %}
+        <div class="pt-2 border-t border-slate-100 space-y-2">
+          <!-- User info card -->
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center space-x-3 mb-1">
+            <div class="w-9 h-9 rounded-full bg-sugu-blue text-white font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
+              {{ user.first_name|default:user.username|slice:":1"|upper }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="block text-xs font-bold text-slate-900 truncate">{{ user.get_full_name|default:user.username }}</span>
+              <span class="block text-[10px] text-emerald-600 font-semibold leading-tight">
+                {% if user.role == 'VENDOR' %}Vendor Partner{% elif user.role == 'ADMIN' or user.is_superuser %}Admin Account{% else %}Verified Customer{% endif %}
+              </span>
+            </div>
+          </div>
+
+          {% if user.role == 'ADMIN' or user.is_superuser %}
+          <a href="/admin-dashboard" class="w-full py-2.5 px-3 rounded-xl bg-sugu-blue text-white font-bold text-xs flex items-center space-x-2.5 shadow-sm">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+            <span>Admin Dashboard</span>
+          </a>
+          {% elif user.role == 'VENDOR' %}
+          <a href="/vendor/dashboard" class="w-full py-2.5 px-3 rounded-xl bg-sugu-blue text-white font-bold text-xs flex items-center space-x-2.5 shadow-sm">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+            <span>Vendor Dashboard</span>
+          </a>
+          {% else %}
+          <!-- Customer mobile quick links -->
+          <a href="/user/jobs/index.html" class="w-full py-2.5 px-3 rounded-xl bg-white border border-slate-200 text-slate-800 font-bold text-xs flex items-center space-x-2.5 hover:bg-slate-50 transition shadow-xs">
+            <i data-lucide="briefcase" class="w-4 h-4 text-sky-600"></i>
+            <span>My Jobs (Bids & Tenders)</span>
+          </a>
+          <a href="/user/messages/index.html" class="w-full py-2.5 px-3 rounded-xl bg-white border border-slate-200 text-slate-800 font-bold text-xs flex items-center space-x-2.5 hover:bg-slate-50 transition shadow-xs">
+            <i data-lucide="message-square" class="w-4 h-4 text-purple-600"></i>
+            <span>Messages & Quotes</span>
+          </a>
+          <a href="/user/profile/index.html" class="w-full py-2.5 px-3 rounded-xl bg-white border border-slate-200 text-slate-800 font-bold text-xs flex items-center space-x-2.5 hover:bg-slate-50 transition shadow-xs">
+            <i data-lucide="user" class="w-4 h-4 text-emerald-600"></i>
+            <span>My Profile</span>
+          </a>
+          {% endif %}
+
+          <a href="/logout/" class="w-full py-2 px-3 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 font-bold text-xs flex items-center justify-center space-x-2 transition">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            <span>Log Out</span>
+          </a>
+        </div>
+        {% else %}
+        <div class="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2">
+          <a href="/login/" class="py-2.5 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs flex items-center justify-center space-x-1.5 shadow-xs">
+            <i data-lucide="user" class="w-4 h-4 text-slate-500"></i>
+            <span>Log In</span>
+          </a>
+          <a href="/register/vendor/" class="py-2.5 px-3 rounded-xl bg-sugu-navy hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-xs">
+            <i data-lucide="briefcase" class="w-4 h-4 text-amber-400"></i>
+            <span>Become Vendor</span>
+          </a>
+        </div>
+        {% endif %}
+
+        <!-- Guarantee & Helpline row -->
+        <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+          <span class="flex items-center text-emerald-700 font-semibold"><i data-lucide="shield-check" class="w-3.5 h-3.5 mr-1"></i> ₹25,000 Sugu Cover</span>
+          <a href="tel:18007848349" class="flex items-center text-blue-600 font-semibold"><i data-lucide="phone" class="w-3.5 h-3.5 mr-1"></i> 1800-SUGU-FIX</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- ======================================================== -->
+  <!-- 1. VIEW: HOME PAGE                                       -->
+  <!-- ======================================================== -->
+  <main id="view-home" class="transition-opacity duration-300">
+
+    <!-- ================= HERO SECTION (HIGH-RESOLUTION COMMERCIAL BANNER) ================= -->
+    <section class="relative bg-[#07152b] text-white overflow-hidden py-8 sm:py-12 lg:py-20 min-h-0 lg:min-h-[620px] flex items-center">
+      
+      <!-- Full-Width Photographic Hero Banner (Technician in Modern Kitchen) -->
+      <div class="absolute inset-0 w-full h-full pointer-events-none select-none">
+        <img 
+          src="{% if hero and hero.hero_image %}{{ hero.hero_image.url }}{% else %}/static/images/hero_service_banner.jpg{% endif %}" 
+          alt="SUGU Verified Home Services Technicians" 
+          class="w-full h-full object-cover object-[80%_15%] sm:object-[82%_top] lg:object-[84%_top] xl:object-[86%_top] transition-opacity duration-700"
+          onerror="this.src='/static/images/hero_service_banner.jpg'"
+        />
+        
+        <!-- Smooth Directional Vignette / Gradient Overlay -->
+        <div class="absolute inset-0 bg-gradient-to-r from-[#07152b] via-[#07152bf2] sm:via-[#07152be6] md:via-[#07152bcc] lg:via-[#07152b99] via-45% lg:via-48% to-[#07152b4d] lg:to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-[#07152b] via-transparent to-[#07152b66] opacity-95 lg:opacity-40"></div>
+      </div>
+
+      <!-- Script Brand Badge on Top-Right -->
+      <div class="hidden xl:flex flex-col items-end absolute top-6 right-8 xl:right-14 z-20 pointer-events-none select-none">
+        <span class="text-blue-300 font-serif italic text-lg xl:text-xl tracking-wider drop-shadow-md">Your Home</span>
+        <span class="text-white font-black font-heading text-xl xl:text-2xl tracking-tight -mt-1 drop-shadow-lg">Our Priority</span>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-center">
+          
+          <!-- Hero Left Column -->
+          <div class="lg:col-span-7 space-y-4 sm:space-y-6 text-center lg:text-left">
+            
+            <!-- Blue Pill Badge -->
+            <div class="inline-flex items-center space-x-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-sugu-blue/90 text-white text-[11px] sm:text-sm font-semibold tracking-wide shadow-md backdrop-blur-md border border-blue-400/40">
+              <span class="flex h-2 w-2 sm:h-2.5 sm:w-2.5 relative">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-emerald-500"></span>
+              </span>
+              <span>{{ hero.badge_text|default:"India's Dual-Engine Home Services Platform" }}</span>
+            </div>
+
+            <!-- Main Hero Heading -->
+            <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-[46px] font-black tracking-tight text-white leading-tight sm:leading-[1.15] font-heading drop-shadow-md">
+              {% if hero and hero.headline %}
+                {{ hero.headline|safe }}
+              {% else %}
+                India's First<br />
+                <span class="text-white-300">Quick-Service Booking</span> &amp;<br />
+                <span class="text-white-300">Smart Project Bidding Platform</span>
+              {% endif %}
+            </h1>
+
+            <!-- Tagline Subtitle -->
+            <p class="text-xs sm:text-base lg:text-lg text-blue-100/95 font-medium max-w-xl mx-auto lg:mx-0 drop-shadow-sm">
+              {{ hero.subtext|default:"Quick Booking for Today. Smart Bidding for Tomorrow's Projects." }}
+            </p>
+
+            <!-- Dual Highlights: Lightning (Quick) & Gavel (Bidding) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3.5 pt-1 sm:pt-2 max-w-xl mx-auto lg:mx-0">
+              <!-- Highlight 1: Quick Services -->
+              <div onclick="switchRoute('quick-service')" class="flex items-center space-x-3 bg-white/10 hover:bg-white/15 cursor-pointer backdrop-blur-md p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border border-white/20 transition shadow-sm hover:border-blue-400/50">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sugu-blue text-white flex items-center justify-center shrink-0 shadow">
+                  <i data-lucide="zap" class="w-4 h-4 sm:w-5 sm:h-5 fill-current"></i>
+                </div>
+                <div class="text-left text-xs sm:text-sm font-bold text-white leading-snug">
+                  Get Instant Help<br /><span class="text-[11px] sm:text-xs font-normal text-blue-200">for Everyday Needs (15-min arrival)</span>
+                </div>
+              </div>
+
+              <!-- Highlight 2: Project Bidding -->
+              <div onclick="switchRoute('bidding')" class="flex items-center space-x-3 bg-white/10 hover:bg-white/15 cursor-pointer backdrop-blur-md p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border border-white/20 transition shadow-sm hover:border-blue-400/50">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sugu-blue text-white flex items-center justify-center shrink-0 shadow">
+                  <i data-lucide="gavel" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                </div>
+                <div class="text-left text-xs sm:text-sm font-bold text-white leading-snug">
+                  Competitive Offers<br /><span class="text-[11px] sm:text-xs font-normal text-blue-200">for Bigger Projects (Save 40%)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Explainer Sentence -->
+            <p class="text-[11px] sm:text-xs lg:text-sm text-slate-200 max-w-xl leading-relaxed mx-auto lg:mx-0 drop-shadow-sm">
+              From 15-minute standard technician visits to reverse-auction bidding for home painting, carpentry, and full renovations.
+            </p>
+
+            <!-- CTA Buttons -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-2 sm:pt-3 w-full max-w-md mx-auto lg:mx-0">
+              <button onclick="switchRoute('quick-service')" class="min-h-[52px] sm:min-h-[54px] py-3.5 px-6 rounded-2xl font-extrabold text-sm sm:text-base bg-sugu-blue hover:bg-sugu-blueDark active:scale-[0.98] text-white shadow-xl shadow-blue-500/35 transition transform hover:-translate-y-0.5 flex items-center justify-center space-x-2.5 flex-1 border border-blue-300/30">
+                <i data-lucide="zap" class="w-5 h-5 fill-white shrink-0"></i>
+                <span class="tracking-wide">Book a Quick Service &rarr;</span>
+              </button>
+
+              <button onclick="switchRoute('bidding')" class="min-h-[52px] sm:min-h-[54px] py-3.5 px-6 rounded-2xl font-extrabold text-sm sm:text-base bg-sugu-blue hover:bg-sugu-blueDark active:scale-[0.98] text-white shadow-xl shadow-blue-500/35 transition transform hover:-translate-y-0.5 flex items-center justify-center space-x-2.5 flex-1 border border-blue-300/30">
+                <i data-lucide="gavel" class="w-5 h-5 shrink-0"></i>
+                <span class="tracking-wide">Explore Projects &rarr;</span>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Hero Right Column -->
+          <div class="lg:col-span-5 relative hidden lg:block min-h-[380px] pointer-events-none"></div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- OUR SERVICES (EXACT 8 REALISTIC TILES FROM USER MOCKUP)  -->
+    <!-- ======================================================== -->
+    <section id="our-services-section" class="py-8 sm:py-12 bg-white border-b border-slate-100">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="mb-6 sm:mb-8 text-center sm:text-left">
+          <h2 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-sugu-navy tracking-tight font-heading">Our Services</h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">Professional, reliable and affordable home services — at your fingertips.</p>
+        </div>
+
+        <!-- Dynamic Service Category Cards created by Super Admin -->
+        <!-- Responsive layout: 1 row on big screens (8 cols), 2 rows on small laptops (4 cols x 2 rows), 2 rows on mobile (2 cols x 2 rows) -->
+        <div id="our-services-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 gap-2.5 sm:gap-4">
+          {% for cat in categories %}
+            {% if forloop.counter <= 4 %}
+              <div onclick="switchRoute('quick-service', '{{ cat.id }}')" class="cat-card-item bg-[#f0f4f9] hover:bg-[#e4ebf5] border border-slate-200/80 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 flex flex-col items-center justify-between text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer group">
+            {% elif forloop.counter <= 8 %}
+              <div onclick="switchRoute('quick-service', '{{ cat.id }}')" class="cat-card-item service-cat-extra-mobile hidden sm:flex bg-[#f0f4f9] hover:bg-[#e4ebf5] border border-slate-200/80 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 flex-col items-center justify-between text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer group">
+            {% else %}
+              <div onclick="switchRoute('quick-service', '{{ cat.id }}')" class="cat-card-item service-cat-extra-desktop hidden bg-[#f0f4f9] hover:bg-[#e4ebf5] border border-slate-200/80 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 flex-col items-center justify-between text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer group">
+            {% endif %}
+                <div class="w-14 h-14 sm:w-20 sm:h-20 flex items-center justify-center p-1">
+                  {% if cat.image %}
+                    <img src="{{ cat.image.url }}" alt="{{ cat.name }}" class="max-w-full max-h-full object-contain group-hover:scale-108 transition-transform duration-300 drop-shadow-sm" />
+                  {% else %}
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-white shadow-sm flex items-center justify-center text-sugu-blue text-xl sm:text-2xl group-hover:scale-108 transition-transform">
+                      <i class="bi {{ cat.icon_class }}"></i>
+                    </div>
+                  {% endif %}
+                </div>
+                <span class="text-xs font-bold text-slate-800 mt-2 line-clamp-1">{{ cat.name }}</span>
+              </div>
+          {% empty %}
+          <div class="col-span-full py-8 text-center text-slate-400 text-sm">
+            No active categories found. Categories created by Super Admin will appear here.
+          </div>
+          {% endfor %}
+        </div>
+
+        {% if categories|length > 4 %}
+        <div class="mt-8 text-center {% if categories|length <= 8 %}sm:hidden{% endif %}">
+          <button id="toggle-our-services-btn" type="button" onclick="toggleOurServices()" class="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-white hover:bg-slate-50 text-sugu-blue border border-sugu-blue/30 hover:border-sugu-blue font-bold text-xs sm:text-sm shadow-sm hover:shadow-md transition-all duration-200 group">
+            <span id="toggle-our-services-text">
+              <span class="lg:hidden">View All</span>
+              <span class="hidden lg:inline">View More</span>
+            </span>
+            <i id="toggle-our-services-icon" class="bi bi-chevron-down text-xs transition-transform duration-300 group-hover:translate-y-0.5"></i>
+          </button>
+        </div>
+        {% endif %}
+
+      </div>
+    </section>
+
+    <!-- KEY STATS BANNER (BLUE STRIP) -->
+    <section class="bg-sugu-blue text-white py-5 sm:py-6 shadow-inner">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 text-center sm:text-left divide-y sm:divide-y-0 sm:divide-x divide-blue-400/40">
+          
+          <div class="flex items-center justify-center sm:justify-start space-x-2.5 sm:space-x-3.5 sm:px-4 pt-2 sm:pt-0">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+              <i data-lucide="users" class="w-5 h-5 sm:w-6 sm:h-6 text-white"></i>
+            </div>
+            <div>
+              <div class="text-xl sm:text-2xl font-extrabold font-display leading-tight">{{ happy_customers_display|default:"1000+" }}</div>
+              <div class="text-[11px] sm:text-xs text-blue-100 font-medium">Happy Customers</div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-center sm:justify-start space-x-2.5 sm:space-x-3.5 sm:px-4 pt-2 sm:pt-0">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+              <i data-lucide="award" class="w-5 h-5 sm:w-6 sm:h-6 text-white"></i>
+            </div>
+            <div>
+              <div class="text-xl sm:text-2xl font-extrabold font-display leading-tight">10+</div>
+              <div class="text-[11px] sm:text-xs text-blue-100 font-medium">Years of Experience</div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-center sm:justify-start space-x-2.5 sm:space-x-3.5 sm:px-4 pt-2 sm:pt-0">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+              <i data-lucide="clock" class="w-5 h-5 sm:w-6 sm:h-6 text-white"></i>
+            </div>
+            <div>
+              <div class="text-xl sm:text-2xl font-extrabold font-display leading-tight">24/7</div>
+              <div class="text-[11px] sm:text-xs text-blue-100 font-medium">Emergency Support</div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-center sm:justify-start space-x-2.5 sm:space-x-3.5 sm:px-4 pt-2 sm:pt-0">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+              <i data-lucide="shield-check" class="w-5 h-5 sm:w-6 sm:h-6 text-white"></i>
+            </div>
+            <div>
+              <div class="text-xl sm:text-2xl font-extrabold font-display leading-tight">100%</div>
+              <div class="text-[11px] sm:text-xs text-blue-100 font-medium">Quality Work</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- THE TWO DUAL-ENGINE OPTIONS (SIDE-BY-SIDE CARDS - MATCHING REFERENCE) -->
+    <section class="py-10 sm:py-12 lg:py-16 bg-[#f8fafc] border-b border-slate-200/60">
+      <div class="w-full max-w-[1600px] xl:max-w-[1680px] 2xl:max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
+        
+        <div class="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
+          <span class="px-3.5 py-1 text-xs font-bold uppercase tracking-wider bg-blue-50 text-sugu-blue rounded-full border border-blue-200/60">Dual Booking Engines</span>
+          <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold font-heading text-sugu-navy mt-2.5">Choose the Right Option For Your Need</h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1.5">Instant standard repairs for today or competitive multi-bid projects for tomorrow.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 xl:gap-8 items-stretch">
+          
+          <!-- OPTION 1: QUICK SERVICE BOOKING CARD -->
+          <div onclick="switchRoute('quick-service')" 
+               class="group relative bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-blue-300/80 transition-all duration-300 overflow-hidden cursor-pointer flex flex-col md:flex-row items-stretch min-h-0 md:min-h-[420px] lg:min-h-[460px] xl:min-h-[480px]">
+            
+            <!-- Left Text Content -->
+            <div class="relative z-10 p-5 sm:p-8 lg:p-10 md:w-[48%] lg:w-[46%] xl:w-[44%] flex flex-col justify-between space-y-3 sm:space-y-4 shrink-0">
+              <div class="space-y-2.5 sm:space-y-3.5">
+                <div class="flex items-center space-x-2 text-sugu-blue font-bold text-xs sm:text-sm tracking-wide">
+                  <i data-lucide="zap" class="w-4 h-4 fill-sugu-blue text-sugu-blue shrink-0"></i>
+                  <span>Quick Service Booking</span>
+                </div>
+
+                <h3 class="text-xl sm:text-2xl lg:text-[32px] font-extrabold text-[#07152b] tracking-tight font-heading leading-tight">
+                  Need Help Today?
+                </h3>
+
+                <p class="text-xs sm:text-sm lg:text-[15px] text-slate-500 leading-relaxed">
+                  Book skilled &amp; verified technicians for all your home service needs.
+                </p>
+                
+                <ul class="space-y-2 sm:space-y-3 pt-1 sm:pt-2 text-xs sm:text-sm lg:text-[15px] text-slate-700 font-medium">
+                  <li class="flex items-center space-x-2.5 sm:space-x-3">
+                    <span class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-sugu-blue text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <i data-lucide="check" class="w-2.5 h-2.5 sm:w-3 sm:h-3 stroke-[3]"></i>
+                    </span>
+                    <span class="leading-tight">15-Minute Response (select cities)</span>
+                  </li>
+                  <li class="flex items-center space-x-2.5 sm:space-x-3">
+                    <span class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-sugu-blue text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <i data-lucide="check" class="w-2.5 h-2.5 sm:w-3 sm:h-3 stroke-[3]"></i>
+                    </span>
+                    <span class="leading-tight">Transparent Pricing</span>
+                  </li>
+                  <li class="flex items-center space-x-2.5 sm:space-x-3">
+                    <span class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-sugu-blue text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <i data-lucide="check" class="w-2.5 h-2.5 sm:w-3 sm:h-3 stroke-[3]"></i>
+                    </span>
+                    <span class="leading-tight">Experienced &amp; Verified Professionals</span>
+                  </li>
+                  <li class="flex items-center space-x-2.5 sm:space-x-3">
+                    <span class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-sugu-blue text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <i data-lucide="check" class="w-2.5 h-2.5 sm:w-3 sm:h-3 stroke-[3]"></i>
+                    </span>
+                    <span class="leading-tight">Clean &amp; Professional Work</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <div class="pt-3 sm:pt-4 mt-auto">
+                <button class="w-full sm:w-auto min-h-[48px] sm:min-h-[50px] py-3 px-6 sm:px-7 rounded-2xl sm:rounded-full font-extrabold text-sm bg-sugu-blue hover:bg-sugu-blueDark text-white shadow-lg shadow-blue-500/25 transition-all duration-200 transform group-hover:translate-x-1 inline-flex items-center justify-center space-x-2 whitespace-nowrap">
+                  <span>Book a Quick Service</span>
+                  <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Image Area -->
+            <div class="relative md:w-[52%] lg:w-[54%] xl:w-[56%] w-full h-52 sm:h-64 md:h-auto min-h-[220px] sm:min-h-[260px] md:min-h-full overflow-hidden">
+              <img src="/static/images/card_plumber_sink.jpg" alt="Quick Service Technician Under Sink" 
+                   class="absolute inset-0 w-full h-full object-cover object-[78%_center] group-hover:scale-105 transition-transform duration-700 ease-out" />
+              <div class="absolute inset-y-0 left-0 w-32 sm:w-40 lg:w-48 bg-gradient-to-r from-white via-white/80 via-25% to-transparent pointer-events-none hidden md:block"></div>
+              <div class="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white via-white/70 to-transparent pointer-events-none md:hidden"></div>
+            </div>
+
+          </div>
+
+          <!-- OPTION 2: SMART PROJECT BIDDING CARD -->
+          <div onclick="switchRoute('bidding')" 
+               class="group relative bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-blue-300/80 transition-all duration-300 overflow-hidden cursor-pointer flex flex-col md:flex-row items-stretch min-h-0 md:min-h-[420px] lg:min-h-[460px] xl:min-h-[480px]">
+            
+            <!-- Left Text Content -->
+            <div class="relative z-10 p-5 sm:p-8 lg:p-10 md:w-[48%] lg:w-[46%] xl:w-[44%] flex flex-col justify-between space-y-3 sm:space-y-4 shrink-0">
+              <div class="space-y-2.5 sm:space-y-3.5">
+                <div class="flex items-center space-x-2 text-sugu-blue font-bold text-xs sm:text-sm tracking-wide">
+                  <i data-lucide="gavel" class="w-4 h-4 text-sugu-blue shrink-0"></i>
+                  <span>Smart Project Bidding</span>
+                </div>
+
+                <h3 class="text-xl sm:text-2xl lg:text-[32px] font-extrabold text-[#07152b] tracking-tight font-heading leading-tight">
+                  Planning a Big Project?
+                </h3>
+
+                <p class="text-xs sm:text-sm lg:text-[15px] text-slate-500 leading-relaxed">
+                  Get competitive bids from verified vendors for your home renovation needs.
+                </p>
+                
+                <ul class="space-y-2 sm:space-y-3 pt-1 sm:pt-2 text-xs sm:text-sm lg:text-[15px] text-slate-700 font-medium">
+                  <li class="flex items-center space-x-2.5 sm:space-x-3">
+                    <span class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-sugu-blue text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <i data-lucide="check" class="w-2.5 h-2.5 sm:w-3 sm:h-3 stroke-[3]"></i>
+                    </span>
+                    <span class="leading-tight">Reverse Auction Bidding</span>
+                  </li>
+                  <li class="flex items-center space-x-2.5 sm:space-x-3">
+                    <span class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-sugu-blue text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <i data-lucide="check" class="w-2.5 h-2.5 sm:w-3 sm:h-3 stroke-[3]"></i>
+                    </span>
+                    <span class="leading-tight">Transparent &amp; Fair Pricing</span>
+                  </li>
+                  <li class="flex items-center space-x-2.5 sm:space-x-3">
+                    <span class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-sugu-blue text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <i data-lucide="check" class="w-2.5 h-2.5 sm:w-3 sm:h-3 stroke-[3]"></i>
+                    </span>
+                    <span class="leading-tight">Verified Professionals &amp; Contractors</span>
+                  </li>
+                  <li class="flex items-center space-x-2.5 sm:space-x-3">
+                    <span class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-sugu-blue text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <i data-lucide="check" class="w-2.5 h-2.5 sm:w-3 sm:h-3 stroke-[3]"></i>
+                    </span>
+                    <span class="leading-tight">End-to-End Project Support</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <div class="pt-3 sm:pt-4 mt-auto">
+                <button class="w-full sm:w-auto min-h-[48px] sm:min-h-[50px] py-3 px-6 sm:px-7 rounded-2xl sm:rounded-full font-extrabold text-sm bg-sugu-blue hover:bg-sugu-blueDark text-white shadow-lg shadow-blue-500/25 transition-all duration-200 transform group-hover:translate-x-1 inline-flex items-center justify-center space-x-2 whitespace-nowrap">
+                  <span>Explore Projects</span>
+                  <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Image Area -->
+            <div class="relative md:w-[52%] lg:w-[54%] xl:w-[56%] w-full h-52 sm:h-64 md:h-auto min-h-[220px] sm:min-h-[260px] md:min-h-full overflow-hidden">
+              <img src="/static/images/card_contractor_renovation.jpg" alt="Contractor with Blueprint in Renovation" 
+                   class="absolute inset-0 w-full h-full object-cover object-[65%_center] group-hover:scale-105 transition-transform duration-700 ease-out" />
+              <div class="absolute inset-y-0 left-0 w-32 sm:w-40 lg:w-48 bg-gradient-to-r from-white via-white/80 via-25% to-transparent pointer-events-none hidden md:block"></div>
+              <div class="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white via-white/70 to-transparent pointer-events-none md:hidden"></div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- POPULAR QUICK SERVICES (EXACT 6 CARDS FROM ATTACHMENT)   -->
+    <!-- ======================================================== -->
+    <section class="py-8 sm:py-12 bg-white border-b border-slate-100">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="flex items-center justify-between mb-6 sm:mb-8">
+          <div>
+            <h2 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-sugu-navy tracking-tight font-heading">Popular Quick Services</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Most booked services for your daily home needs.</p>
+          </div>
+          <button onclick="switchRoute('quick-service')" class="text-xs sm:text-sm font-bold text-sugu-blue hover:text-sugu-blueDark flex items-center space-x-1 group">
+            <span>View All</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </button>
+        </div>
+
+        <!-- Dynamic Popular Quick Services Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4">
+          {% for s in popular_services %}
+          <div onclick="switchRoute('quick-service', '{{ s.category.id }}')" class="bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group flex flex-col justify-between">
+            <div class="aspect-[4/3] overflow-hidden bg-slate-100 relative">
+              <img src="{% if s.image %}{{ s.image.url }}{% elif s.image_url %}{{ s.image_url }}{% elif s.category and s.category.image %}{{ s.category.image.url }}{% else %}/static/assets/realistic/popular_tap_repair.png{% endif %}" alt="{{ s.title }}" class="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500" />
+              {% if s.base_price %}
+              <span class="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg bg-white/95 backdrop-blur text-[9px] sm:text-[10px] font-bold text-slate-800 shadow-sm border border-slate-100">
+                ₹{{ s.base_price|floatformat:0 }}
+              </span>
+              {% endif %}
+            </div>
+            <div class="p-2.5 sm:p-3 flex items-center justify-between gap-1.5 sm:gap-2">
+              <div class="min-w-0 flex-1">
+                <span class="text-xs sm:text-sm font-bold text-slate-800 truncate block group-hover:text-sugu-blue transition" title="{{ s.title }}">{{ s.title }}</span>
+                {% if s.category %}
+                <span class="text-[10px] text-slate-400 block truncate">{{ s.category.name }}</span>
+                {% endif %}
+              </div>
+              <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-sugu-blue text-sugu-blue flex items-center justify-center group-hover:bg-sugu-blue group-hover:text-white transition shrink-0">
+                <i data-lucide="arrow-right" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="col-span-full py-8 text-center text-slate-400 text-sm">
+            No popular services available right now.
+          </div>
+          {% endfor %}
+        </div>
+
+      </div>
+    </section>
+
+    <!-- EXPLORE ALL MAIN CATEGORIES SHOWCASE WITH REALISTIC 3D ICONS -->
+    <section class="py-14 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+          <div>
+            <span class="px-3.5 py-1 text-xs font-bold uppercase tracking-wider bg-blue-100 text-sugu-blue rounded-full">All Core Categories</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-sugu-navy tracking-tight mt-1">Our Core Services &amp; Categories</h2>
+            <p class="text-sm text-slate-500 mt-1">Click any category below to view verified upfront pricing and book in 60 seconds.</p>
+          </div>
+          <button onclick="switchRoute('quick-service')" class="text-xs sm:text-sm font-bold text-sugu-blue hover:underline flex items-center gap-1 self-start sm:self-auto">
+            <span>View Quick Services Catalog</span>
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Dynamic Category Grid created by Super Admin in Database -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
+          {% for cat in categories %}
+          <div onclick="switchRoute('quick-service', '{{ cat.id }}')" class="sugu-category-card group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-white border border-slate-200/90 rounded-2xl overflow-hidden flex flex-col justify-between">
+            <div class="relative overflow-hidden bg-slate-50 aspect-square flex items-center justify-center p-4">
+              {% if cat.image %}
+                <img src="{{ cat.image.url }}" alt="{{ cat.name }}" class="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-2xl group-hover:scale-108 transition-transform duration-300">
+              {% else %}
+                <div class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-sugu-blue text-2xl group-hover:scale-108 transition-transform">
+                  <i class="bi {{ cat.icon_class }}"></i>
+                </div>
+              {% endif %}
+            </div>
+            <div class="p-3.5 bg-white border-t border-slate-100 flex flex-col justify-between flex-1">
+              <div>
+                <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+                  <span class="flex items-center font-semibold text-amber-600"><i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400 mr-0.5"></i> 4.88</span>
+                  <span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[10px] font-bold border border-emerald-200">15 Min</span>
+                </div>
+                <h4 class="font-bold text-slate-900 group-hover:text-sugu-blue transition text-sm mb-1 line-clamp-1">{{ cat.name }}</h4>
+                <p class="text-[11px] text-slate-500 line-clamp-1">
+                  {% if cat.subcategories.all %}
+                    {% for sub in cat.subcategories.all|slice:":3" %}{{ sub.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                  {% else %}
+                    Verified instant doorstep service
+                  {% endif %}
+                </p>
+              </div>
+              <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-xs font-black text-sugu-blue">
+                  {% if cat.min_price %}
+                    Starts ₹{{ cat.min_price }}
+                  {% else %}
+                    Starts ₹199
+                  {% endif %}
+                </span>
+                <span class="text-xs font-bold text-sugu-blue flex items-center group-hover:translate-x-1 transition">Book &rarr;</span>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="col-span-full py-12 text-center text-slate-400 text-sm">
+            No active categories found. Categories created by Super Admin will appear here.
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: HOW QUICK SERVICE WORKS VS HOW BIDDING WORKS -->
+    <section class="py-10 sm:py-16 bg-slate-100/70 border-y border-slate-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-8 sm:mb-14">
+          <span class="px-3.5 py-1 text-xs font-bold uppercase tracking-wider bg-slate-200 text-slate-800 rounded-full">Comparison &amp; Guide</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900 mt-2">
+            How Quick Service Works vs How Bidding Works
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+            Choose the workflow that matches your job requirements. Simple on-demand booking for standard jobs, or competitive bids for custom scopes.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 items-stretch">
+          
+          <!-- Column A: Quick Service Flow -->
+          <div class="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 border-2 border-sugu-blue/30 shadow-xl flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-4 sm:pb-6 border-b border-slate-100 mb-5 sm:mb-6 gap-2">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-blue-100 text-sugu-blue flex items-center justify-center font-bold shrink-0">
+                    <i data-lucide="zap" class="w-5 h-5 sm:w-6 sm:h-6 fill-sugu-blue"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-base sm:text-xl font-bold text-slate-900">⚡ Quick Service Flow</h3>
+                    <span class="text-[11px] sm:text-xs text-slate-500">For standard, fixed-price repairs &amp; grooming</span>
+                  </div>
+                </div>
+                <span class="text-[11px] sm:text-xs font-bold bg-blue-50 text-sugu-blue px-2.5 sm:px-3 py-1 rounded-full border border-blue-200 shrink-0 whitespace-nowrap">
+                  Fixed Pricing
+                </span>
+              </div>
+              <!-- Steps List Rendered Dynamically -->
+              <div id="how-qs-steps" class="space-y-4"></div>
+            </div>
+
+            <div class="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-slate-100 text-center">
+              <button onclick="switchRoute('quick-service')" class="w-full h-11 sm:h-12 bg-sugu-blue hover:bg-sugu-blueDark text-white rounded-xl font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition flex items-center justify-center space-x-2 whitespace-nowrap">
+                <span>Select a Quick Service Now</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Column B: Bidding Flow -->
+          <div class="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 border-2 border-amber-500/30 shadow-xl flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-4 sm:pb-6 border-b border-slate-100 mb-5 sm:mb-6 gap-2">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold shrink-0">
+                    <i data-lucide="gavel" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-base sm:text-xl font-bold text-slate-900">🏷️ Bidding Flow</h3>
+                    <span class="text-[11px] sm:text-xs text-slate-500">For renovations, full painting &amp; large projects</span>
+                  </div>
+                </div>
+                <span class="text-[11px] sm:text-xs font-bold bg-amber-50 text-amber-700 px-2.5 sm:px-3 py-1 rounded-full border border-amber-200 shrink-0 whitespace-nowrap">
+                  Save Up to 40%
+                </span>
+              </div>
+              <!-- Steps List Rendered Dynamically -->
+              <div id="how-bidding-steps" class="space-y-4"></div>
+            </div>
+
+            <div class="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-slate-100 text-center">
+              <button onclick="switchRoute('bidding')" class="w-full h-11 sm:h-12 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition flex items-center justify-center space-x-2 whitespace-nowrap">
+                <span>Go to End-User Bidding Hub</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: CUSTOMER REVIEWS & PLAYABLE VIDEO SHOWCASE -->
+    <section class="py-10 sm:py-16 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10 gap-3">
+          <div>
+            <span class="px-3.5 py-1 text-xs font-bold uppercase tracking-wider bg-rose-100 text-rose-800 rounded-full">{{ cms_transform_section.tag_badge|default:"Real Customer Stories" }}</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900 mt-2">
+              {{ cms_transform_section.title|default:"Watch How Sugu Transforms Homes" }}
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">{{ cms_transform_section.subtitle|default:"Unscripted video testimonials and project walkthroughs across India." }}</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xs font-bold text-slate-500">{{ cms_transform_section.counter_text|default:"Over 50,000+ 5-star video reviews" }}</span>
+          </div>
+        </div>
+
+        <!-- Video Testimonial Cards Grid -->
+        <div id="home-videos-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8 mb-10 sm:mb-16"></div>
+
+        <!-- Customer Written Reviews -->
+        <div class="border-t border-slate-200 pt-10 sm:pt-14">
+          <div class="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
+            <h3 class="text-xl sm:text-2xl font-bold font-heading text-slate-900">What Our Verified Customers Say</h3>
+            <p class="text-xs text-slate-500 mt-1">Authentic feedback from verified homeowners and apartment managers.</p>
+          </div>
+          <div id="home-reviews-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
+            {% for t in cms_testimonials %}
+            <div class="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white border border-slate-200 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3 sm:mb-4 gap-2">
+                  <div class="flex items-center space-x-3 min-w-0 pr-1">
+                    {% if t.avatar %}
+                      <img src="{{ t.avatar.url }}" alt="{{ t.client_name }}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-sky-500 shadow-sm shrink-0">
+                    {% else %}
+                      <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 text-white font-bold flex items-center justify-center text-xs sm:text-sm border-2 border-sky-400 shadow-sm shrink-0">
+                        {{ t.client_name|slice:":1"|upper }}
+                      </div>
+                    {% endif %}
+                    <div class="min-w-0">
+                      <h5 class="font-bold text-slate-900 text-sm sm:text-base leading-tight truncate">{{ t.client_name }}</h5>
+                      <span class="text-[11px] sm:text-xs text-slate-500 block truncate">{{ t.client_role_or_company }}</span>
+                    </div>
+                  </div>
+                  <span class="px-2 py-0.5 text-[10px] sm:text-[11px] font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap shrink-0 self-start">
+                    Verified Customer
+                  </span>
+                </div>
+                <div class="flex items-center space-x-1 text-amber-400 mb-2.5 sm:mb-3">
+                  <i data-lucide="star" class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-amber-400"></i>
+                  <i data-lucide="star" class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-amber-400"></i>
+                  <i data-lucide="star" class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-amber-400"></i>
+                  <i data-lucide="star" class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-amber-400"></i>
+                  <i data-lucide="star" class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-amber-400"></i>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">"{{ t.review_text }}"</p>
+              </div>
+              <div class="mt-3.5 sm:mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] sm:text-xs text-slate-400">
+                <span>Service: <strong class="text-slate-600">{{ t.service_taken }}</strong></span>
+                <span>{{ t.created_at|date:"d M Y" }}</span>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- SECTION: SUGU SERVICES VS UNORGANIZED LOCAL HANDYMEN -->
+    <section class="py-10 sm:py-16 bg-slate-50">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-8 sm:mb-10">
+          {% if cms_why_choose_section.tag_badge %}
+            <span class="inline-block px-3.5 py-1 text-xs font-bold uppercase tracking-wider bg-blue-100 text-sugu-navy rounded-full mb-3">{{ cms_why_choose_section.tag_badge }}</span>
+          {% endif %}
+          <h2 class="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900">{{ cms_why_choose_section.title|default:"Why Choose Sugu Services?" }}</h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">{{ cms_why_choose_section.subtitle|default:"A transparent comparison between Sugu Services and unverified roadside technicians." }}</p>
+        </div>
+
+        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-lg overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[500px] text-left text-xs sm:text-sm">
+              <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                <tr>
+                  <th class="p-3.5 sm:p-5">Feature</th>
+                  <th class="p-3.5 sm:p-5 text-sugu-navy bg-blue-50/60">{{ cms_why_choose_section.col_sugu_title|default:"Sugu Services (Quick &amp; Bidding)" }}</th>
+                  <th class="p-3.5 sm:p-5 text-slate-500">{{ cms_why_choose_section.col_others_title|default:"Unorganized Local Technicians" }}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                {% for f in cms_why_choose_features %}
+                <tr>
+                  <td class="p-3.5 sm:p-5 font-semibold text-slate-800">{{ f.feature_name }}</td>
+                  <td class="p-3.5 sm:p-5 text-emerald-700 font-bold bg-blue-50/30">{{ f.sugu_value }}</td>
+                  <td class="p-3.5 sm:p-5 text-rose-500">{{ f.others_value }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td class="p-3.5 sm:p-5 font-semibold text-slate-800">Technician Background Check</td>
+                  <td class="p-3.5 sm:p-5 text-emerald-700 font-bold bg-blue-50/30">✓ 7-Step Police &amp; Skill Verified</td>
+                  <td class="p-3.5 sm:p-5 text-rose-500">✗ Zero verification or background check</td>
+                </tr>
+                <tr>
+                  <td class="p-3.5 sm:p-5 font-semibold text-slate-800">Pricing Transparency</td>
+                  <td class="p-3.5 sm:p-5 text-emerald-700 font-bold bg-blue-50/30">✓ Upfront fixed rate or competitive pro bids</td>
+                  <td class="p-3.5 sm:p-5 text-rose-500">✗ Random arbitrary pricing &amp; hidden charges</td>
+                </tr>
+                <tr>
+                  <td class="p-3.5 sm:p-5 font-semibold text-slate-800">Post-Service Warranty</td>
+                  <td class="p-3.5 sm:p-5 text-emerald-700 font-bold bg-blue-50/30">✓ 30-Day Money-Back &amp; Free Re-work</td>
+                  <td class="p-3.5 sm:p-5 text-rose-500">✗ No warranty once technician leaves</td>
+                </tr>
+                <tr>
+                  <td class="p-3.5 sm:p-5 font-semibold text-slate-800">Damage Protection</td>
+                  <td class="p-3.5 sm:p-5 text-emerald-700 font-bold bg-blue-50/30">✓ Up to ₹10,000 Free Insurance Cover</td>
+                  <td class="p-3.5 sm:p-5 text-rose-500">✗ Customer bears 100% loss</td>
+                </tr>
+                <tr>
+                  <td class="p-3.5 sm:p-5 font-semibold text-slate-800">Payment Security</td>
+                  <td class="p-3.5 sm:p-5 text-emerald-700 font-bold bg-blue-50/30">✓ Pay After Service or Work Satisfaction</td>
+                  <td class="p-3.5 sm:p-5 text-rose-500">✗ Demands high non-refundable cash advance</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ======================================================== -->
+  <!-- 2. VIEW: QUICK SERVICE (URBAN COMPANY NAVIGATION & FLOW) -->
+  <!-- ======================================================== -->
+  <main id="view-quick-service" class="hidden transition-opacity duration-300">
+    
+    <!-- SUB-VIEW A: 13 CATEGORY CARDS GRID -->
+    <section id="qs-category-grid-section" class="py-6 sm:py-12 bg-slate-50 min-h-screen">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header Banner -->
+        <div class="mb-6 sm:mb-10 text-center sm:text-left flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-8 rounded-2xl sm:rounded-3xl text-white shadow-xl"
+          style="background: linear-gradient(135deg, #0c1a30 0%, #102a54 50%, #1b75d0 100%);">
+          <div>
+            <div class="flex items-center space-x-2 mb-1.5 justify-center sm:justify-start">
+              <span class="px-2.5 py-0.5 text-[11px] sm:text-xs font-bold bg-white text-sugu-navy rounded-full">⚡ Instant Booking</span>
+              <span class="text-[11px] sm:text-xs text-blue-200">15-Minute Guaranteed Arrival</span>
+            </div>
+            <h2 class="text-xl sm:text-3xl font-extrabold font-heading">⚡ Sugu Quick Services Catalog</h2>
+            <p class="text-xs sm:text-sm text-blue-100 mt-1">Select a category below to browse verified services, view transparent prices, and book in 60 seconds.</p>
+          </div>
+          <button onclick="switchRoute('bidding')" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition flex items-center justify-center space-x-1.5 w-full sm:w-auto self-stretch sm:self-auto">
+            <span>Need Custom Bidding?</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+
+        <!-- THE DYNAMIC 13 CATEGORY CARDS (WITH REALISTIC 3D ICONS FROM ASSETS/ICONS/) -->
+        <div id="qs-12-icons-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-6">
+          <!-- Rendered dynamically by app.js from data.js -->
+        </div>
+
+        <!-- Quick Services Category Grid Pagination Container -->
+        <div id="qs-categories-pagination" class="mt-8"></div>
+
+      </div>
+    </section>
+
+    <!-- SUB-VIEW B: URBAN COMPANY CATEGORY DETAIL & BOOKING SCREEN -->
+    <section id="qs-uc-detail-section" class="hidden py-8 bg-slate-100 min-h-screen">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Top Back Bar & Category Header -->
+        <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+          <div class="flex items-center space-x-4">
+            <button onclick="backToCategories()" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition" title="Back to all categories">
+              <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            <img id="uc-cat-icon-thumb" src="" alt="Icon" class="w-12 h-12 object-contain rounded-xl border border-slate-200 p-1 bg-slate-50">
+            <div>
+              <div class="flex items-center space-x-2">
+                <h2 id="uc-cat-title" class="text-2xl font-bold font-heading text-slate-900">Category Name</h2>
+                <span id="uc-cat-rating" class="flex items-center text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200"></span>
+              </div>
+              <p id="uc-cat-tagline" class="text-xs text-slate-500 mt-0.5">Tagline</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-3 text-xs text-slate-500">
+            <span class="flex items-center text-emerald-700 font-semibold bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 mr-1 text-emerald-600"></i> Sugu 30-Day Guarantee
+            </span>
+          </div>
+        </div>
+
+
+
+        <!-- Horizontal Category Pills Strip (Quick Switch across all 13 categories) -->
+        <div id="uc-category-pills" class="flex items-center space-x-2 overflow-x-auto pb-4 mb-6 scrollbar-none"></div>
+
+        <!-- ======================================================== -->
+        <!-- BEAUTY & WELLNESS GENDER HUB (2 CARDS: WOMEN & MEN)      -->
+        <!-- Shown specifically for the Beauty category               -->
+        <!-- ======================================================== -->
+        <div id="beauty-gender-hub-view" class="hidden mb-10">
+          <div class="text-center mb-8">
+            <div class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-pink-50 text-pink-700 text-xs font-bold border border-pink-200 mb-3 shadow-xs">
+              <i data-lucide="sparkles" class="w-4 h-4 text-pink-600"></i>
+              <span>Select Your Dedicated Beauty &amp; Grooming Experience</span>
+            </div>
+            <h3 class="text-2xl sm:text-3xl font-black text-slate-900 font-heading">Choose Service Audience</h3>
+            <p class="text-xs sm:text-sm text-slate-500 mt-2 max-w-lg mx-auto">
+              Select Women or Men below to view verified specialized subcategories, certified specialists, and doorstep bookings.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-3xl mx-auto">
+            <!-- Card 1: Women -->
+            <div onclick="selectBeautyGender('women')" 
+              class="group bg-white rounded-3xl border-2 border-slate-200/90 shadow-md hover:shadow-2xl hover:border-pink-500 transition-all duration-300 cursor-pointer overflow-hidden flex flex-col justify-between hover:-translate-y-1">
+              <div>
+                <div class="relative aspect-[4/3] overflow-hidden bg-pink-50/50 p-3">
+                  <img src="/static/assets/beauty/women_photo.png" alt="Women's Salon &amp; Spa" class="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500">
+                  <div class="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </div>
+                <div class="p-5 pb-0">
+                  <div class="flex items-center justify-between text-xs mb-2">
+                    <span class="flex items-center font-bold text-amber-500">
+                      <i data-lucide="star" class="w-4 h-4 fill-amber-400 mr-1"></i> 4.91
+                    </span>
+                    <span class="text-pink-700 bg-pink-50 px-2.5 py-0.5 rounded-full text-[11px] font-bold border border-pink-200">For Women</span>
+                  </div>
+                  <h4 class="text-xl font-black text-slate-900 group-hover:text-pink-600 transition font-heading">Women's Salon &amp; Spa</h4>
+                  <p class="text-xs text-slate-500 mt-1 line-clamp-1">Salon, Facial, Manicure, Pedicure &amp; Doorstep Spa</p>
+                  <div id="women-subcats-count" class="text-xs font-semibold text-pink-600 mt-2 flex items-center space-x-1">
+                    <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                    <span>Browse Women's Categories</span>
+                  </div>
+                </div>
+              </div>
+              <div class="p-5 pt-4 mt-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <span class="text-sm font-bold text-slate-700">Explore Services</span>
+                <span class="text-sm font-bold text-pink-600 flex items-center group-hover:translate-x-1 transition">
+                  Enter <i data-lucide="chevron-right" class="w-4 h-4 ml-0.5"></i>
+                </span>
+              </div>
+            </div>
+
+            <!-- Card 2: Men -->
+            <div onclick="selectBeautyGender('men')" 
+              class="group bg-white rounded-3xl border-2 border-slate-200/90 shadow-md hover:shadow-2xl hover:border-sky-600 transition-all duration-300 cursor-pointer overflow-hidden flex flex-col justify-between hover:-translate-y-1">
+              <div>
+                <div class="relative aspect-[4/3] overflow-hidden bg-sky-50/50 p-3">
+                  <img src="/static/assets/beauty/men_photo.png" alt="Men's Salon &amp; Grooming" class="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500">
+                  <div class="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </div>
+                <div class="p-5 pb-0">
+                  <div class="flex items-center justify-between text-xs mb-2">
+                    <span class="flex items-center font-bold text-amber-500">
+                      <i data-lucide="star" class="w-4 h-4 fill-amber-400 mr-1"></i> 4.87
+                    </span>
+                    <span class="text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded-full text-[11px] font-bold border border-sky-200">For Men</span>
+                  </div>
+                  <h4 class="text-xl font-black text-slate-900 group-hover:text-sky-600 transition font-heading">Men's Salon &amp; Grooming</h4>
+                  <p class="text-xs text-slate-500 mt-1 line-clamp-1">Haircut, Beard Trim, Head Massage &amp; Face Care</p>
+                  <div id="men-subcats-count" class="text-xs font-semibold text-sky-600 mt-2 flex items-center space-x-1">
+                    <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                    <span>Browse Men's Categories</span>
+                  </div>
+                </div>
+              </div>
+              <div class="p-5 pt-4 mt-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <span class="text-sm font-bold text-slate-700">Explore Services</span>
+                <span class="text-sm font-bold text-sky-600 flex items-center group-hover:translate-x-1 transition">
+                  Enter <i data-lucide="chevron-right" class="w-4 h-4 ml-0.5"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GENDER TOGGLE BAR (SHOWN WHEN VIEWING BEAUTY SERVICES) -->
+        <div id="beauty-gender-toggle-bar" class="hidden mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs">
+          <div class="flex items-center space-x-2">
+            <button onclick="backToBeautyHub()" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+              <i data-lucide="arrow-left" class="w-4 h-4"></i>
+              <span>Back to Gender Cards</span>
+            </button>
+            <span class="text-slate-300">|</span>
+            <span id="beauty-active-gender-label" class="text-xs font-bold text-slate-800">Women's Salon &amp; Spa</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button id="toggle-womens-btn" onclick="selectBeautyGender('women')" class="px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-pink-100 text-pink-800 border-2 border-pink-500 shadow-xs">
+              <i data-lucide="venus" class="w-3.5 h-3.5 text-pink-600"></i>
+              <span>Women</span>
+            </button>
+            <button id="toggle-mens-btn" onclick="selectBeautyGender('men')" class="px-4 py-1.5 rounded-xl text-xs font-semibold transition flex items-center space-x-1.5 bg-slate-50 text-slate-600 hover:bg-sky-50 hover:text-sky-700 border border-slate-200">
+              <i data-lucide="mars" class="w-3.5 h-3.5 text-sky-600"></i>
+              <span>Men</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- BEAUTY DELIVERY MODE SELECTOR (IMAGE 2: 1. SALON AT HOME vs 2. PREMIUM PARLOUR SERVICES) -->
+        <div id="beauty-service-mode-bar" class="hidden mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Card 1: Salon at Home -->
+          <div id="mode-card-home" onclick="setBeautyServiceMode('home')" 
+            class="relative flex items-center p-4 sm:p-5 rounded-2xl sm:rounded-3xl cursor-pointer border-2 transition-all duration-300 bg-white hover:shadow-md group border-pink-500 ring-2 ring-pink-500/20 bg-pink-50/20">
+            <div id="mode-home-icon-wrap" class="w-12 h-12 rounded-2xl flex items-center justify-center mr-4 flex-shrink-0 bg-pink-100 text-pink-600 transition group-hover:scale-105">
+              <i data-lucide="home" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1 pr-6">
+              <div class="flex items-center space-x-2 mb-1">
+                <h4 id="mode-home-title" class="text-base sm:text-lg font-bold text-slate-900 font-heading">1. Salon at Home</h4>
+                <span id="mode-home-badge" class="px-2 py-0.5 text-[10px] font-black uppercase rounded-full bg-pink-100 text-pink-700 tracking-wider">ALL SERVICES AVAILABLE</span>
+              </div>
+              <p id="mode-home-sub" class="text-xs text-slate-500 font-medium">Certified beautician visits your home • 100% sealed mono-kits</p>
+            </div>
+            <div id="mode-home-check" class="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-pink-600 text-white flex items-center justify-center shadow-sm">
+              <i data-lucide="check" class="w-4 h-4"></i>
+            </div>
+          </div>
+
+          <!-- Card 2: Premium Parlour Services -->
+          <div id="mode-card-parlour" onclick="setBeautyServiceMode('parlour')" 
+            class="relative flex items-center p-4 sm:p-5 rounded-2xl sm:rounded-3xl cursor-pointer border-2 transition-all duration-300 bg-white hover:shadow-md group border-slate-200 hover:border-amber-400">
+            <div id="mode-parlour-icon-wrap" class="w-12 h-12 rounded-2xl flex items-center justify-center mr-4 flex-shrink-0 bg-amber-50 text-amber-600 transition group-hover:scale-105">
+              <i data-lucide="crown" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1 pr-6">
+              <div class="flex items-center space-x-2 mb-1">
+                <h4 id="mode-parlour-title" class="text-base sm:text-lg font-bold text-slate-900 font-heading">2. Premium Parlour Services</h4>
+                <span class="px-2 py-0.5 text-[10px] font-black uppercase rounded-full bg-amber-100 text-amber-800 tracking-wider">LUXURY SALON BRANDS</span>
+              </div>
+              <p id="mode-parlour-sub" class="text-xs text-slate-500 font-medium">Book visit at Lakmé Luxe, Enrich, BBlunt, Toni &amp; Guy in your area</p>
+            </div>
+            <div id="mode-parlour-check" class="hidden absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-amber-600 text-white flex items-center justify-center shadow-sm">
+              <i data-lucide="check" class="w-4 h-4"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- STANDARD LAYOUT: Left Subcategory Sidebar + Right Services Feed -->
+        <div id="uc-standard-layout" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          <!-- Left Subcategory Sidebar -->
+          <div class="lg:col-span-4 bg-white rounded-3xl p-5 border border-slate-200 shadow-sm sticky top-28">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 px-2">Subcategories</h4>
+            <div id="uc-subcat-nav" class="space-y-1"></div>
+
+            <!-- Perks Banner -->
+            <div class="mt-6 pt-5 border-t border-slate-100 text-xs text-slate-600 space-y-2">
+              <div class="flex items-center space-x-2 text-sugu-navy font-semibold">
+                <i data-lucide="check-circle" class="w-4 h-4 text-sugu-blue"></i>
+                <span>Standardized Industrial Tools</span>
+              </div>
+              <div class="flex items-center space-x-2 text-sugu-navy font-semibold">
+                <i data-lucide="check-circle" class="w-4 h-4 text-sugu-blue"></i>
+                <span>Fixed Transparent Pricing</span>
+              </div>
+              <div class="flex items-center space-x-2 text-sugu-navy font-semibold">
+                <i data-lucide="check-circle" class="w-4 h-4 text-sugu-blue"></i>
+                <span>Zero Mess Post-Service Cleanup</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Services Feed -->
+          <div class="lg:col-span-8">
+            <div class="mb-4 flex items-center justify-between">
+              <h3 id="uc-subcat-heading" class="text-xl font-bold font-heading text-slate-900">Services</h3>
+              <span class="text-xs text-slate-400">All prices inclusive of taxes</span>
+            </div>
+            
+            <div id="uc-services-list"></div>
+            <!-- Quick Services Items Pagination Container -->
+            <div id="uc-services-pagination" class="mt-6"></div>
+          </div>
+
+        </div>
+
+        <!-- DEDICATED LAYOUT: PREMIUM PARLOUR SERVICES -->
+        <div id="beauty-parlours-layout" class="hidden">
+          <div id="beauty-parlours-content"></div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ======================================================== -->
+  <!-- 3. VIEW: BIDDING HUB (END-USER BIDDING MARKETPLACE)       -->
+  <!-- ======================================================== -->
+  <main id="view-bidding" class="hidden transition-opacity duration-300">
+    <section class="py-6 sm:py-10 bg-slate-50 min-h-screen">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Bidding Hub Header -->
+        <div class="mb-6 sm:mb-8 p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#0c1a30] via-slate-900 to-amber-950 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
+          <div class="max-w-2xl">
+            <div class="flex items-center space-x-2 mb-2">
+              <span class="px-2.5 py-0.5 text-[11px] sm:text-xs font-bold bg-amber-500 text-slate-950 rounded-full">For End-Users</span>
+              <span class="text-[11px] sm:text-xs text-amber-200">Save up to 40% vs Traditional Contractors</span>
+            </div>
+            <h2 class="text-xl sm:text-3xl font-extrabold font-heading text-white">🏷️ Sugu Bidding Marketplace</h2>
+            <p class="text-xs sm:text-sm text-slate-300 mt-1">
+              Have a big painting job, custom modular woodwork, complete renovation, or septic job? Post your requirement once and let certified local contractors submit competitive itemized quotes. Compare bids, chat, counter-offer, and hire with 100% Payment Protection!
+            </p>
+          </div>
+
+          <!-- Bidding Sub-Tabs -->
+          <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 bg-slate-800/90 p-1.5 sm:p-2 rounded-2xl border border-slate-700/80 shrink-0 w-full md:w-auto">
+            <button id="bid-tab-tenders-btn" onclick="setBiddingTab('tenders')" 
+              class="h-9 sm:h-10 px-3 sm:px-4 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 flex-1 sm:flex-initial whitespace-nowrap bg-amber-600 text-white shadow">
+              <i data-lucide="layers" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+              <span>Active Quotes</span>
+              <span id="bid-badge-count" class="px-1.5 py-0.2 bg-white/20 text-white text-[10px] rounded-full font-black">5</span>
+            </button>
+            <button id="bid-tab-post-btn" onclick="setBiddingTab('post-job')" 
+              class="h-9 sm:h-10 px-3 sm:px-4 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 flex-1 sm:flex-initial whitespace-nowrap bg-white text-slate-700 hover:bg-slate-100">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600"></i>
+              <span>⚡ Post Job</span>
+            </button>
+            <button id="bid-tab-templates-btn" onclick="setBiddingTab('templates')" 
+              class="h-9 sm:h-10 px-3 sm:px-4 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 flex-1 sm:flex-initial whitespace-nowrap bg-white text-slate-700 hover:bg-slate-100">
+              <i data-lucide="bookmark-check" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600"></i>
+              <span>💡 Templates</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3-STEP EASY GUIDED BANNER FOR END-USERS -->
+        <div class="mb-6 sm:mb-8 p-3.5 sm:p-4 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-amber-950 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black shrink-0">
+              <i data-lucide="shield-check" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+            </div>
+            <div>
+              <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-amber-700 block">How Bidding Works for You</span>
+              <p class="text-[11px] sm:text-xs text-amber-900 font-medium">1. Tap your service &rarr; 2. Get 3-5 verified contractor quotes in 30 mins &rarr; 3. Negotiate &amp; Pay only after work satisfaction!</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1.5 sm:space-x-2 text-[11px] sm:text-xs font-bold text-amber-800 bg-white/80 px-2.5 sm:px-3 py-1.5 rounded-xl border border-amber-300 self-stretch sm:self-auto justify-center">
+            <i data-lucide="lock" class="w-3.5 h-3.5 text-emerald-600"></i>
+            <span>100% Secure Payment Guarantee</span>
+          </div>
+        </div>
+
+        <!-- TAB 1: ACTIVE TENDERS & LIVE INCOMING BIDS -->
+        <div id="bidding-tenders-section">
+          <div id="bidding-filter-bar" class="mb-6 flex flex-wrap items-center gap-2"></div>
+          <div id="active-tenders-list"></div>
+        </div>
+
+        <!-- TAB 2: POST A NEW JOB REQUIREMENT WIZARD -->
+        <div id="bidding-post-section" class="hidden">
+          <div id="bidding-post-form-container"></div>
+        </div>
+
+        <!-- TAB 3: 1-TAP READY TEMPLATES -->
+        <div id="bidding-templates-section" class="hidden">
+          <div id="bidding-templates-container"></div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+
+  <!-- ======================================================== -->
+  <!-- FLOATING BOTTOM CART BAR (URBAN COMPANY STYLE)           -->
+  <!-- ======================================================== -->
+  <div id="floating-cart-bar" class="hidden fixed bottom-14 md:bottom-0 inset-x-0 z-40 translate-y-full transition-transform duration-300 ease-in-out">
+    <div class="max-w-4xl mx-auto px-3 sm:px-4 pb-2 sm:pb-4">
+      <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-900 text-white shadow-2xl flex items-center justify-between border border-slate-700/80 backdrop-blur-md">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sugu-blue text-white flex items-center justify-center font-bold shrink-0">
+            <i data-lucide="shopping-cart" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+          </div>
+          <div>
+            <span id="cart-bar-count" class="text-[11px] sm:text-xs text-blue-300 font-semibold block">0 services added</span>
+            <div class="flex items-baseline space-x-1.5">
+              <span class="text-[11px] sm:text-xs text-slate-400">Total:</span>
+              <span id="cart-bar-total" class="text-base sm:text-lg font-black text-white">₹0</span>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="openCheckoutModal()" class="px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl bg-sugu-blue hover:bg-sugu-blueDark text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-500/30 transition flex items-center space-x-1.5 sm:space-x-2">
+          <span>View Cart &amp; Book</span>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL: CHECKOUT FLOW (URBAN COMPANY STEPPER)             -->
+  <!-- ======================================================== -->
+  <div id="checkout-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+    <div class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden modal-enter modal-enter-active">
+      <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sugu-blue"></span>
+          <h4 class="font-bold text-slate-900 text-sm">Sugu Quick Service Checkout</h4>
+        </div>
+        <button onclick="closeCheckoutModal()" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="checkout-step-content" class="p-6"></div>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ORDER SUCCESS & LIVE PRO DISPATCH TRACKER         -->
+  <!-- ======================================================== -->
+  <div id="order-success-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+    <div class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden p-6 modal-enter modal-enter-active">
+      <div id="order-tracking-content"></div>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL: COUNTER-OFFER DIALOG (FOR BIDDING)                -->
+  <!-- ======================================================== -->
+  <div id="counter-offer-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+    <div class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 modal-enter modal-enter-active">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-lg text-slate-900">Send Counter-Offer</h3>
+        <button onclick="closeCounterOfferModal()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 mb-4 text-xs">
+        <span class="text-amber-800 block">Pro: <strong id="counter-modal-pro-name">Contractor</strong></span>
+        <span class="text-amber-800 block">Current Quoted Bid: <strong id="counter-modal-current-bid">₹0</strong></span>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">Quick Counter Presets (1-Tap):</label>
+          <div id="counter-presets-container"></div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Your Proposed Counter Price (₹)</label>
+          <input type="number" id="counter-offer-price" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm font-bold focus:outline-none focus:border-amber-600 bg-white">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Note to Contractor (Optional)</label>
+          <textarea id="counter-offer-note" rows="2" placeholder="e.g. Can you match ₹20,000 if we supply primer?" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-amber-600 bg-white"></textarea>
+        </div>
+        <button onclick="submitCounterOffer()" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs transition shadow-md">
+          Send Counter-Offer
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL: DIRECT CONTRACTOR CHAT                            -->
+  <!-- ======================================================== -->
+  <div id="chat-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+    <div class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden modal-enter modal-enter-active flex flex-col h-[520px]">
+      <div class="p-4 bg-slate-900 text-white flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <img id="chat-pro-avatar" src="" alt="Pro" class="w-10 h-10 rounded-full object-cover border border-amber-400">
+          <div>
+            <h4 id="chat-pro-name" class="font-bold text-sm text-white leading-tight">Contractor Name</h4>
+            <span class="text-[10px] text-emerald-400 flex items-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse"></span> Online Now
+            </span>
+          </div>
+        </div>
+        <button onclick="closeChatModal()" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="chat-stream" class="flex-1 p-4 overflow-y-auto bg-slate-50 space-y-3">
+        <div class="text-center my-2">
+          <span class="text-[10px] bg-slate-200 text-slate-600 px-2.5 py-0.5 rounded-full">Encrypted Direct Chat</span>
+        </div>
+        <div class="flex justify-start">
+          <div class="bg-white text-slate-800 rounded-2xl rounded-tl-none px-4 py-2.5 text-xs max-w-xs border border-slate-200 shadow-sm">
+            "Hello! I reviewed your project details. We have 5 master craftsmen available and can start right away."
+          </div>
+        </div>
+      </div>
+
+      <form onsubmit="sendChatMessage(event)" class="p-3 bg-white border-t border-slate-200 flex gap-2">
+        <input type="text" id="chat-input" placeholder="Type a message or inquiry..." class="flex-1 px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-sugu-blue bg-slate-50">
+        <button type="submit" class="px-3.5 py-2 bg-sugu-blue hover:bg-sugu-blueDark text-white rounded-xl text-xs font-bold transition">
+          <i data-lucide="send" class="w-4 h-4"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL: SERVICE DETAILS & WARRANTY POPUP                  -->
+  <!-- ======================================================== -->
+  <div id="service-details-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-sm overflow-y-auto" onclick="if (event.target === this) closeServiceDetailsModal();">
+    <div class="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-auto flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200" onclick="event.stopPropagation();">
+      <!-- Modal Header -->
+      <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-sm tracking-tight text-white" id="service-details-modal-header-title">Service Details &amp; Warranty</h4>
+            <span class="text-[11px] text-slate-400 block" id="service-details-modal-header-sub">Verified Sugu Assurance</span>
+          </div>
+        </div>
+        <button onclick="closeServiceDetailsModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 flex items-center justify-center transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div id="service-details-modal-body" class="p-5 sm:p-6 overflow-y-auto space-y-5 text-slate-800 flex-1">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Modal Sticky Footer -->
+      <div id="service-details-modal-footer" class="p-4 bg-slate-50 border-t border-slate-200/80 flex items-center justify-between shrink-0">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Toast Notification -->
+  <div id="toast-notification" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="bg-slate-900 text-white text-xs sm:text-sm font-semibold px-4 py-3 rounded-2xl shadow-2xl flex items-center space-x-2.5 border border-slate-700">
+      <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+      <span id="toast-message">Notification</span>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: PREMIUM PARLOUR APPOINTMENT BOOKING               -->
+  <!-- ======================================================== -->
+  <div id="parlour-booking-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+    <div class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden modal-enter modal-enter-active">
+      <div class="px-6 py-4 bg-gradient-to-r from-amber-900 to-slate-900 text-white flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="crown" class="w-5 h-5 text-amber-400"></i>
+          <h4 id="parlour-modal-title" class="font-bold text-sm">Book Parlour Appointment</h4>
+        </div>
+        <button onclick="closeParlourBookingModal()" class="p-1 rounded-lg text-slate-400 hover:text-white transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="parlour-booking-content" class="p-6"></div>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL: VIDEO STORY PLAYER                                -->
+  <!-- ======================================================== -->
+  <div id="video-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+    <div class="relative w-full max-w-2xl bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-700 modal-enter modal-enter-active">
+      <button onclick="closeVideoModal()" class="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-slate-800/80 text-white flex items-center justify-center hover:bg-slate-700 transition">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+
+      <div class="relative aspect-video bg-black flex items-center justify-center">
+        <video id="video-modal-player" controls autoplay class="w-full h-full object-contain"></video>
+      </div>
+
+      <div class="p-6 text-white">
+        <h4 id="video-modal-title" class="text-xl font-bold font-heading mb-1">Video Title</h4>
+        <span id="video-modal-author" class="text-xs text-blue-400 font-semibold block mb-3">Customer City</span>
+        <p id="video-modal-quote" class="text-xs text-slate-300 italic">"Customer Quote"</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: CITY LOCATION PICKER                              -->
+  <!-- ======================================================== -->
+  <div id="location-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+    <div class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 modal-enter modal-enter-active">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="font-bold text-lg text-slate-900">Select Your Location</h3>
+          <p class="text-xs text-slate-500">Choose your area or detect exact address via GPS</p>
+        </div>
+        <button onclick="closeLocationPicker()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Live GPS Detection Button -->
+      <button id="modal-detect-gps-btn" onclick="detectUserLiveLocation()" class="w-full mb-4 p-3.5 rounded-2xl bg-gradient-to-r from-sugu-blue to-indigo-600 hover:from-sugu-blueDark hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-between shadow-md hover:shadow-lg transition group">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+            <i data-lucide="crosshair" id="modal-gps-icon" class="w-4 h-4 text-white group-hover:scale-110 transition-transform"></i>
+          </div>
+          <div class="text-left">
+            <div class="font-bold text-xs text-white" id="modal-gps-text">Use My Current Location</div>
+            <div class="text-[10px] text-blue-100 font-normal" id="modal-gps-sub">High accuracy GPS &amp; reverse geocoding</div>
+          </div>
+        </div>
+        <span class="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full uppercase tracking-wider">GPS</span>
+      </button>
+
+      <!-- City Search Input -->
+      <div class="relative mb-3">
+        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+        <input type="text" id="modal-city-search-input" oninput="filterModalCities(this.value)" placeholder="Search city or state..." class="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-sugu-blue focus:ring-1 focus:ring-sugu-blue">
+      </div>
+
+      <!-- Database Locations List -->
+      <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Serviceable Areas</div>
+      <div id="modal-cities-list" class="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+        {% for loc in locations %}
+        <button onclick="setLocation('{{ loc.city }}, {{ loc.state }}')" class="modal-city-item w-full text-left p-3 rounded-xl border border-slate-200 hover:bg-blue-50/70 hover:border-sugu-blue transition text-xs font-bold text-slate-800 flex items-center justify-between group">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-7 h-7 rounded-lg bg-slate-100 group-hover:bg-blue-100 text-sugu-blue flex items-center justify-center shrink-0 transition">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+            </div>
+            <div>
+              <span class="city-name font-bold text-slate-900 group-hover:text-sugu-blue transition">{{ loc.city }}</span>
+              <span class="state-name text-slate-500 font-normal block text-[11px]">{{ loc.state }}</span>
+            </div>
+          </div>
+          <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold border border-emerald-200 shrink-0">Available</span>
+        </button>
+        {% empty %}
+        <div class="text-xs text-slate-400 p-4 text-center">No locations active yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- FOOTER (STYLISH, DYNAMIC & CAPPED TO 5-6 CATEGORIES)      -->
+  <!-- ======================================================== -->
+  <footer class="text-slate-300 pt-16 pb-12 border-t border-slate-800/90 relative overflow-hidden" style="background: radial-gradient(130% 100% at 50% 0%, #0d1b38 0%, #050a17 100%);">
+    
+    <!-- Ambient subtle background glow -->
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-0 right-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-12 pb-12 border-b border-slate-800">
+        
+        <!-- Column 1: Brand, Helpline & Social Media (6 cols) -->
+        <div class="lg:col-span-6 space-y-4">
+          <div class="flex items-center space-x-3">
+            {% if branding and branding.logo %}
+              <img src="{{ branding.logo.url }}" alt="{{ branding.site_title|default:'SUGU' }}" class="h-12 sm:h-14 w-auto object-contain bg-white rounded-xl p-1.5 shadow-sm">
+            {% else %}
+              <div class="w-10 h-10 rounded-xl bg-sugu-blue text-white flex items-center justify-center font-bold">
+                <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" />
+                  <polyline points="9 21 9 12 15 12 15 21" />
+                </svg>
+              </div>
+            {% endif %}
+            <div>
+              <span class="text-xl font-bold font-heading text-white tracking-tight">{{ branding.site_title|default:"SUGU Services" }}</span>
+              <span class="block text-xs text-sky-400 font-medium">{{ branding.tagline|default:"Your Home. Our Priority." }}</span>
+            </div>
+          </div>
+
+          <p class="text-xs text-slate-400 leading-relaxed max-w-md">
+            India's premier dual-engine marketplace: guaranteed 15-minute quick emergency services and transparent reverse-auction contractor bidding for custom interior projects.
+          </p>
+
+          <div class="space-y-1.5 pt-1 text-xs text-slate-400">
+            <div class="flex items-center space-x-2">
+              <span class="text-slate-500 font-medium">Helpline:</span>
+              <a href="tel:{{ branding.support_phone|default:'1800-SUGU-FIX' }}" class="text-slate-300 hover:text-white font-mono font-semibold transition">{{ branding.support_phone|default:"1800-SUGU-FIX (24/7)" }}</a>
+            </div>
+            {% if branding.contact_email %}
+            <div class="flex items-center space-x-2">
+              <span class="text-slate-500 font-medium">Email:</span>
+              <a href="mailto:{{ branding.contact_email }}" class="text-slate-300 hover:text-white transition">{{ branding.contact_email }}</a>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Social Media Icons (Clean, Minimalist, Tasteful) -->
+          <div class="flex items-center space-x-2.5 pt-2">
+            <a href="{{ branding.facebook_url|default:'https://facebook.com' }}" target="_blank" rel="noopener noreferrer" 
+               class="w-8 h-8 rounded-lg bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700 flex items-center justify-center transition" 
+               title="Facebook" aria-label="Facebook">
+              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+            <a href="{{ branding.instagram_url|default:'https://instagram.com' }}" target="_blank" rel="noopener noreferrer" 
+               class="w-8 h-8 rounded-lg bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700 flex items-center justify-center transition" 
+               title="Instagram" aria-label="Instagram">
+              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </a>
+            <a href="{{ branding.linkedin_url|default:'https://linkedin.com' }}" target="_blank" rel="noopener noreferrer" 
+               class="w-8 h-8 rounded-lg bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700 flex items-center justify-center transition" 
+               title="LinkedIn" aria-label="LinkedIn">
+              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+            </a>
+            <a href="{{ branding.twitter_url|default:'https://twitter.com' }}" target="_blank" rel="noopener noreferrer" 
+               class="w-8 h-8 rounded-lg bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700 flex items-center justify-center transition" 
+               title="Twitter / X" aria-label="Twitter">
+              <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a href="{{ branding.youtube_url|default:'https://youtube.com' }}" target="_blank" rel="noopener noreferrer" 
+               class="w-8 h-8 rounded-lg bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700 flex items-center justify-center transition" 
+               title="YouTube" aria-label="YouTube">
+              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Column 2: Quick Services (Strictly capped to 5-6 Categories) (3 cols) -->
+        <div class="lg:col-span-3">
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-4">Quick Services</h4>
+          <ul class="space-y-2.5 text-xs text-slate-400">
+            {% for cat in footer_quick_categories|slice:":6" %}
+            <li>
+              <a href="javascript:void(0)" onclick="switchRoute('quick-service', '{{ cat.id }}')" class="hover:text-white transition-colors duration-150 block">
+                {{ cat.name }}
+              </a>
+            </li>
+            {% empty %}
+            {% for cat in categories|slice:":6" %}
+            <li>
+              <a href="javascript:void(0)" onclick="switchRoute('quick-service', '{{ cat.id }}')" class="hover:text-white transition-colors duration-150 block">
+                {{ cat.name }}
+              </a>
+            </li>
+            {% endfor %}
+            {% endfor %}
+            
+            <li class="pt-2">
+              <a href="javascript:void(0)" onclick="switchRoute('quick-service')" class="inline-flex items-center gap-1 text-sky-400 hover:text-sky-300 font-semibold transition">
+                <span>Browse All Categories</span>
+                <span>&rarr;</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Bidding Hub (Strictly capped to 5-6 Items) (3 cols) -->
+        <div class="lg:col-span-3">
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-4">Bidding Hub</h4>
+          <ul class="space-y-2.5 text-xs text-slate-400">
+            {% for item in footer_bidding_items|slice:":6" %}
+            <li>
+              <a href="javascript:void(0)" onclick="switchRoute('bidding')" class="hover:text-white transition-colors duration-150 block">
+                {{ item }}
+              </a>
+            </li>
+            {% empty %}
+            <li><a href="javascript:void(0)" onclick="switchRoute('bidding')" class="hover:text-white transition-colors duration-150 block">Full Home Renovation</a></li>
+            <li><a href="javascript:void(0)" onclick="switchRoute('bidding')" class="hover:text-white transition-colors duration-150 block">Interior &amp; Painting</a></li>
+            <li><a href="javascript:void(0)" onclick="switchRoute('bidding')" class="hover:text-white transition-colors duration-150 block">Modular Kitchen Setup</a></li>
+            <li><a href="javascript:void(0)" onclick="switchRoute('bidding')" class="hover:text-white transition-colors duration-150 block">Waterproofing &amp; PU Coating</a></li>
+            <li><a href="javascript:void(0)" onclick="switchRoute('bidding')" class="hover:text-white transition-colors duration-150 block">Commercial Electrical</a></li>
+            <li><a href="javascript:void(0)" onclick="switchRoute('bidding')" class="hover:text-white transition-colors duration-150 block">Milestone Payment Protection</a></li>
+            {% endfor %}
+
+            <li class="pt-2">
+              <a href="javascript:void(0)" onclick="switchRoute('bidding')" class="inline-flex items-center gap-1 text-sky-400 hover:text-sky-300 font-semibold transition">
+                <span>Post Project for Free Quotes</span>
+                <span>&rarr;</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar: Links + Watermark -->
+      <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4">
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <a href="#" class="hover:text-white transition">Privacy Policy</a>
+          <span class="text-slate-700 hidden sm:inline">&bull;</span>
+          <a href="#" class="hover:text-white transition">Terms of Service</a>
+          <span class="text-slate-700 hidden sm:inline">&bull;</span>
+          <a href="#" class="hover:text-white transition">Safety Standards</a>
+          <span class="text-slate-700 hidden sm:inline">&bull;</span>
+          <a href="#" class="hover:text-white transition">Vendor Code of Conduct</a>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:#94a3b8;">
+          <span>Designed by</span>
+          <a href="https://www.brightcodess.com/" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; text-decoration:none; background:#ffffff; padding:4px 12px; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.25);">
+            <img src="/static/assets/images/brightcode.png" alt="Brightcode" style="height:20px; vertical-align:middle; display:inline-block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; color:#007bff; font-weight:600;">Brightcode</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: VENDOR AUTH REQUIRED PROMPT                       -->
+  <!-- ======================================================== -->
+  <div id="vendor-auth-prompt-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+    <div class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 sm:p-7 modal-enter modal-enter-active">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+            <i data-lucide="lock" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-900 leading-tight">Vendor Login Required</h3>
+            <span class="text-xs text-slate-500">Verified Contractor Access</span>
+          </div>
+        </div>
+        <button onclick="closeVendorAuthPromptModal()" class="text-slate-400 hover:text-slate-600 transition p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="py-5 space-y-4">
+        <div class="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-xs">
+          <div class="text-[10px] uppercase font-bold text-amber-700 mb-0.5 tracking-wider">Target Project</div>
+          <div id="vendor-prompt-job-title" class="font-bold text-amber-950 text-sm">General Service</div>
+          <div id="vendor-prompt-job-budget" class="text-amber-800 font-semibold mt-0.5">Target Budget: ₹25,000</div>
+        </div>
+
+        <p id="vendor-prompt-message" class="text-xs text-slate-600 leading-relaxed">
+          To submit a proposal and itemized quotation for this project, you must be logged into your verified <strong>Sugu Vendor Partner</strong> account.
+        </p>
+
+        <div class="space-y-2 pt-1 text-xs text-slate-600">
+          <div class="flex items-center space-x-2">
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+            <span>Direct contract negotiation with verified homeowner</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+            <span>100% Secure payouts upon milestone completion &amp; sign-off</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+            <span>Zero platform fee on your first 3 approved bids</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-2.5 pt-2 border-t border-slate-100">
+        <a id="vendor-prompt-login-btn" href="/login/?next=/#view-bidding" class="w-full h-11 bg-sugu-navy hover:bg-slate-800 text-white rounded-xl font-bold text-xs shadow-md transition flex items-center justify-center space-x-2 whitespace-nowrap">
+          <i data-lucide="log-in" class="w-4 h-4 text-amber-400"></i>
+          <span>Log In as Vendor Partner</span>
+        </a>
+        <a href="/register/vendor/" class="w-full h-11 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-bold text-xs transition flex items-center justify-center space-x-2 whitespace-nowrap">
+          <i data-lucide="briefcase" class="w-4 h-4 text-sugu-blue"></i>
+          <span>Become a Verified Vendor Partner</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL: SEND BID / SUBMIT QUOTATION FORM                  -->
+  <!-- ======================================================== -->
+  <div id="send-bid-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto">
+    <div class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden modal-enter modal-enter-active my-8">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 bg-gradient-to-r from-slate-900 via-sugu-navy to-slate-900 text-white flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-bold shadow-sm">
+            <i data-lucide="gavel" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-white leading-tight">Send Project Bid</h3>
+            <span class="text-xs text-blue-200">Submit competitive quotation directly to customer</span>
+          </div>
+        </div>
+        <button onclick="closeSendBidModal()" class="p-1 rounded-lg text-slate-400 hover:text-white transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Target Job Summary Badge -->
+      <div class="px-6 py-3.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div>
+          <span id="send-bid-job-id" class="px-2 py-0.5 rounded font-mono font-bold bg-slate-200 text-slate-700 text-[11px] mr-1.5">JOB-51</span>
+          <strong id="send-bid-job-title" class="text-slate-900 font-bold">General Service</strong>
+          <span id="send-bid-job-category" class="text-slate-500 block text-[11px] mt-0.5">Plumbing • Namkum, Ranchi</span>
+        </div>
+        <div class="text-right">
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Client Budget</span>
+          <span id="send-bid-job-budget" class="text-sm font-extrabold text-emerald-700">₹25,000</span>
+        </div>
+      </div>
+
+      <!-- Form Content -->
+      <div id="send-bid-form-container" class="p-6 space-y-4">
+        <form id="vendor-quotation-form" onsubmit="submitVendorQuotation(event)">
+          <input type="hidden" id="send-bid-job-dbid" value="">
+
+          <!-- Quoted Price Input -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold text-slate-800">Your Quoted Amount (₹) <span class="text-rose-500">*</span></label>
+              <span id="send-bid-price-bounds" class="text-[11px] text-slate-500 font-medium"></span>
+            </div>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-bold text-base">₹</span>
+              <input type="number" id="send-bid-amount-input" required min="1" step="1"
+                placeholder="Enter quotation amount"
+                oninput="updateBidCalculationBreakdown()"
+                class="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-300 font-extrabold text-lg text-slate-900 focus:outline-none focus:border-sugu-blue bg-white shadow-xs">
+            </div>
+          </div>
+
+          <!-- Live Financial Breakdown -->
+          <div class="p-3 rounded-xl bg-blue-50/70 border border-blue-100 space-y-1.5 text-xs text-slate-600">
+            <div class="flex justify-between">
+              <span>Your Base Quotation:</span>
+              <strong id="calc-bid-base" class="text-slate-900">₹0</strong>
+            </div>
+            <div class="flex justify-between text-slate-500 text-[11px]">
+              <span>Platform Facilitation &amp; Safety Fee (10%):</span>
+              <span id="calc-bid-fee">- ₹0</span>
+            </div>
+            <div class="flex justify-between pt-1 border-t border-blue-200/60 font-bold text-slate-900 text-xs">
+              <span>Estimated Net Payout to Vendor:</span>
+              <span id="calc-bid-net" class="text-emerald-700 font-black">₹0</span>
+            </div>
+          </div>
+
+          <!-- Delivery Timeline Selection -->
+          <div class="space-y-1.5 pt-1">
+            <label class="text-xs font-bold text-slate-800">Estimated Work Timeline <span class="text-rose-500">*</span></label>
+            <div class="grid grid-cols-4 gap-1.5 mb-2">
+              <button type="button" onclick="setBidTimelinePreset('1-2 Days')" class="timeline-preset-btn py-1.5 px-2 text-xs font-semibold rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition text-center">1-2 Days</button>
+              <button type="button" onclick="setBidTimelinePreset('3-5 Days')" class="timeline-preset-btn py-1.5 px-2 text-xs font-semibold rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition text-center">3-5 Days</button>
+              <button type="button" onclick="setBidTimelinePreset('1 Week')" class="timeline-preset-btn py-1.5 px-2 text-xs font-semibold rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition text-center">1 Week</button>
+              <button type="button" onclick="setBidTimelinePreset('2 Weeks')" class="timeline-preset-btn py-1.5 px-2 text-xs font-semibold rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition text-center">2 Weeks</button>
+            </div>
+            <input type="text" id="send-bid-timeline-input" required placeholder="e.g. 3-5 Working Days" value="3-5 Working Days"
+              class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-sugu-blue bg-white">
+          </div>
+
+          <!-- Proposal & Scope Details -->
+          <div class="space-y-1.5 pt-1">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold text-slate-800">Scope of Work & Proposal Note</label>
+              <button type="button" onclick="insertProBidTemplate()" class="text-[11px] text-sugu-blue hover:underline font-bold flex items-center">
+                <i data-lucide="sparkles" class="w-3 h-3 mr-0.5"></i> Insert Template
+              </button>
+            </div>
+            <textarea id="send-bid-proposal-input" rows="3" required
+              placeholder="Detail what is included: labor, materials, cleanup, warranty terms..."
+              class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-sugu-blue bg-white leading-relaxed"></textarea>
+          </div>
+
+          <!-- Optional Quotation File Attachment -->
+          <div class="space-y-1 pt-1">
+            <label class="text-xs font-semibold text-slate-700">Attach Detailed Estimate / PDF (Optional)</label>
+            <input type="file" id="send-bid-attachment-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-sugu-blue hover:file:bg-blue-100 cursor-pointer">
+          </div>
+
+          <!-- Alert / Error Banner inside modal -->
+          <div id="send-bid-error-banner" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium"></div>
+
+          <!-- Submit Buttons -->
+          <div class="pt-3 flex items-center justify-end space-x-2">
+            <button type="button" onclick="closeSendBidModal()" class="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+              Cancel
+            </button>
+            <button type="submit" id="send-bid-submit-btn" class="px-6 py-2.5 bg-gradient-to-r from-sugu-navy via-sugu-blue to-blue-600 hover:from-blue-700 hover:to-sugu-navy text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition flex items-center space-x-2">
+              <i data-lucide="send" class="w-4 h-4"></i>
+              <span>Send Bid to Client</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Success Screen (Replaces form on successful bid submission) -->
+      <div id="send-bid-success-container" class="hidden p-8 text-center space-y-4">
+        <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-sm animate-bounce">
+          <i data-lucide="check" class="w-8 h-8 stroke-[3]"></i>
+        </div>
+        <div>
+          <h4 class="text-xl font-black text-slate-900 font-heading">Bid Transmitted Successfully!</h4>
+          <p id="send-bid-success-msg" class="text-xs text-slate-600 mt-1.5 max-w-sm mx-auto leading-relaxed">
+            Your quotation has been delivered directly to the client. The client will be notified via SMS and push notification.
+          </p>
+        </div>
+        <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 text-left space-y-1">
+          <div class="flex items-center text-emerald-700 font-bold">
+            <i data-lucide="shield-check" class="w-4 h-4 mr-1"></i> Sugu Payment Protection Active
+          </div>
+          <p class="text-[11px] text-slate-500">Upon client acceptance, contract funds are safely secured in platform guarantee before you begin work.</p>
+        </div>
+        <div class="pt-2 flex flex-col sm:flex-row gap-2.5 justify-center">
+          <a href="/vendor/dashboard" class="h-10 px-5 bg-sugu-navy hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center space-x-1.5 whitespace-nowrap">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+            <span>Track in Vendor Dashboard</span>
+          </a>
+          <button onclick="closeSendBidModal()" class="h-10 px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center justify-center whitespace-nowrap">
+            Close &amp; Continue Browsing
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: LUXURY PARLOUR & BARBERSHOP APPOINTMENT BOOKING   -->
+  <!-- ======================================================== -->
+  <div id="parlour-booking-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
+    <div class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 sm:p-7 modal-enter modal-enter-active max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+            <i data-lucide="crown" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 id="parlour-modal-title" class="font-bold text-base text-slate-900 leading-tight">Book Parlour Appointment</h3>
+            <span class="text-xs text-amber-700 font-semibold flex items-center">
+              <i data-lucide="check-circle" class="w-3.5 h-3.5 mr-1 text-emerald-600"></i> Zero Waiting Time Guarantee • VIP Reserved
+            </span>
+          </div>
+        </div>
+        <button onclick="closeParlourBookingModal()" class="text-slate-400 hover:text-slate-600 transition p-1.5 rounded-xl hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="parlour-booking-content" class="py-4"></div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MOBILE STICKY BOTTOM NAVIGATION BAR (APP STYLE)          -->
+  <!-- ======================================================== -->
+  <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 py-1.5 px-2 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] flex items-center justify-around">
+    <button onclick="switchRoute('home')" data-mode="home" class="mobile-bottom-tab flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition text-sugu-blue font-bold">
+      <i data-lucide="home" class="w-5 h-5"></i>
+      <span class="text-[10px] mt-0.5">Home</span>
+    </button>
+    <button onclick="switchRoute('quick-service')" data-mode="quick-service" class="mobile-bottom-tab flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition text-slate-500 font-medium hover:text-slate-800">
+      <div class="relative">
+        <i data-lucide="zap" class="w-5 h-5 text-amber-500 fill-amber-500"></i>
+        <span class="absolute -top-1 -right-3.5 px-1 py-0.2 rounded-full bg-blue-600 text-[8px] font-black text-white leading-none">15m</span>
+      </div>
+      <span class="text-[10px] mt-0.5">Quick Service</span>
+    </button>
+    <button onclick="switchRoute('bidding')" data-mode="bidding" class="mobile-bottom-tab flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition text-slate-500 font-medium hover:text-slate-800">
+      <div class="relative">
+        <i data-lucide="gavel" class="w-5 h-5 text-sugu-blue"></i>
+        <span class="absolute -top-1 -right-4 px-1 py-0.2 rounded-full bg-amber-500 text-[8px] font-black text-white leading-none">-40%</span>
+      </div>
+      <span class="text-[10px] mt-0.5">Bidding</span>
+    </button>
+    <a href="{% if user.is_authenticated %}{% if user.role == 'VENDOR' %}/vendor/dashboard{% elif user.role == 'ADMIN' or user.is_superuser %}/admin-dashboard{% else %}#account{% endif %}{% else %}/login/{% endif %}" {% if user.is_authenticated and user.role != 'ADMIN' and user.role != 'VENDOR' and not user.is_superuser %}onclick="toggleMobileNavDrawer(); return false;"{% endif %} class="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition text-slate-500 font-medium hover:text-slate-800">
+      {% if user.is_authenticated %}
+        <div class="w-5 h-5 rounded-full bg-sugu-blue text-white text-[10px] font-bold flex items-center justify-center">
+          {{ user.first_name|default:user.username|slice:":1"|upper }}
+        </div>
+        <span class="text-[10px] mt-0.5">Account</span>
+      {% else %}
+        <i data-lucide="user" class="w-5 h-5"></i>
+        <span class="text-[10px] mt-0.5">Log In</span>
+      {% endif %}
+    </a>
+  </nav>
+
+  <!-- Scripts: Data & Application Logic -->
+  <script>
+    window.CURRENT_USER = {
+      isAuthenticated: {% if user.is_authenticated %}true{% else %}false{% endif %},
+      id: {% if user.is_authenticated %}{{ user.id }}{% else %}null{% endif %},
+      username: "{{ user.username|default:''|escapejs }}",
+      name: "{{ user.first_name|default:user.username|default:''|escapejs }}",
+      role: "{{ user.role|default:'' }}",
+      isStaff: {% if user.is_staff or user.is_superuser %}true{% else %}false{% endif %}
+    };
+    window.CSRF_TOKEN = "{{ csrf_token }}";
+    window.DB_CATEGORIES = {{ categories_data_json|safe }};
+    window.DB_TESTIMONIALS = {{ testimonials_data_json|safe }};
+    window.DB_VIDEOS = {{ transform_videos_data_json|safe }};
+    window.DB_BIDDING_JOBS = {{ bidding_jobs_data_json|safe }};
+    window.SERVER_USER_LOCATION = "{{ user_city|default:'' }}{% if user_state %}, {{ user_state }}{% endif %}";
+
+    function toggleMobileNavDrawer() {
+      const drawer = document.getElementById("mobile-nav-drawer");
+      const icon = document.getElementById("mobile-menu-icon");
+      if (!drawer) return;
+      const isHidden = drawer.classList.contains("hidden");
+      if (isHidden) {
+        drawer.classList.remove("hidden");
+        if (icon) icon.setAttribute("data-lucide", "x");
+      } else {
+        drawer.classList.add("hidden");
+        if (icon) icon.setAttribute("data-lucide", "menu");
+      }
+      if (window.lucide && typeof lucide.createIcons === 'function') {
+        lucide.createIcons();
+      }
+    }
+
+    function toggleUserProfileDropdown(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      const menu = document.getElementById("user-profile-dropdown-menu");
+      const chevron = document.getElementById("user-profile-chevron");
+      if (!menu) return;
+      const isClosed = menu.classList.contains("hidden");
+      if (isClosed) {
+        menu.classList.remove("hidden");
+        if (chevron) chevron.style.transform = "rotate(180deg)";
+      } else {
+        menu.classList.add("hidden");
+        if (chevron) chevron.style.transform = "rotate(0deg)";
+      }
+      if (window.lucide && typeof lucide.createIcons === 'function') {
+        lucide.createIcons();
+      }
+    }
+
+    document.addEventListener("click", function(event) {
+      const wrapper = document.getElementById("user-profile-dropdown-wrapper");
+      const menu = document.getElementById("user-profile-dropdown-menu");
+      const chevron = document.getElementById("user-profile-chevron");
+      if (menu && !menu.classList.contains("hidden")) {
+        if (!wrapper || !wrapper.contains(event.target)) {
+          menu.classList.add("hidden");
+          if (chevron) chevron.style.transform = "rotate(0deg)";
+        }
+      }
+    });
+
+    let isServicesExpanded = false;
+
+    function toggleOurServices() {
+      isServicesExpanded = !isServicesExpanded;
+      const desktopExtras = document.querySelectorAll('.service-cat-extra-desktop');
+      const mobileExtras = document.querySelectorAll('.service-cat-extra-mobile');
+      const btnText = document.getElementById('toggle-our-services-text');
+      const btnIcon = document.getElementById('toggle-our-services-icon');
+
+      if (isServicesExpanded) {
+        desktopExtras.forEach(el => {
+          el.style.display = 'flex';
+        });
+        mobileExtras.forEach(el => {
+          el.style.display = 'flex';
+        });
+        if (btnText) btnText.innerHTML = 'Show Less';
+        if (btnIcon) btnIcon.classList.add('rotate-180');
+      } else {
+        desktopExtras.forEach(el => {
+          el.style.display = '';
+        });
+        mobileExtras.forEach(el => {
+          el.style.display = '';
+        });
+        if (btnText) {
+          btnText.innerHTML = '<span class="lg:hidden">View All</span><span class="hidden lg:inline">View More</span>';
+        }
+        if (btnIcon) btnIcon.classList.remove('rotate-180');
+
+        const section = document.getElementById('our-services-section');
+        if (section) {
+          const topOffset = section.getBoundingClientRect().top + window.pageYOffset - 90;
+          if (window.pageYOffset > topOffset) {
+            window.scrollTo({ top: topOffset, behavior: 'smooth' });
+          }
+        }
+      }
+    }
+  </script>
+  <script src="{% static 'data.js' %}?v=6.1"></script>
+  <script src="{% static 'app.js' %}?v=6.1"></script>
+  <script>
+    if (window.lucide && typeof lucide.createIcons === 'function') {
+      lucide.createIcons();
+    }
+  </script>
+</body>
+</html>

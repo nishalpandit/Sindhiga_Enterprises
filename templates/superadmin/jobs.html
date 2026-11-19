@@ -1,0 +1,133 @@
+{% extends 'superadmin/base.html' %}
+{% block title %}Jobs{% endblock %}
+{% block header_title %}Jobs Engine{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'super_admin_job_create' %}" class="btn btn-primary btn-sm">
+  <i class="fa-solid fa-plus"></i>
+  <span>Create Job</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="padding: 0;">
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Job Title</th>
+          <th>Customer</th>
+          <th>Budget &amp; Price Limits</th>
+          <th>Bids / Limit</th>
+          <th>Assigned Vendor</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for job in jobs %}
+        <tr>
+          <td>
+            <div style="display:flex; align-items:center; gap:10px;">
+              {% if job.image %}
+              <a href="{{ job.image.url }}" target="_blank" title="View attached job photo"><img src="{{ job.image.url }}" alt="Job Photo" style="width:36px; height:36px; object-fit:cover; border-radius:6px; border:1px solid #cbd5e1; flex-shrink:0;"></a>
+              {% endif %}
+              <div>
+                <strong>{{ job.title }}</strong>
+                <div style="font-size: 11.5px; color: var(--text-muted);">
+                  {% if job.category %}<span style="color: var(--accent); font-weight: 600;">{{ job.category.name }}</span> · {% endif %}
+                  {% if job.location %}{{ job.location.city }}, {{ job.location.state }}{% else %}Online / Anywhere{% endif %}
+                </div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <strong>{{ job.user.username }}</strong>
+            {% if job.user.email %}<div style="font-size: 11.5px; color: var(--text-muted);">{{ job.user.email }}</div>{% endif %}
+          </td>
+          <td>
+            <strong style="color: var(--success); font-size: 14px;">₹{{ job.budget }}</strong>
+            {% if job.min_bid_amount or job.max_bid_amount %}
+            <div style="font-size: 11.5px; color: var(--text-muted);">
+              Range: {% if job.min_bid_amount %}₹{{ job.min_bid_amount }}{% else %}0{% endif %} - {% if job.max_bid_amount %}₹{{ job.max_bid_amount }}{% else %}∞{% endif %}
+            </div>
+            {% else %}
+            <div style="font-size: 11px; color: var(--text-muted);">No price limits</div>
+            {% endif %}
+          </td>
+          <td>
+            {% with bcount=job.bids.count %}
+            <a href="{% url 'super_admin_job_bids' job.id %}" style="text-decoration: none;">
+              <span class="badge" style="background: rgba(79, 70, 229, 0.1); color: var(--accent); font-size: 12px; font-weight: 700;">
+                <i class="fa-solid fa-gavel"></i> {{ bcount }}{% if job.max_bids %} / {{ job.max_bids }}{% endif %} bids
+              </span>
+            </a>
+            {% if job.max_bids and bcount >= job.max_bids %}
+            <div style="font-size: 10.5px; color: var(--danger); font-weight: 700; margin-top: 2px;">Limit Full</div>
+            {% endif %}
+            {% endwith %}
+          </td>
+          <td>
+            {% if job.assigned_vendor %}
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span class="badge active" style="font-size: 11.5px;">
+                  <i class="fa-solid fa-user-check"></i> {{ job.assigned_vendor.vendor_profile.company_name|default:job.assigned_vendor.username }}
+                </span>
+              </div>
+            {% else %}
+              <span style="color: var(--text-muted); font-size: 12px; font-style: italic;">Unassigned</span>
+            {% endif %}
+          </td>
+          <td><span class="badge {% if job.status == 'open' %}active{% elif job.status == 'selected' or job.status == 'progress' %}info{% elif job.status == 'completed' %}active{% else %}inactive{% endif %}">{{ job.get_status_display }}</span></td>
+          <td>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <a href="{% url 'super_admin_job_bids' job.id %}" class="btn btn-primary btn-sm" title="View Bids, Set Limits & Assign Vendor" style="font-size: 11.5px; padding: 5px 10px;">
+                <i class="fa-solid fa-gavel"></i> Bids &amp; Assign
+              </a>
+              <a href="{% url 'super_admin_job_edit' job.id %}" class="btn btn-outline btn-sm" title="Edit Job"><i class="fa-solid fa-pen-to-square"></i></a>
+              <a href="{% url 'super_admin_job_delete' job.id %}" class="btn btn-outline btn-sm" style="border-color: rgba(239,68,68,0.3); color: var(--danger);" onclick="return confirm('Delete this job?')" title="Delete Job">
+                <i class="fa-solid fa-trash"></i>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No jobs found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if jobs.has_other_pages %}
+    <div class="pagination-wrap">
+      <div>Showing <strong>{{ jobs.start_index|default:0 }}</strong> to <strong>{{ jobs.end_index|default:0 }}</strong> of <strong>{{ jobs.paginator.count }}</strong> jobs</div>
+      <nav class="pagination-nav" aria-label="Page navigation">
+        {% if jobs.has_previous %}
+          <a href="?page=1" class="page-link" title="First Page"><i class="fa-solid fa-angles-left"></i></a>
+          <a href="?page={{ jobs.previous_page_number }}" class="page-link" title="Previous Page"><i class="fa-solid fa-chevron-left"></i></a>
+        {% else %}
+          <span class="page-link disabled"><i class="fa-solid fa-angles-left"></i></span>
+          <span class="page-link disabled"><i class="fa-solid fa-chevron-left"></i></span>
+        {% endif %}
+
+        {% for p in page_range %}
+          {% if p == jobs.paginator.ELLIPSIS %}
+            <span class="page-link disabled">…</span>
+          {% elif p == jobs.number %}
+            <span class="page-link active">{{ p }}</span>
+          {% else %}
+            <a href="?page={{ p }}" class="page-link">{{ p }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if jobs.has_next %}
+          <a href="?page={{ jobs.next_page_number }}" class="page-link" title="Next Page"><i class="fa-solid fa-chevron-right"></i></a>
+          <a href="?page={{ jobs.paginator.num_pages }}" class="page-link" title="Last Page"><i class="fa-solid fa-angles-right"></i></a>
+        {% else %}
+          <span class="page-link disabled"><i class="fa-solid fa-chevron-right"></i></span>
+          <span class="page-link disabled"><i class="fa-solid fa-angles-right"></i></span>
+        {% endif %}
+      </nav>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
