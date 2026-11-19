@@ -71,7 +71,7 @@
     <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:flex-nowrap lg:gap-6">
       
       <!-- Brand Logo -->
-      <a href="{% url 'landing_index' %}" class="flex items-center gap-2.5 text-left group">
+      <a href="{% url 'home' %}" class="flex items-center gap-2.5 text-left group">
         <span class="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-sm transition-transform duration-200 group-hover:scale-105">
           <i class="fa-solid fa-toolbox text-lg"></i>
         </span>
@@ -533,7 +533,7 @@
                 <span class="text-xs text-slate-400 line-through">₹320</span>
               </div>
             </div>
-            <button type="button" onclick="addToCart('prod_1', 'Silicone Waterproof Gap Sealant (280ml)', 215, '{% static \"images/cat-sealant.jpg\" %}')" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-colors">
+            <button type="button" onclick="addToCart('prod_1', 'Silicone Waterproof Gap Sealant (280ml)', 215, '{% static 'images/cat-sealant.jpg' %}')" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-colors">
               <i class="fa-solid fa-plus text-[10px]"></i>
               <span>Add</span>
             </button>
@@ -564,7 +564,7 @@
                 <span class="text-xs text-slate-400 line-through">₹1,299</span>
               </div>
             </div>
-            <button type="button" onclick="addToCart('prod_2', '8-Piece Plumber Tool Kit', 899, '{% static \"images/prod-toolkit.jpg\" %}')" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-colors">
+            <button type="button" onclick="addToCart('prod_2', '8-Piece Plumber Tool Kit', 899, '{% static 'images/prod-toolkit.jpg' %}')" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-colors">
               <i class="fa-solid fa-plus text-[10px]"></i>
               <span>Add</span>
             </button>
