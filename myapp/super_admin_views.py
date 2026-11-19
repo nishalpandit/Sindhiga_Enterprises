@@ -12,6 +12,7 @@ from django.utils import timezone
 from .models import (
     CustomUser, VendorProfile, UserProfile, Job, QuickService, 
     Category, SubCategory, GlobalSettings, Location, State, Bid, Subscription, Message,
+    ProductOrder, ServiceBooking, DeliveryPartnerProfile,
     SiteBranding, HeroSection, QuickServiceCard, FeaturedProjectCard,
     PackageCard, Testimonial, TrustMetric, VendorKYC,
     VendorWallet, WalletTransaction, PayoutRequest,
@@ -68,43 +69,44 @@ def super_admin_login_view(request):
 # ─────────────────────────────────────────────
 @sa_required
 def super_admin_dashboard(request):
-    total_users = CustomUser.objects.filter(role__in=['USER', 'CUSTOMER']).count()
+    total_customers = CustomUser.objects.filter(role__in=['USER', 'CUSTOMER']).count()
     total_vendors = VendorProfile.objects.count()
     total_admins = CustomUser.objects.filter(role='ADMIN').count()
-    active_jobs = Job.objects.filter(status__in=['open', 'progress']).count()
-    total_jobs = Job.objects.count()
-    total_qs = QuickService.objects.count()
-    total_bids = Bid.objects.count()
+    total_delivery_partners = DeliveryPartnerProfile.objects.count()
     total_categories = Category.objects.count()
     total_locations = Location.objects.count()
     settings_obj = GlobalSettings.objects.first()
 
-    # Dynamic Category Distribution from live Jobs
-    job_cats = list(Job.objects.exclude(category__isnull=True).values('category__name').annotate(cnt=Count('id')).order_by('-cnt')[:5])
-    if job_cats:
-        category_chart_labels = [jc['category__name'] for jc in job_cats]
-        category_chart_data = [jc['cnt'] for jc in job_cats]
-    else:
-        vendor_cats = list(VendorProfile.objects.exclude(category='').values('category').annotate(cnt=Count('id')).order_by('-cnt')[:5])
-        category_chart_labels = [vc['category'] for vc in vendor_cats] if vendor_cats else []
-        category_chart_data = [vc['cnt'] for vc in vendor_cats] if vendor_cats else []
+    # Exact Sindhiga Platform KPIs (PDF 4. Admin Panel -> A. Dashboard)
+    total_orders = ProductOrder.objects.count()
+    total_service_bookings = ServiceBooking.objects.count()
+    ecom_rev = ProductOrder.objects.filter(payment_status='PAID').aggregate(sum=Sum('total_amount'))['sum'] or Decimal('0.00')
+    serv_rev = ServiceBooking.objects.filter(payment_status='PAID').aggregate(sum=Sum('total_amount'))['sum'] or Decimal('0.00')
+    total_revenue = ecom_rev + serv_rev
+
+    # Category Distribution from Services & Products
+    cat_counts = list(Category.objects.annotate(cnt=Count('quickservice')).order_by('-cnt')[:5])
+    category_chart_labels = [c.name for c in cat_counts] if cat_counts else []
+    category_chart_data = [c.cnt for c in cat_counts] if cat_counts else []
 
     # Platform Role Breakdown for growth / distribution visualization
-    growth_labels = ['Total Users', 'Vendors', 'Area Admins', 'Active Jobs']
-    growth_data = [total_users, total_vendors, total_admins, active_jobs]
+    growth_labels = ['Customers', 'Service Providers', 'Delivery Partners', 'Area Admins']
+    growth_data = [total_customers, total_vendors, total_delivery_partners, total_admins]
 
-    # Dynamic Recent Users (with profile images) & Recent Jobs
+    # Dynamic Recent Users (with profile images), Recent Orders & Recent Service Bookings
     recent_users = CustomUser.objects.select_related('user_profile', 'vendor_profile').order_by('-date_joined')[:5]
-    recent_jobs = Job.objects.select_related('user', 'category').order_by('-created_at')[:5]
+    recent_orders = ProductOrder.objects.order_by('-created_at')[:5]
+    recent_bookings = ServiceBooking.objects.select_related('category', 'provider').order_by('-created_at')[:5]
 
     context = {
-        'total_users': total_users,
+        'total_customers': total_customers,
+        'total_users': total_customers,
+        'total_orders': total_orders,
+        'total_service_bookings': total_service_bookings,
+        'total_revenue': total_revenue,
         'total_vendors': total_vendors,
+        'total_delivery_partners': total_delivery_partners,
         'total_admins': total_admins,
-        'active_jobs': active_jobs,
-        'total_jobs': total_jobs,
-        'total_qs': total_qs,
-        'total_bids': total_bids,
         'total_categories': total_categories,
         'total_locations': total_locations,
         'settings': settings_obj,
@@ -113,7 +115,8 @@ def super_admin_dashboard(request):
         'growth_labels': json.dumps(growth_labels),
         'growth_data': json.dumps(growth_data),
         'recent_users': recent_users,
-        'recent_jobs': recent_jobs,
+        'recent_orders': recent_orders,
+        'recent_bookings': recent_bookings,
     }
     return render(request, 'superadmin/dashboard.html', context)
 

@@ -4,52 +4,52 @@
 {% block header_title %}Dashboard Overview{% endblock %}
 
 {% block content %}
-<!-- Primary Stats -->
+<!-- Primary Sindhiga Platform KPIs (PDF 4. Admin Panel -> A. Dashboard) -->
 <div class="grid-4">
   <div class="stat-card">
     <div class="stat-icon blue"><i class="fa-solid fa-users"></i></div>
     <div class="stat-info">
-      <div class="label">Customers</div>
-      <div class="value">{{ total_users }}</div>
+      <div class="label">Total Customers</div>
+      <div class="value">{{ total_customers }}</div>
     </div>
   </div>
   <div class="stat-card">
-    <div class="stat-icon purple"><i class="fa-solid fa-user-tie"></i></div>
+    <div class="stat-icon purple"><i class="fa-solid fa-cart-shopping"></i></div>
     <div class="stat-info">
-      <div class="label">Vendors</div>
-      <div class="value">{{ total_vendors }}</div>
+      <div class="label">Total Orders</div>
+      <div class="value">{{ total_orders }}</div>
     </div>
   </div>
   <div class="stat-card">
-    <div class="stat-icon green"><i class="fa-solid fa-briefcase"></i></div>
+    <div class="stat-icon green"><i class="fa-solid fa-calendar-check"></i></div>
     <div class="stat-info">
-      <div class="label">Active Jobs</div>
-      <div class="value">{{ active_jobs }}</div>
+      <div class="label">Total Service Bookings</div>
+      <div class="value">{{ total_service_bookings }}</div>
     </div>
   </div>
   <div class="stat-card">
-    <div class="stat-icon orange"><i class="fa-solid fa-shield-halved"></i></div>
+    <div class="stat-icon orange"><i class="fa-solid fa-indian-rupee-sign"></i></div>
     <div class="stat-info">
-      <div class="label">Area Admins</div>
-      <div class="value">{{ total_admins }}</div>
+      <div class="label">Total Revenue</div>
+      <div class="value">₹{{ total_revenue|floatformat:2 }}</div>
     </div>
   </div>
 </div>
 
-<!-- Secondary Stats -->
+<!-- Secondary Operational Metrics -->
 <div class="grid-4">
   <div class="stat-card">
-    <div class="stat-icon" style="background: rgba(236,72,153,0.12); color: #ec4899;"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+    <div class="stat-icon" style="background: rgba(236,72,153,0.12); color: #ec4899;"><i class="fa-solid fa-user-gear"></i></div>
     <div class="stat-info">
-      <div class="label">Total Bids</div>
-      <div class="value">{{ total_bids }}</div>
+      <div class="label">Service Providers</div>
+      <div class="value">{{ total_vendors }}</div>
     </div>
   </div>
   <div class="stat-card">
-    <div class="stat-icon" style="background: rgba(14,165,233,0.12); color: #0ea5e9;"><i class="fa-solid fa-bolt"></i></div>
+    <div class="stat-icon" style="background: rgba(14,165,233,0.12); color: #0ea5e9;"><i class="fa-solid fa-truck-fast"></i></div>
     <div class="stat-info">
-      <div class="label">Quick Services</div>
-      <div class="value">{{ total_qs }}</div>
+      <div class="label">Delivery Partners</div>
+      <div class="value">{{ total_delivery_partners }}</div>
     </div>
   </div>
   <div class="stat-card">
@@ -73,87 +73,69 @@
   <div class="card" style="height: 380px; display: flex; flex-direction: column;">
     <h3 style="font-size: 16px; margin-bottom: 20px; font-weight: 700; display: flex; align-items: center; justify-content: space-between;">
       <span><i class="fa-solid fa-chart-line" style="color: var(--accent); margin-right: 8px;"></i> Platform Overview</span>
-      <span style="font-size: 12px; font-weight: 500; color: var(--text-muted);">Live System Counts</span>
+      <span style="font-size: 12px; font-weight: 500; color: var(--text-muted);">Active Users & Ecosystem</span>
     </h3>
     <div style="flex: 1; position: relative;"><canvas id="growthChart"></canvas></div>
   </div>
   <div class="card" style="height: 380px; display: flex; flex-direction: column;">
     <h3 style="font-size: 16px; margin-bottom: 20px; font-weight: 700; display: flex; align-items: center; justify-content: space-between;">
       <span><i class="fa-solid fa-chart-pie" style="color: #ec4899; margin-right: 8px;"></i> Category Distribution</span>
-      <span style="font-size: 12px; font-weight: 500; color: var(--text-muted);">Real Job Postings</span>
+      <span style="font-size: 12px; font-weight: 500; color: var(--text-muted);">Services & Catalog</span>
     </h3>
     <div style="flex: 1; position: relative;"><canvas id="categoryChart"></canvas></div>
   </div>
 </div>
 
-<!-- Dynamic Recent Registrations & Active Jobs -->
+<!-- Recent Orders & Recent Service Bookings -->
 <div class="grid-2" style="margin-bottom: 24px;">
-  <!-- Recent Users with Dynamic Avatars -->
+  <!-- Recent E-Commerce Orders -->
   <div class="card" style="padding: 24px; margin-bottom: 0;">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border);">
       <h3 style="font-size: 15px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
-        <i class="fa-solid fa-user-group" style="color: var(--accent);"></i> Recent Dynamic Profiles
+        <i class="fa-solid fa-cart-shopping" style="color: var(--accent);"></i> Recent E-Commerce Orders
       </h3>
-      <a href="{% url 'super_admin_users' %}" style="font-size: 12.5px; font-weight: 600; color: var(--accent); text-decoration: none;">View All ({{ total_users|add:total_vendors|add:total_admins }}) &rarr;</a>
+      <span style="font-size: 12.5px; font-weight: 600; color: var(--accent);">Total: {{ total_orders }}</span>
     </div>
     <div style="display: flex; flex-direction: column; gap: 12px;">
-      {% for u in recent_users %}
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: #fafbfc; border-radius: var(--r-sm); border: 1px solid var(--border);">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          {% if u.user_profile.profile_image %}
-            <img src="{{ u.user_profile.profile_image.url }}" alt="{{ u.username }}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border);">
-          {% elif u.vendor_profile.profile_image %}
-            <img src="{{ u.vendor_profile.profile_image.url }}" alt="{{ u.username }}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border);">
-          {% else %}
-            <div class="avatar" style="width: 36px; height: 36px; font-size: 13px; font-weight: 800; background: {% if u.role == 'VENDOR' %}linear-gradient(135deg, #9333ea, #c026d3){% elif u.role == 'ADMIN' %}linear-gradient(135deg, #4f46e5, #7c3aed){% else %}linear-gradient(135deg, #2563eb, #38bdf8){% endif %};">
-              {{ u.username|make_list|first|upper }}
-            </div>
-          {% endif %}
-          <div>
-            <div style="font-size: 13px; font-weight: 700; color: var(--text-main);">{{ u.username }}</div>
-            <div style="font-size: 11.5px; color: var(--text-muted);">
-              {% if u.first_name %}{{ u.first_name }} {{ u.last_name }}{% else %}{{ u.email|default:'Active Profile' }}{% endif %}
-            </div>
-          </div>
+      {% for o in recent_orders %}
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #fafbfc; border-radius: var(--r-sm); border: 1px solid var(--border);">
+        <div>
+          <div style="font-size: 13.5px; font-weight: 700; color: var(--text-main);">#{{ o.order_number }}</div>
+          <div style="font-size: 11.5px; color: var(--text-muted);">{{ o.customer_name }} · {{ o.delivery_city|default:'Doorstep' }}</div>
         </div>
         <div style="text-align: right;">
-          {% if u.role == 'VENDOR' %}
-            <span class="badge" style="background: rgba(124,58,237,0.12); color: #6d28d9; font-size: 11px;">Vendor</span>
-          {% elif u.role == 'ADMIN' %}
-            <span class="badge" style="background: rgba(79,70,229,0.12); color: #4338ca; font-size: 11px;">Admin</span>
-          {% else %}
-            <span class="badge" style="background: rgba(59,130,246,0.12); color: #1d4ed8; font-size: 11px;">Customer</span>
-          {% endif %}
+          <div style="font-weight: 750; font-size: 13px; color: #059669;">₹{{ o.total_amount }}</div>
+          <span class="badge" style="font-size: 10.5px; background: rgba(59,130,246,0.12); color: #1d4ed8;">{{ o.order_status }}</span>
         </div>
       </div>
+      {% empty %}
+      <div style="text-align: center; padding: 25px; color: var(--text-muted); font-size: 13px;">No orders placed yet.</div>
       {% endfor %}
     </div>
   </div>
 
-  <!-- Recent Live Jobs -->
+  <!-- Recent Service Bookings -->
   <div class="card" style="padding: 24px; margin-bottom: 0;">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border);">
       <h3 style="font-size: 15px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
-        <i class="fa-solid fa-briefcase" style="color: #10b981;"></i> Recent Live Jobs
+        <i class="fa-solid fa-calendar-check" style="color: #10b981;"></i> Recent Service Bookings
       </h3>
-      <a href="{% url 'super_admin_jobs' %}" style="font-size: 12.5px; font-weight: 600; color: var(--accent); text-decoration: none;">View All Jobs &rarr;</a>
+      <span style="font-size: 12.5px; font-weight: 600; color: #10b981;">Total: {{ total_service_bookings }}</span>
     </div>
     <div style="display: flex; flex-direction: column; gap: 12px;">
-      {% for j in recent_jobs %}
+      {% for b in recent_bookings %}
       <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #fafbfc; border-radius: var(--r-sm); border: 1px solid var(--border);">
         <div>
-          <div style="font-size: 13.5px; font-weight: 700; color: var(--text-main);">{{ j.title|truncatechars:35 }}</div>
-          <div style="font-size: 11.5px; color: var(--text-muted);">
-            {{ j.category.name|default:"General" }} · {{ j.location|default:"Pan India" }}
-          </div>
+          <div style="font-size: 13.5px; font-weight: 700; color: var(--text-main);">#{{ b.booking_number }} · {{ b.service_title|truncatechars:28 }}</div>
+          <div style="font-size: 11.5px; color: var(--text-muted);">{{ b.booking_date|date:"d M Y" }} ({{ b.booking_time_slot|default:"Scheduled" }})</div>
         </div>
         <div style="text-align: right;">
-          <div style="font-weight: 750; font-size: 13px; color: #059669;">₹{{ j.budget|default:'Negotiable' }}</div>
-          <span class="badge" style="font-size: 10.5px; background: {% if j.status == 'open' %}rgba(16,185,129,0.12); color: #059669;{% else %}rgba(245,158,11,0.12); color: #d97706;{% endif %}">{{ j.status|title }}</span>
+          <div style="font-weight: 750; font-size: 13px; color: #059669;">₹{{ b.total_amount }}</div>
+          <span class="badge" style="font-size: 10.5px; background: {% if b.status == 'completed' %}rgba(16,185,129,0.12); color: #059669;{% else %}rgba(245,158,11,0.12); color: #d97706;{% endif %}">{{ b.status|title }}</span>
         </div>
       </div>
       {% empty %}
-      <div style="text-align: center; padding: 25px; color: var(--text-muted); font-size: 13px;">No jobs posted yet.</div>
+      <div style="text-align: center; padding: 25px; color: var(--text-muted); font-size: 13px;">No service bookings yet.</div>
       {% endfor %}
     </div>
   </div>
