@@ -11,6 +11,12 @@ from . import sindhiga_admin_views as admin_api
 
 urlpatterns = [
     path('', views.home_view, name='home'),
+    path('item/<str:item_type>/<str:item_id>/', views.item_detail_view, name='item_detail'),
+    path('item/<str:item_type>/<str:item_id>', views.item_detail_view, name='item_detail_no_slash'),
+    path('service/<str:item_id>/', views.service_detail_view, name='service_detail'),
+    path('service/<str:item_id>', views.service_detail_view, name='service_detail_no_slash'),
+    path('product/<str:item_id>/', views.product_detail_view, name='product_detail'),
+    path('product/<str:item_id>', views.product_detail_view, name='product_detail_no_slash'),
     path('services/browse', views.public_browse_services, name='public_browse_services'),
     path('login/', views.user_login_view, name='login'),
     path('login', views.user_login_view, name='login_no_slash'),

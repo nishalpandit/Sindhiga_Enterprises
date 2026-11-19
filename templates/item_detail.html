@@ -1,0 +1,892 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ item.title }} | Sindhiga.in Services & Store</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            amazon: {
+              dark: '#131921',
+              light: '#232f3e',
+              yellow: '#febd69',
+              orange: '#f3a847',
+              blue: '#007185',
+              btn: '#ffd814',
+              btnHover: '#f7ca00',
+              btnBuy: '#ffa41c',
+              btnBuyHover: '#fa8900'
+            },
+            flipkart: {
+              blue: '#2874f0',
+              yellow: '#ff9f00',
+              green: '#388e3c',
+              bg: '#f1f3f6'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #f8fafc;
+      -webkit-font-smoothing: antialiased;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col selection:bg-amber-400 selection:text-slate-900">
+
+  <!-- ===================================================================== -->
+  <!-- 1. AMAZON/FLIPKART STYLE TOP HEADER BAR                               -->
+  <!-- ===================================================================== -->
+  <header class="sticky top-0 z-40 bg-[#131921] text-white shadow-md">
+    <!-- Main Header Row -->
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-3 py-2.5 sm:px-6 lg:gap-6">
+      
+      <!-- Brand Logo -->
+      <a href="{% url 'home' %}" class="flex items-center gap-2 shrink-0 group">
+        <span class="flex size-9 items-center justify-center rounded-lg bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 font-black shadow-xs">
+          <i class="fa-solid fa-boxes-packing text-lg"></i>
+        </span>
+        <div class="leading-tight">
+          <span class="block text-base font-extrabold tracking-tight text-white group-hover:text-yellow-400 transition-colors">
+            Sindhiga<span class="text-yellow-400 font-normal">.in</span>
+          </span>
+          <span class="block text-[10px] text-slate-400 font-medium">Services &amp; Store</span>
+        </div>
+      </a>
+
+      <!-- Delivering To Location Pill (Amazon Style) -->
+      <div class="hidden lg:flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-left text-xs cursor-pointer hover:border hover:border-white/30 transition-all">
+        <i class="fa-solid fa-location-dot text-amber-400 text-base mt-0.5"></i>
+        <div class="leading-tight">
+          <span class="block text-[11px] text-slate-400">Deliver to</span>
+          <span class="block font-bold text-white">Bengaluru 560034</span>
+        </div>
+      </div>
+
+      <!-- Center Search Bar -->
+      <div class="relative flex-1 max-w-2xl mx-1 sm:mx-2">
+        <div class="flex h-10 w-full overflow-hidden rounded-md bg-white shadow-inner focus-within:ring-2 focus-within:ring-amber-400">
+          <input
+            id="mainSearchInput"
+            type="text"
+            placeholder="Search products or services..."
+            onkeydown="if(event.key==='Enter') window.location.href='{% url 'home' %}?q=' + encodeURIComponent(this.value);"
+            class="h-full flex-1 bg-transparent px-3.5 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+          />
+          <button type="button" onclick="window.location.href='{% url 'home' %}';" class="flex w-12 items-center justify-center bg-[#febd69] hover:bg-[#f3a847] text-slate-900 transition-colors shrink-0" title="Search">
+            <i class="fa-solid fa-magnifying-glass text-base"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Navigation Actions -->
+      <div class="flex items-center gap-2 sm:gap-4 shrink-0 text-xs">
+        <a href="{% url 'home' %}#servicesCatalogSection" class="hidden sm:inline-flex rounded-full bg-[#232f3e] px-3 py-1.5 font-bold text-white hover:bg-slate-700 transition-colors">
+          <i class="fa-solid fa-screwdriver-wrench mr-1.5 text-amber-400"></i>Services
+        </a>
+        <a href="{% url 'home' %}#productsCatalogSection" class="hidden sm:inline-flex rounded-full bg-[#232f3e] px-3 py-1.5 font-bold text-white hover:bg-slate-700 transition-colors">
+          <i class="fa-solid fa-bag-shopping mr-1.5 text-amber-400"></i>Store
+        </a>
+
+        <!-- Account / Sign In -->
+        {% if user.is_authenticated %}
+        <a href="{% if user.is_superuser or user.role == 'ADMIN' %}{% url 'super_admin_dashboard_slash' %}{% elif user.role == 'VENDOR' %}{% url 'vendor_dashboard' %}{% else %}{% url 'user_dashboard' %}{% endif %}" class="flex items-center gap-1.5 rounded-md px-2 py-1.5 hover:border hover:border-white/30 transition-all text-left">
+          <div class="leading-tight">
+            <span class="block text-[11px] text-slate-400">Welcome, {{ user.first_name|default:user.username }}</span>
+            <span class="block font-bold text-white">Dashboard &rsaquo;</span>
+          </div>
+        </a>
+        {% else %}
+        <a href="{% url 'login' %}" class="flex items-center gap-1.5 rounded-md px-2 py-1.5 hover:border hover:border-white/30 transition-all text-left">
+          <div class="leading-tight">
+            <span class="block text-[11px] text-slate-400">Hello, Sign in</span>
+            <span class="block font-bold text-white">Account &amp; Orders</span>
+          </div>
+        </a>
+        {% endif %}
+
+        <!-- Cart Button with Counter Badge -->
+        <button type="button" onclick="toggleCartDrawer()" class="relative flex items-center gap-1 rounded-md px-2.5 py-1.5 hover:border hover:border-white/30 transition-all" title="View Cart">
+          <div class="relative">
+            <i class="fa-solid fa-cart-shopping text-2xl text-amber-400"></i>
+            <span id="cartCountBadge" class="absolute -top-1.5 -right-2 flex size-5 items-center justify-center rounded-full bg-red-600 text-[11px] font-black text-white shadow-xs">0</span>
+          </div>
+          <span class="hidden md:inline font-extrabold text-white text-sm ml-1">Cart</span>
+        </button>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- 2. BREADCRUMBS BAR                                                    -->
+  <!-- ===================================================================== -->
+  <nav class="bg-white border-b border-slate-200/80 px-3 py-2.5 sm:px-6">
+    <div class="mx-auto max-w-7xl flex items-center gap-2 text-xs text-slate-500 overflow-x-auto">
+      <a href="{% url 'home' %}" class="hover:text-blue-600 transition-colors flex items-center gap-1">
+        <i class="fa-solid fa-house text-slate-400"></i> Home
+      </a>
+      <span>&rsaquo;</span>
+      <a href="{% url 'home' %}#{% if item.type == 'service' %}servicesCatalogSection{% else %}productsCatalogSection{% endif %}" class="hover:text-blue-600 transition-colors">
+        {{ item.category_name }}
+      </a>
+      <span>&rsaquo;</span>
+      <span class="text-slate-900 font-bold truncate max-w-xs sm:max-w-md">{{ item.title }}</span>
+    </div>
+  </nav>
+
+  <!-- ===================================================================== -->
+  <!-- 3. MAIN ITEM DETAIL SHOWCASE (AMAZON / FLIPKART STYLE)                -->
+  <!-- ===================================================================== -->
+  <main class="flex-1 py-6 px-3 sm:px-6">
+    <div class="mx-auto max-w-7xl">
+
+      <!-- Detail Card (Two Columns) -->
+      <div class="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 sm:p-8 mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+          
+          <!-- LEFT COLUMN: Product / Service Image Showcase -->
+          <div class="lg:col-span-5 flex flex-col">
+            <!-- Main Hero Image Display -->
+            <div class="relative aspect-square w-full rounded-2xl overflow-hidden bg-slate-50 border border-slate-200/80 p-4 flex items-center justify-center group shadow-inner">
+              {% if item.image %}
+                {% if "images/" in item.image %}
+                  <img id="mainImageDisplay" src="{% static item.image %}" alt="{{ item.title }}" class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105">
+                {% else %}
+                  <img id="mainImageDisplay" src="{{ item.image }}" alt="{{ item.title }}" class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105">
+                {% endif %}
+              {% else %}
+                <div class="flex flex-col items-center justify-center text-slate-400">
+                  <i class="fa-solid fa-box-open text-6xl mb-2 text-slate-300"></i>
+                  <span class="text-xs font-semibold">Image Preview</span>
+                </div>
+              {% endif %}
+
+              <!-- Badges on Image -->
+              <div class="absolute top-3 left-3 flex flex-col gap-1.5">
+                <span class="rounded bg-emerald-600 px-2 py-0.5 text-xs font-extrabold text-white shadow-xs">
+                  {{ item.discount }}
+                </span>
+                <span class="rounded bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
+                  {% if item.type == 'service' %}SERVICE{% else %}STORE{% endif %}
+                </span>
+              </div>
+
+              <div class="absolute top-3 right-3">
+                <span class="inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-extrabold text-amber-700 border border-amber-300 shadow-xs">
+                  <i class="fa-solid fa-shield-halved text-amber-500"></i> Sindhiga Assured
+                </span>
+              </div>
+            </div>
+
+            <!-- Trust Features below Image -->
+            <div class="mt-6 grid grid-cols-3 gap-2 border-t border-slate-100 pt-5 text-center">
+              <div class="rounded-xl bg-slate-50 p-2.5 border border-slate-200/70">
+                <i class="fa-solid fa-certificate text-emerald-600 text-lg mb-1 block"></i>
+                <span class="text-[11px] font-bold text-slate-800 block">100% Verified</span>
+                <span class="text-[10px] text-slate-400">Genuine Experts</span>
+              </div>
+              <div class="rounded-xl bg-slate-50 p-2.5 border border-slate-200/70">
+                <i class="fa-solid fa-rotate-left text-blue-600 text-lg mb-1 block"></i>
+                <span class="text-[11px] font-bold text-slate-800 block">Rework Guarantee</span>
+                <span class="text-[10px] text-slate-400">30 Days Protection</span>
+              </div>
+              <div class="rounded-xl bg-slate-50 p-2.5 border border-slate-200/70">
+                <i class="fa-solid fa-bolt text-amber-500 text-lg mb-1 block"></i>
+                <span class="text-[11px] font-bold text-slate-800 block">Fast Doorstep</span>
+                <span class="text-[10px] text-slate-400">In 30–45 Mins</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: Purchase / Booking Info & Specs -->
+          <div class="lg:col-span-7 flex flex-col justify-between">
+            <div>
+              <!-- Category Pill -->
+              <div class="flex items-center gap-2 mb-2">
+                <span class="bg-blue-50 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                  {{ item.category_name }}
+                </span>
+                <span class="text-xs text-slate-400 font-medium">| In-Stock &amp; Operational</span>
+              </div>
+
+              <!-- Main Title -->
+              <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
+                {{ item.title }}
+              </h1>
+
+              <!-- Ratings & Review Count -->
+              <div class="flex items-center gap-2.5 mt-3">
+                <span class="bg-[#388e3c] text-white text-xs font-bold px-2 py-0.5 rounded flex items-center gap-1 shadow-2xs">
+                  {{ item.rating }} <i class="fa-solid fa-star text-[10px]"></i>
+                </span>
+                <span class="text-xs font-semibold text-slate-600">
+                  {{ item.reviews_count }} verified ratings &amp; reviews
+                </span>
+                <span class="text-slate-300">|</span>
+                <span class="text-xs font-semibold text-emerald-600 flex items-center gap-1">
+                  <i class="fa-solid fa-circle-check"></i> Highly Recommended
+                </span>
+              </div>
+
+              <!-- Price Box -->
+              <div class="mt-5 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+                <div class="flex items-baseline gap-3">
+                  <span class="text-3xl sm:text-4xl font-black text-slate-900">₹{{ item.price|floatformat:0 }}</span>
+                  <span class="text-base text-slate-400 line-through">₹{{ item.mrp|floatformat:0 }}</span>
+                  <span class="text-sm font-extrabold text-emerald-600 bg-emerald-100 px-2.5 py-0.5 rounded">
+                    {{ item.discount }}
+                  </span>
+                </div>
+                <p class="text-xs text-slate-500 mt-1">
+                  Inclusive of all taxes. Free doorstep arrival &amp; digital invoice provided.
+                </p>
+
+                <!-- Delivery or Service Timeline Pill -->
+                <div class="mt-3 flex items-center gap-2 text-xs font-bold text-slate-700">
+                  <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  {% if item.type == 'service' %}
+                    <span>⚡ Available Today: Expert arrives in <span class="text-blue-700 font-extrabold">{{ item.duration|default:"45 mins" }}</span></span>
+                  {% else %}
+                    <span>⚡ Delivery: Guaranteed doorstep delivery in <span class="text-emerald-700 font-extrabold">45 Mins</span></span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Short Description -->
+              <p class="mt-4 text-sm text-slate-600 leading-relaxed">
+                {{ item.short_desc }}
+              </p>
+
+              <!-- Pincode Checker -->
+              <div class="mt-5 p-3.5 rounded-xl border border-dashed border-slate-300 bg-white">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2 text-xs font-bold text-slate-800">
+                    <i class="fa-solid fa-location-dot text-amber-500 text-sm"></i>
+                    <span>Check Service &amp; Delivery Availability</span>
+                  </div>
+                </div>
+                <div class="mt-2 flex max-w-sm gap-2">
+                  <input id="pincodeInput" type="text" maxlength="6" value="560034" placeholder="Enter 6-digit Pincode" class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                  <button type="button" onclick="checkPincode()" class="rounded-lg bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-1.5 text-xs font-bold transition-colors">
+                    Check
+                  </button>
+                </div>
+                <p id="pincodeResult" class="text-[11px] text-emerald-600 font-semibold mt-1.5">
+                  <i class="fa-solid fa-circle-check mr-1"></i> Fast Doorstep Service &amp; Delivery active for 560034 (Bengaluru)
+                </p>
+              </div>
+
+              <!-- Primary Action Buttons -->
+              <div class="mt-6 flex flex-wrap gap-3">
+                {% if item.type == 'service' %}
+                  <!-- Service Action: Book Service Slot -->
+                  <button type="button" onclick="openBookingModal('{{ item.title|escapejs }}', {{ item.price }}, '{{ item.duration|default:"45 mins" }}')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-xl bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 font-extrabold px-6 py-3.5 text-sm shadow-md transition-all hover:-translate-y-0.5">
+                    <i class="fa-solid fa-calendar-check text-base"></i>
+                    <span>Book Service Slot Now (₹{{ item.price|floatformat:0 }})</span>
+                  </button>
+                {% else %}
+                  <!-- Product Actions: Add to Cart & Buy Now -->
+                  <div class="flex items-center rounded-xl border border-slate-300 bg-slate-50 px-2 py-1">
+                    <button type="button" onclick="changeQty(-1)" class="size-8 flex items-center justify-center text-slate-600 hover:text-slate-900 font-bold">-</button>
+                    <span id="qtyDisplay" class="w-8 text-center text-sm font-bold text-slate-900">1</span>
+                    <button type="button" onclick="changeQty(1)" class="size-8 flex items-center justify-center text-slate-600 hover:text-slate-900 font-bold">+</button>
+                  </div>
+
+                  <button type="button" onclick="addItemToCart('{{ item.id }}', '{{ item.title|escapejs }}', {{ item.price }}, '{% if "images/" in item.image %}{% static item.image %}{% else %}{{ item.image }}{% endif %}')" class="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 font-extrabold px-6 py-3 text-sm shadow-md transition-all hover:-translate-y-0.5">
+                    <i class="fa-solid fa-cart-plus text-base"></i>
+                    <span>Add to Cart</span>
+                  </button>
+
+                  <button type="button" onclick="buyNowProduct('{{ item.id }}', '{{ item.title|escapejs }}', {{ item.price }}, '{% if "images/" in item.image %}{% static item.image %}{% else %}{{ item.image }}{% endif %}')" class="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#ffa41c] hover:bg-[#fa8900] text-slate-950 font-extrabold px-6 py-3 text-sm shadow-md transition-all hover:-translate-y-0.5">
+                    <i class="fa-solid fa-bolt text-base"></i>
+                    <span>Buy Now</span>
+                  </button>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Key Highlights Checklist -->
+            <div class="mt-8 pt-5 border-t border-slate-100">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Key Highlights &amp; Inclusions</h4>
+              <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700">
+                {% for h in item.highlights %}
+                <li class="flex items-start gap-2">
+                  <i class="fa-solid fa-circle-check text-emerald-600 mt-0.5 shrink-0"></i>
+                  <span>{{ h }}</span>
+                </li>
+                {% empty %}
+                <li class="flex items-start gap-2">
+                  <i class="fa-solid fa-circle-check text-emerald-600 mt-0.5 shrink-0"></i>
+                  <span>100% Genuine Certified Quality Assurance</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Detail Tabs (Specifications, Inclusions/Exclusions, Scope) -->
+      <div class="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 sm:p-8 mb-10">
+        <h3 class="text-lg font-bold text-slate-900 mb-4 border-b border-slate-100 pb-3">Detailed Information &amp; Scope of Work</h3>
+        
+        <div class="prose max-w-none text-sm text-slate-600 leading-relaxed mb-6">
+          <p>{{ item.full_desc }}</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+          <!-- Inclusions -->
+          <div class="rounded-xl bg-emerald-50/60 p-4 border border-emerald-200/80">
+            <h4 class="text-xs font-bold text-emerald-900 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-check text-emerald-600"></i> What's Included
+            </h4>
+            <ul class="space-y-1.5 text-xs text-emerald-950">
+              {% for inc in item.inclusions %}
+              <li class="flex items-start gap-2">
+                <span class="text-emerald-600 font-bold">•</span>
+                <span>{{ inc }}</span>
+              </li>
+              {% empty %}
+              <li>Standard inspection, testing and verified labor execution.</li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <!-- Exclusions -->
+          <div class="rounded-xl bg-slate-50 p-4 border border-slate-200/80">
+            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-xmark text-slate-400"></i> What's Excluded
+            </h4>
+            <ul class="space-y-1.5 text-xs text-slate-600">
+              {% for exc in item.exclusions %}
+              <li class="flex items-start gap-2">
+                <span class="text-slate-400 font-bold">•</span>
+                <span>{{ exc }}</span>
+              </li>
+              {% empty %}
+              <li>Major structural modifications and non-standard parts billed separately.</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+
+        <!-- Specifications Table -->
+        {% if item.specifications %}
+        <div class="mt-6 pt-4 border-t border-slate-100">
+          <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Specifications</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {% for key, val in item.specifications.items %}
+            <div class="rounded-lg bg-slate-50 p-3 border border-slate-200/70">
+              <span class="block text-[11px] font-semibold text-slate-400">{{ key }}</span>
+              <span class="block text-xs font-bold text-slate-800 mt-0.5">{{ val }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- 4. CRITICAL BOTTOM SECTION: SIMILAR CATEGORY SUGGESTION PRODUCTS/SVCS -->
+      <!-- ===================================================================== -->
+      <section id="similarCategorySection" class="bg-gradient-to-b from-blue-50/70 to-white rounded-2xl border-2 border-blue-300 shadow-md p-5 sm:p-8 mb-12">
+        <div class="flex flex-wrap items-end justify-between gap-3 mb-6 border-b border-blue-200 pb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="flex size-7 items-center justify-center rounded-lg bg-blue-600 text-white text-sm">
+                <i class="fa-solid fa-layer-group"></i>
+              </span>
+              <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                Similar Category Products &amp; Suggestions
+              </h2>
+            </div>
+            <p class="text-xs text-slate-600 mt-1">
+              Customers who viewed this <strong class="text-blue-900">{{ item.category_name }}</strong> also explored these complementary essentials:
+            </p>
+          </div>
+          <a href="{% url 'home' %}#{% if item.type == 'service' %}servicesCatalogSection{% else %}productsCatalogSection{% endif %}" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-blue-700 hover:bg-blue-50 border border-blue-200 shadow-2xs transition-colors">
+            <span>View All in Catalog</span>
+            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+          </a>
+        </div>
+
+        <!-- Similar Items Grid (Clicking navigates to that item's detail page) -->
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {% for sim in similar_items %}
+          <div onclick="window.location.href='/item/{{ sim.type }}/{{ sim.id }}/'" class="cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 transition-all duration-200 hover:-translate-y-1 hover:border-blue-400 hover:shadow-lg">
+            <div>
+              <!-- Thumbnail -->
+              <div class="relative aspect-square overflow-hidden rounded-lg bg-slate-50 mb-3 flex items-center justify-center p-2">
+                {% if sim.image %}
+                  {% if "images/" in sim.image %}
+                    <img src="{% static sim.image %}" alt="{{ sim.title }}" class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105">
+                  {% else %}
+                    <img src="{{ sim.image }}" alt="{{ sim.title }}" class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105">
+                  {% endif %}
+                {% else %}
+                  <i class="fa-solid fa-box text-3xl text-slate-300"></i>
+                {% endif %}
+
+                <!-- Type Pill -->
+                <span class="absolute top-2 left-2 rounded bg-slate-900/80 text-[10px] font-bold text-white px-1.5 py-0.5 uppercase">
+                  {{ sim.type }}
+                </span>
+              </div>
+
+              <!-- Rating & Assured -->
+              <div class="flex items-center gap-1.5 mb-1.5">
+                <span class="bg-[#388e3c] text-white text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                  {{ sim.rating }} <i class="fa-solid fa-star text-[8px]"></i>
+                </span>
+                <span class="text-[10px] text-slate-400 font-semibold">({{ sim.reviews_count }})</span>
+                <span class="ml-auto text-[9px] font-extrabold text-blue-600 bg-blue-50 px-1 py-0.5 rounded">ASSURED</span>
+              </div>
+
+              <!-- Title -->
+              <h4 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+                {{ sim.title }}
+              </h4>
+              <p class="text-[11px] text-slate-500 mt-1 line-clamp-2">
+                {{ sim.short_desc }}
+              </p>
+            </div>
+
+            <!-- Price & Action Button -->
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+              <div>
+                <span class="text-base font-black text-slate-900">₹{{ sim.price|floatformat:0 }}</span>
+                <span class="text-[10px] text-slate-400 line-through ml-1">₹{{ sim.mrp|floatformat:0 }}</span>
+              </div>
+
+              {% if sim.type == 'service' %}
+              <button type="button" onclick="event.stopPropagation(); openBookingModal('{{ sim.title|escapejs }}', {{ sim.price }}, '{{ sim.duration|default:"45 mins" }}')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3 py-1.5 text-xs font-bold shadow-xs transition-colors">
+                Book Slot
+              </button>
+              {% else %}
+              <button type="button" onclick="event.stopPropagation(); addItemToCart('{{ sim.id }}', '{{ sim.title|escapejs }}', {{ sim.price }}, '{% if "images/" in sim.image %}{% static sim.image %}{% else %}{{ sim.image }}{% endif %}')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3 py-1.5 text-xs font-bold shadow-xs transition-colors">
+                <i class="fa-solid fa-plus text-[10px] mr-1"></i>Add
+              </button>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- 5. SLIDE-OVER CART DRAWER                                             -->
+  <!-- ===================================================================== -->
+  <div id="cartDrawerBackdrop" onclick="toggleCartDrawer()" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs hidden transition-opacity"></div>
+  <aside id="cartDrawer" class="fixed top-0 right-0 z-50 h-full w-full sm:w-96 bg-white shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-out">
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4 bg-[#131921] text-white">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-bag-shopping text-amber-400 text-lg"></i>
+        <h3 class="font-extrabold text-base tracking-tight">Your Sindhiga Cart</h3>
+      </div>
+      <button type="button" onclick="toggleCartDrawer()" class="size-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- Items List -->
+    <div id="cartItemsContainer" class="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-3">
+      <!-- Items dynamically populated via JS -->
+    </div>
+
+    <!-- Footer / Checkout -->
+    <div class="border-t border-slate-200 p-4 bg-slate-50 space-y-3">
+      <div class="flex items-center justify-between text-xs text-slate-600">
+        <span>Delivery / Arrival Charge:</span>
+        <span class="font-bold text-emerald-600 uppercase">FREE (Doorstep in 45m)</span>
+      </div>
+      <div class="flex items-center justify-between text-base font-extrabold text-slate-900">
+        <span>Total Amount:</span>
+        <span id="cartDrawerTotal" class="text-xl font-black text-slate-900">₹0</span>
+      </div>
+      <button type="button" onclick="handleCheckout()" class="w-full rounded-xl bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 py-3 text-sm font-extrabold shadow-md transition-colors flex items-center justify-center gap-2">
+        <span>Proceed to Fast Checkout</span>
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ===================================================================== -->
+  <!-- 6. HOME SERVICE BOOKING MODAL                                         -->
+  <!-- ===================================================================== -->
+  <div id="bookingModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+    <div class="relative w-full max-w-md rounded-2xl bg-white shadow-2xl overflow-hidden border border-slate-200">
+      <!-- Header -->
+      <div class="flex items-center justify-between bg-[#131921] text-white px-5 py-4">
+        <div>
+          <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Sindhiga Verified Home Service</span>
+          <h3 id="modalServiceTitle" class="text-base font-extrabold text-white">Book Service</h3>
+        </div>
+        <button type="button" onclick="closeBookingModal()" class="size-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <form id="bookingForm" onsubmit="handleBookingSubmit(event)" class="p-5 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Select Service Date</label>
+          <input type="date" id="bookingDateInput" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Select Time Slot</label>
+          <select id="bookingSlotInput" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+            <option value="09:00 AM - 11:00 AM (Morning)">09:00 AM - 11:00 AM (Morning)</option>
+            <option value="11:00 AM - 01:00 PM (Afternoon)">11:00 AM - 01:00 PM (Afternoon)</option>
+            <option value="02:00 PM - 04:00 PM (Afternoon)">02:00 PM - 04:00 PM (Afternoon)</option>
+            <option value="04:00 PM - 06:00 PM (Evening)">04:00 PM - 06:00 PM (Evening)</option>
+            <option value="06:00 PM - 08:00 PM (Night)">06:00 PM - 08:00 PM (Night)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Full Delivery / Service Address</label>
+          <textarea id="bookingAddressInput" rows="2" required placeholder="Flat / House No, Street, Landmark, Area" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">Flat 304, Green Valley Heights, 5th Main, Bengaluru 560034</textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Phone Number</label>
+            <input type="tel" id="bookingPhoneInput" value="9876543210" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Payment Method</label>
+            <select id="bookingPaymentInput" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-900 outline-none">
+              <option value="cod">Pay After Service (Cash/UPI)</option>
+              <option value="online">Online Payment</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Total Notice -->
+        <div class="rounded-xl bg-amber-50 p-3 border border-amber-200 flex items-center justify-between">
+          <div>
+            <span class="block text-[11px] font-bold text-amber-900">Total Fixed Price</span>
+            <span class="block text-[10px] text-amber-700">No advance payment needed</span>
+          </div>
+          <span id="modalServicePrice" class="text-xl font-black text-slate-900">₹0</span>
+        </div>
+
+        <button type="submit" class="w-full rounded-xl bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 py-3 text-xs font-extrabold shadow-md transition-colors">
+          Confirm Doorstep Booking
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-16 opacity-0 transition-all duration-300 pointer-events-none rounded-xl bg-slate-900 text-white px-4 py-3 text-xs font-bold shadow-2xl flex items-center gap-2 border border-slate-700">
+    <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+    <span id="toastMessage">Action successful!</span>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 7. FOOTER                                                             -->
+  <!-- ===================================================================== -->
+  <footer class="bg-[#131921] text-white border-t border-slate-800 mt-auto">
+    <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 text-xs">
+        <div>
+          <h4 class="font-extrabold text-white uppercase tracking-wider mb-3">Doorstep Services</h4>
+          <ul class="space-y-2 text-slate-400">
+            <li><a href="{% url 'home' %}#servicesCatalogSection" class="hover:text-yellow-400">AC Repair &amp; Service</a></li>
+            <li><a href="{% url 'home' %}#servicesCatalogSection" class="hover:text-yellow-400">Electricians</a></li>
+            <li><a href="{% url 'home' %}#servicesCatalogSection" class="hover:text-yellow-400">Plumbers</a></li>
+            <li><a href="{% url 'home' %}#servicesCatalogSection" class="hover:text-yellow-400">Deep Cleaning</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-extrabold text-white uppercase tracking-wider mb-3">Home Essentials Store</h4>
+          <ul class="space-y-2 text-slate-400">
+            <li><a href="{% url 'home' %}#productsCatalogSection" class="hover:text-yellow-400">Silicone Sealants</a></li>
+            <li><a href="{% url 'home' %}#productsCatalogSection" class="hover:text-yellow-400">Tool Kits &amp; Hardware</a></li>
+            <li><a href="{% url 'home' %}#productsCatalogSection" class="hover:text-yellow-400">Inverter Bulbs</a></li>
+            <li><a href="{% url 'home' %}#productsCatalogSection" class="hover:text-yellow-400">Drain Cleaners</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-extrabold text-white uppercase tracking-wider mb-3">Partner With Us</h4>
+          <ul class="space-y-2 text-slate-400">
+            <li><a href="{% url 'register_vendor' %}" class="hover:text-yellow-400">Register as Service Provider</a></li>
+            <li><a href="{% url 'register_vendor' %}" class="hover:text-yellow-400">Register as Delivery Partner</a></li>
+            <li><a href="{% url 'login' %}" class="hover:text-yellow-400">Partner Login</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-extrabold text-white uppercase tracking-wider mb-3">Sindhiga Assured</h4>
+          <p class="text-slate-400 leading-relaxed">
+            The reliable dual-engine platform combining genuine e-commerce hardware delivery with verified doorstep home services.
+          </p>
+        </div>
+      </div>
+      <div class="border-t border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
+        <p>&copy; 2026 Sindhiga Enterprises. All rights reserved.</p>
+        <div class="flex gap-4 mt-2 sm:mt-0">
+          <a href="#" class="hover:text-slate-300">Privacy Policy</a>
+          <a href="#" class="hover:text-slate-300">Terms of Service</a>
+          <a href="#" class="hover:text-slate-300">Warranty Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- 8. JAVASCRIPT LOGIC (CART, BOOKINGS, PINCODE)                        -->
+  <!-- ===================================================================== -->
+  <script>
+    // --- CART SYSTEM ---
+    let currentQty = 1;
+    function changeQty(delta) {
+      currentQty = Math.max(1, currentQty + delta);
+      const display = document.getElementById('qtyDisplay');
+      if (display) display.textContent = currentQty;
+    }
+
+    function getCart() {
+      try {
+        return JSON.parse(localStorage.getItem('sindhiga_cart') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveCart(cart) {
+      localStorage.setItem('sindhiga_cart', JSON.stringify(cart));
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      const cart = getCart();
+      const badge = document.getElementById('cartCountBadge');
+      const totalUnits = cart.reduce((sum, item) => sum + item.qty, 0);
+      if (badge) badge.textContent = totalUnits;
+
+      const container = document.getElementById('cartItemsContainer');
+      const totalEl = document.getElementById('cartDrawerTotal');
+
+      if (!container || !totalEl) return;
+
+      if (cart.length === 0) {
+        container.innerHTML = `
+          <div class="flex flex-col items-center justify-center h-64 text-center text-slate-400">
+            <i class="fa-solid fa-cart-shopping text-4xl mb-3 text-slate-300"></i>
+            <p class="text-sm font-semibold">Your cart is empty</p>
+            <p class="text-xs text-slate-400 mt-1">Explore similar items below to add</p>
+          </div>
+        `;
+        totalEl.textContent = '₹0';
+        return;
+      }
+
+      let subtotal = 0;
+      container.innerHTML = cart.map((item, idx) => {
+        const itemTotal = item.price * item.qty;
+        subtotal += itemTotal;
+        return `
+          <div class="flex gap-3 rounded-xl border border-slate-200 p-3 bg-white shadow-2xs">
+            <div class="size-16 rounded-lg bg-slate-50 flex items-center justify-center p-1 border border-slate-100 shrink-0">
+              ${item.img ? `<img src="${item.img}" alt="${item.title}" class="size-full object-contain">` : `<i class="fa-solid fa-box text-slate-400"></i>`}
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="text-xs font-bold text-slate-900 truncate">${item.title}</h4>
+              <div class="text-xs font-black text-slate-900 mt-1">₹${item.price}</div>
+              <div class="mt-2 flex items-center justify-between">
+                <div class="flex items-center rounded-md border border-slate-200 bg-slate-50">
+                  <button type="button" onclick="updateItemQty(${idx}, -1)" class="size-6 text-xs font-bold text-slate-600 hover:text-slate-900">-</button>
+                  <span class="w-6 text-center text-xs font-bold">${item.qty}</span>
+                  <button type="button" onclick="updateItemQty(${idx}, 1)" class="size-6 text-xs font-bold text-slate-600 hover:text-slate-900">+</button>
+                </div>
+                <button type="button" onclick="removeItemFromCart(${idx})" class="text-slate-400 hover:text-red-500 text-xs">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      totalEl.textContent = `₹${subtotal.toLocaleString('en-IN')}`;
+    }
+
+    function addItemToCart(id, title, price, img) {
+      const cart = getCart();
+      const existing = cart.find(i => i.id === id);
+      const qtyToAdd = currentQty || 1;
+      if (existing) {
+        existing.qty += qtyToAdd;
+      } else {
+        cart.push({ id, title, price, img, qty: qtyToAdd });
+      }
+      saveCart(cart);
+      showToast(`Added ${qtyToAdd}x ${title} to your cart`);
+      toggleCartDrawer(true);
+    }
+
+    function buyNowProduct(id, title, price, img) {
+      addItemToCart(id, title, price, img);
+      handleCheckout();
+    }
+
+    function updateItemQty(index, change) {
+      const cart = getCart();
+      if (!cart[index]) return;
+      cart[index].qty += change;
+      if (cart[index].qty <= 0) cart.splice(index, 1);
+      saveCart(cart);
+    }
+
+    function removeItemFromCart(index) {
+      const cart = getCart();
+      cart.splice(index, 1);
+      saveCart(cart);
+    }
+
+    function toggleCartDrawer(openOnly = false) {
+      const drawer = document.getElementById('cartDrawer');
+      const backdrop = document.getElementById('cartDrawerBackdrop');
+      if (!drawer || !backdrop) return;
+
+      const isHidden = drawer.classList.contains('translate-x-full');
+      if (openOnly) {
+        drawer.classList.remove('translate-x-full');
+        backdrop.classList.remove('hidden');
+      } else {
+        if (isHidden) {
+          drawer.classList.remove('translate-x-full');
+          backdrop.classList.remove('hidden');
+        } else {
+          drawer.classList.add('translate-x-full');
+          backdrop.classList.add('hidden');
+        }
+      }
+    }
+
+    function handleCheckout() {
+      const cart = getCart();
+      if (cart.length === 0) {
+        showToast('Your cart is empty! Add an item first.');
+        return;
+      }
+      const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      const randomOrder = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
+      const otp = Math.floor(100000 + Math.random() * 900000);
+
+      alert(`🎉 Order Placed Successfully!\n\nOrder Number: ${randomOrder}\nTotal Amount: ₹${total}\nDelivery OTP: ${otp}\nDelivery Partner assigned for 45-min arrival.`);
+      localStorage.removeItem('sindhiga_cart');
+      updateCartUI();
+      toggleCartDrawer(false);
+    }
+
+    // --- BOOKING MODAL ---
+    let currentServiceBooking = null;
+
+    function openBookingModal(title, price, duration) {
+      currentServiceBooking = { title, price, duration };
+      document.getElementById('modalServiceTitle').textContent = title;
+      document.getElementById('modalServicePrice').textContent = `₹${price}`;
+
+      // Default tomorrow's date
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      document.getElementById('bookingDateInput').value = `${yyyy}-${mm}-${dd}`;
+
+      document.getElementById('bookingModal').classList.remove('hidden');
+    }
+
+    function closeBookingModal() {
+      document.getElementById('bookingModal').classList.add('hidden');
+    }
+
+    function handleBookingSubmit(e) {
+      e.preventDefault();
+      const date = document.getElementById('bookingDateInput').value;
+      const slot = document.getElementById('bookingSlotInput').value;
+      const phone = document.getElementById('bookingPhoneInput').value;
+      const bookingNo = 'BK-' + Math.floor(1000 + Math.random() * 9000);
+      const otp = Math.floor(100000 + Math.random() * 900000);
+
+      alert(`⚡ Doorstep Service Confirmed!\n\nBooking ID: #${bookingNo}\nService: ${currentServiceBooking ? currentServiceBooking.title : 'Home Service'}\nDate: ${date}\nSlot: ${slot}\nOTP for Technician: ${otp}\n\nOur verified technician will reach on time with all required tools.`);
+      closeBookingModal();
+    }
+
+    // --- PINCODE CHECKER ---
+    function checkPincode() {
+      const pin = (document.getElementById('pincodeInput').value || '').trim();
+      const res = document.getElementById('pincodeResult');
+      if (pin.length === 6 && /^\d+$/.test(pin)) {
+        res.innerHTML = `<i class="fa-solid fa-circle-check mr-1"></i> Fast Doorstep Service & Delivery active for ${pin}! Technician arrives in 45 mins.`;
+        res.className = 'text-[11px] text-emerald-600 font-semibold mt-1.5';
+      } else {
+        res.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1"></i> Please enter a valid 6-digit postal pincode.`;
+        res.className = 'text-[11px] text-red-600 font-semibold mt-1.5';
+      }
+    }
+
+    // --- TOAST NOTIFICATIONS ---
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      const msgEl = document.getElementById('toastMessage');
+      if (!toast || !msgEl) return;
+      msgEl.textContent = msg;
+      toast.classList.remove('translate-y-16', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-16', 'opacity-0');
+      }, 3000);
+    }
+
+    // Initialize UI on load
+    document.addEventListener('DOMContentLoaded', () => {
+      updateCartUI();
+    });
+  </script>
+</body>
+</html>

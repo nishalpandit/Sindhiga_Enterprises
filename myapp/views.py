@@ -4926,3 +4926,501 @@ def search_locations_api(request):
     return JsonResponse({'results': results})
 
 
+# =====================================================================
+# SINDHIGA ENTERPRISES: ITEM DETAIL & SIMILAR RECOMMENDATIONS ENGINE
+# =====================================================================
+
+CATALOG_ITEMS = {
+    'ac-service': {
+        'id': 'ac-service',
+        'type': 'service',
+        'category': 'ac',
+        'category_name': 'AC Repair & Servicing',
+        'title': 'Split AC Complete Servicing',
+        'price': 499,
+        'mrp': 799,
+        'discount': '38% off',
+        'duration': '45 mins',
+        'rating': 4.88,
+        'reviews_count': '4,200',
+        'image': 'images/cat-ac.jpg',
+        'gallery': ['images/cat-ac.jpg', 'images/cat-electrician.jpg'],
+        'short_desc': 'Full powerjet deep clean of filters, indoor coil, and drain line with gas pressure check.',
+        'full_desc': 'Keep your air conditioner functioning at peak cooling efficiency. Our certified HVAC specialists use high-pressure waterjet pumps to remove deep-seated indoor coil dust, unclog drain lines, sanitize air filters, and perform comprehensive refrigerant gas pressure diagnostics.',
+        'highlights': [
+            'High-pressure powerjet wash for indoor & outdoor units',
+            'Anti-bacterial foam treatment & air filter sanitization',
+            'Full refrigerant gas pressure & cooling coil check',
+            'Free drain pipe flush to eliminate water dripping',
+            '30-day Sindhiga post-service rework guarantee'
+        ],
+        'inclusions': [
+            'Deep cleaning of cooling coil, blower wheel, and air louvers',
+            'Outdoor condenser unit rinse with waterjet',
+            'Gas pressure measurement report',
+            'Floor & wall protection sheets during cleaning'
+        ],
+        'exclusions': [
+            'Refrigerant gas refill / top-up (billed as per standard tariff if required)',
+            'Spare parts replacement (capacitor, PCB board, motor)',
+            'Scaffolding setup for difficult outdoor unit access'
+        ],
+        'specifications': {
+            'Service Duration': '45–60 minutes',
+            'Technician Profile': 'Sindhiga Verified & Background-Checked HVAC Specialist',
+            'Equipment Used': 'Industrial Powerjet Pump, Antimicrobial Disinfectant',
+            'Guarantee': '30-Day Hassle-Free Rework Protection'
+        },
+        'similar_ids': ['switchboard', 'deep-clean', 'sealant', 'toolkit', 'led-bulb']
+    },
+    'switchboard': {
+        'id': 'switchboard',
+        'type': 'service',
+        'category': 'electrician',
+        'category_name': 'Electrical Repairs',
+        'title': 'Switchboard, Socket & MCB Repair',
+        'price': 149,
+        'mrp': 249,
+        'discount': '40% off',
+        'duration': '30 mins',
+        'rating': 4.85,
+        'reviews_count': '3,100',
+        'image': 'images/cat-electrician.jpg',
+        'gallery': ['images/cat-electrician.jpg', 'images/prod-toolkit.jpg'],
+        'short_desc': 'Diagnosis and replacement of loose sockets, faulty switches, and tripping breakers.',
+        'full_desc': 'Certified electricians inspect and repair faulty switches, sparking 3-pin sockets, humming switchboards, and frequently tripping MCBs. Safe insulation, phase balancing, and earthing verification included.',
+        'highlights': [
+            'Repair or replacement of switches, 3-pin sockets, and indicators',
+            'Tripping MCB diagnosis and phase balancing',
+            'Heavy appliance (geyser, AC, microwave) point wiring check',
+            'Safety insulation and earthing verification'
+        ],
+        'inclusions': [
+            'Inspection of up to 3 switchboards or sockets',
+            'Minor wiring tightening and terminal cleanup',
+            'Safety voltage & earthing test',
+            'Labor charges for 1 switch/socket replacement'
+        ],
+        'exclusions': [
+            'Cost of new switches, sockets, or MCB (customer provides or billed separately)',
+            'Internal wall concealed conduit rewiring',
+            'Three-phase distribution board replacements'
+        ],
+        'specifications': {
+            'Service Duration': '30–45 minutes',
+            'Safety Standard': 'IS:732 Certified electrical safety compliant',
+            'Tools Carried': 'Digital multimeter, wire strippers, heavy-duty testers',
+            'Warranty': '30-Day rework warranty'
+        },
+        'similar_ids': ['led-bulb', 'toolkit', 'ac-service', 'tap-pipe']
+    },
+    'tap-pipe': {
+        'id': 'tap-pipe',
+        'type': 'service',
+        'category': 'plumber',
+        'category_name': 'Plumbing & Sanitary',
+        'title': 'Tap, Pipe & Flush Tank Repair',
+        'price': 199,
+        'mrp': 299,
+        'discount': '33% off',
+        'duration': '45 mins',
+        'rating': 4.91,
+        'reviews_count': '5,800',
+        'image': 'images/cat-plumber.jpg',
+        'gallery': ['images/cat-plumber.jpg', 'images/cat-sealant.jpg'],
+        'short_desc': 'Fix leaky kitchen taps, shower mixers, flush tank overflows, and bathroom pipes.',
+        'full_desc': 'Fix nagging leaks, low water pressure, dripping taps, running flush tanks, and cracked PVC/CPVC pipes. Experienced plumbers arrive equipped with precision wrenches, Teflon tapes, and sealing washers.',
+        'highlights': [
+            'Fix leaky kitchen taps, shower mixers & bib cocks',
+            'Flush tank internal syphon valve & float ball replacement',
+            'Under-sink drain trap leakage diagnosis',
+            'Pressure test and angle valve replacement'
+        ],
+        'inclusions': [
+            'Diagnosis & repair of up to 2 plumbing fixtures',
+            'Washer replacement and Teflon sealing',
+            'Post-repair leak pressure inspection'
+        ],
+        'exclusions': [
+            'Cost of replacement taps, valves, or flush kits',
+            'Underground or concealed pipeline trenching'
+        ],
+        'specifications': {
+            'Service Duration': '45 minutes',
+            'Plumber Profile': 'Certified Sindhiga master plumber',
+            'Warranty': '30-Day leak-free guarantee'
+        },
+        'similar_ids': ['sealant', 'drain-gel', 'toolkit', 'deep-clean']
+    },
+    'deep-clean': {
+        'id': 'deep-clean',
+        'type': 'service',
+        'category': 'cleaning',
+        'category_name': 'Deep Cleaning',
+        'title': 'Kitchen & Bathroom Deep Clean',
+        'price': 899,
+        'mrp': 1399,
+        'discount': '36% off',
+        'duration': '2 hours',
+        'rating': 4.86,
+        'reviews_count': '2,400',
+        'image': 'images/cat-cleaning.jpg',
+        'gallery': ['images/cat-cleaning.jpg', 'images/cat-sealant.jpg'],
+        'short_desc': 'Intensive scrub & sanitization of tiles, slabs, fixtures, hard water stains, and grime.',
+        'full_desc': 'Restore shine and hygiene to your bathrooms and kitchen. Intensive mechanical scrubbing, tile grout descaling, grease degreasing from kitchen slabs, mirror buffing, and 99.9% anti-bacterial sanitization.',
+        'highlights': [
+            'Hard water stain & scale removal from tiles and fixtures',
+            'Degreasing of kitchen slab, chimney exterior & cabinets',
+            'Sanitization of commode, wash basin & glass partitions',
+            'Hospital-grade disinfectants safe for kids and pets'
+        ],
+        'inclusions': [
+            'Complete bathroom sanitization & floor scrubbing',
+            'Kitchen slab, sink, and backsplash degreasing',
+            'Mirror & chrome tap descaling'
+        ],
+        'exclusions': [
+            'Interior utensil washing or refrigerator defrosting',
+            'Chipped tile repair or re-grouting'
+        ],
+        'specifications': {
+            'Service Duration': '2 hours',
+            'Chemicals': 'Biodegradable, acid-free disinfectants',
+            'Equipment': 'Single-disc rotary scrubbers, microfiber pads'
+        },
+        'similar_ids': ['sealant', 'drain-gel', 'tap-pipe', 'grooming']
+    },
+    'grooming': {
+        'id': 'grooming',
+        'type': 'service',
+        'category': 'salon',
+        'category_name': 'Salon & Grooming at Home',
+        'title': 'Men\'s & Women\'s At-Home Grooming',
+        'price': 349,
+        'mrp': 599,
+        'discount': '42% off',
+        'duration': '40 mins',
+        'rating': 4.93,
+        'reviews_count': '3,800',
+        'image': 'images/cat-salon.jpg',
+        'gallery': ['images/cat-salon.jpg'],
+        'short_desc': 'Haircut, styling, or facial using 100% sealed single-use hygiene kits.',
+        'full_desc': 'Enjoy a salon experience in the privacy and comfort of your home. Premium haircuts, beard grooming, detan, or facials performed with sealed, sterilized single-use tools, disposable sheets, and zero mess left behind.',
+        'highlights': [
+            'Precision haircut and beard styling by senior stylists',
+            '100% single-use disposable capes, towels and blades',
+            'Soothing head massage & de-tan face pack',
+            'Post-service mess-free cleanup guaranteed'
+        ],
+        'inclusions': [
+            'Consultation & precision hair styling',
+            'Disposable cape, neck strip, and fresh razor blade',
+            'Post-cut hair vacuum & cleanup'
+        ],
+        'exclusions': [
+            'Hair spa or advanced color treatments (optional add-on)'
+        ],
+        'specifications': {
+            'Duration': '40 mins',
+            'Hygiene': '100% single-use kits opened in front of you',
+            'Stylist': 'Certified salon professional'
+        },
+        'similar_ids': ['deep-clean', 'ac-service', 'sealant', 'toolkit']
+    },
+    'sealant': {
+        'id': 'sealant',
+        'type': 'product',
+        'category': 'bath-kitchen',
+        'category_name': 'Kitchen & Bath Sealants',
+        'title': 'Silicone Waterproof Gap Sealant (280ml)',
+        'price': 215,
+        'mrp': 320,
+        'discount': '33% off',
+        'duration': 'Delivered in 45 Mins',
+        'rating': 4.8,
+        'reviews_count': '1,920',
+        'image': 'images/cat-sealant.jpg',
+        'gallery': ['images/cat-sealant.jpg', 'images/prod-toolkit.jpg'],
+        'short_desc': 'Waterproof silicone sealant to seal sink edges, tiles, and bathroom joints against leaks.',
+        'full_desc': 'Premium neutral-cure silicone sealant engineered specifically for wet environments. Creates a permanently flexible, 100% watertight seal around kitchen sinks, countertops, shower trays, bathtub edges, and tile joints with built-in anti-fungal inhibitors.',
+        'highlights': [
+            '100% waterproof RTV silicone formula',
+            'Anti-fungal and mould-resistant for 5+ years',
+            'Ideal for bathroom sinks, kitchen counters, shower trays, and tile gaps',
+            'Fast curing (tack-free in 20 minutes, full cure in 24 hours)',
+            'Standard cartridge fits all manual caulking guns'
+        ],
+        'inclusions': [
+            '1x 280ml Silicone Sealant Cartridge',
+            '1x Precision Application Nozzle with threaded cap'
+        ],
+        'exclusions': [
+            'Caulking gun applicator (sold separately)'
+        ],
+        'specifications': {
+            'Net Quantity': '280 ml',
+            'Color': 'Translucent Clear',
+            'Cure Time': '24 Hours',
+            'Temperature Resistance': '-40°C to +150°C',
+            'Warranty': '1 Year shelf life'
+        },
+        'similar_ids': ['drain-gel', 'tap-pipe', 'toolkit', 'deep-clean']
+    },
+    'toolkit': {
+        'id': 'toolkit',
+        'type': 'product',
+        'category': 'hardware',
+        'category_name': 'Tools & Hardware',
+        'title': '8-Piece Master Handyman Tool Kit',
+        'price': 899,
+        'mrp': 1299,
+        'discount': '31% off',
+        'duration': 'Delivered in 45 Mins',
+        'rating': 4.9,
+        'reviews_count': '3,450',
+        'image': 'images/prod-toolkit.jpg',
+        'gallery': ['images/prod-toolkit.jpg', 'images/cat-sealant.jpg'],
+        'short_desc': 'Essential toolkit with claw hammer, pliers, wrench, tester, and screwdrivers in hard case.',
+        'full_desc': 'The ultimate all-in-one home maintenance toolbox. Forged from drop-treated chrome-vanadium steel with anti-corrosion coating. Includes claw hammer, combination pliers, adjustable wrench, digital voltage tester, measuring tape, and magnetic screwdriver set.',
+        'highlights': [
+            'High-grade forged carbon steel construction',
+            'Includes claw hammer, combination pliers, adjustable wrench, tape & screwdrivers',
+            'Ergonomic anti-slip rubberized handles for comfortable grip',
+            'Heavy-duty blow-molded carrying case with individual slots',
+            'Corrosion resistant chrome finish'
+        ],
+        'inclusions': [
+            '1x Claw Hammer with rubber grip',
+            '1x 8-inch Combination Pliers',
+            '1x 8-inch Adjustable Wrench',
+            '1x Digital Voltage Tester Pen',
+            '1x 3-Meter Steel Measuring Tape',
+            '2x Phillips & Flat Head Screwdrivers',
+            '1x Blow-molded Rugged Carry Case'
+        ],
+        'exclusions': [
+            'Power drill or electric bits'
+        ],
+        'specifications': {
+            'Weight': '1.85 kg',
+            'Material': 'Chrome Vanadium Steel + TPR',
+            'Warranty': '2 Years Replacement Warranty'
+        },
+        'similar_ids': ['led-bulb', 'switchboard', 'sealant', 'tap-pipe']
+    },
+    'led-bulb': {
+        'id': 'led-bulb',
+        'type': 'product',
+        'category': 'hardware',
+        'category_name': 'Electrical & Lighting',
+        'title': '12W Inverter Rechargeable Emergency LED Bulb',
+        'price': 349,
+        'mrp': 499,
+        'discount': '30% off',
+        'duration': 'Delivered in 45 Mins',
+        'rating': 4.7,
+        'reviews_count': '840',
+        'image': 'images/cat-electrician.jpg',
+        'gallery': ['images/cat-electrician.jpg'],
+        'short_desc': 'Auto-on inverter bulb with up to 4 hours battery backup during sudden power cuts.',
+        'full_desc': 'Never stay in the dark. This smart 12W LED inverter bulb functions like a standard bright bulb when electricity is on, and instantly switches to battery backup the second power cuts out, lasting up to 4 continuous hours.',
+        'highlights': [
+            'Built-in 2200mAh rechargeable lithium-ion battery',
+            'Instant auto-on in 0.5s when electricity cuts',
+            'Standard Indian B22 base (plug-and-play retrofit)',
+            'Cool Daylight (6500K) illumination with low power consumption'
+        ],
+        'inclusions': [
+            '1x 12W Inverter Rechargeable LED Bulb (B22 Cap)',
+            'Instruction manual & warranty card'
+        ],
+        'exclusions': [
+            'Socket fixtures'
+        ],
+        'specifications': {
+            'Wattage': '12 Watts',
+            'Battery Capacity': '2200 mAh',
+            'Backup Duration': 'Up to 4 Hours',
+            'Cap Type': 'B22 Standard',
+            'Warranty': '1 Year Manufacturer Warranty'
+        },
+        'similar_ids': ['switchboard', 'toolkit', 'ac-service', 'sealant']
+    },
+    'drain-gel': {
+        'id': 'drain-gel',
+        'type': 'product',
+        'category': 'bath-kitchen',
+        'category_name': 'Kitchen & Bath Sealants',
+        'title': 'Heavy-Duty Eco Drain Opener Gel (1L)',
+        'price': 189,
+        'mrp': 250,
+        'discount': '24% off',
+        'duration': 'Delivered in 45 Mins',
+        'rating': 4.8,
+        'reviews_count': '2,110',
+        'image': 'images/cat-cleaning.jpg',
+        'gallery': ['images/cat-cleaning.jpg'],
+        'short_desc': 'Dense gel formula dissolves stubborn grease, hair, and soap clogs in 15 minutes.',
+        'full_desc': 'Thick clinging gel sinks straight through standing water to dissolve stubborn hair, soap scum, kitchen grease, and sludge in pipe bends. Non-corrosive to PVC, plastic, and septic systems.',
+        'highlights': [
+            'Dense gel formula clings directly to clogs through standing water',
+            'Clears stubborn bathroom and kitchen clogs in 15 minutes',
+            'Safe on PVC, cast iron, and septic tanks',
+            'Fumes-free fresh lemon scent'
+        ],
+        'inclusions': [
+            '1x 1-Litre Heavy-Duty Drain Gel Bottle with child-lock cap'
+        ],
+        'exclusions': [
+            'Plumber snake or mechanical auger'
+        ],
+        'specifications': {
+            'Volume': '1 Litre',
+            'Action Time': '15–30 Minutes',
+            'Safe for': 'Sinks, Basins, Floor Drains, Toilets',
+            'Country of Origin': 'India'
+        },
+        'similar_ids': ['sealant', 'tap-pipe', 'deep-clean', 'toolkit']
+    }
+}
+
+
+def get_catalog_item(item_type, item_id):
+    alias_map = {
+        'prod_1': 'sealant',
+        'prod_2': 'toolkit',
+        'prod_3': 'led-bulb',
+        'prod_4': 'drain-gel',
+    }
+    raw_id = str(item_id).strip().lower()
+    clean_id = alias_map.get(raw_id, raw_id)
+
+    # 1. Direct key match in static catalog
+    if clean_id in CATALOG_ITEMS:
+        item = dict(CATALOG_ITEMS[clean_id])
+        return item
+
+    # 2. Database model check if numeric ID
+    from .models import Product, QuickService
+    if str(item_id).isdigit():
+        int_id = int(item_id)
+        if item_type == 'product' or not item_type:
+            prod = Product.objects.filter(id=int_id).first()
+            if prod:
+                img = prod.image.url if prod.image else (prod.image_url or 'images/cat-sealant.jpg')
+                cat_name = prod.category.name if prod.category else "Tools & Hardware"
+                mrp_val = float(prod.mrp_price) if prod.mrp_price else float(prod.sale_price * Decimal('1.35'))
+                sale_val = float(prod.sale_price)
+                disc_pct = int(((mrp_val - sale_val) / mrp_val) * 100) if mrp_val > sale_val else 15
+                return {
+                    'id': str(prod.id),
+                    'type': 'product',
+                    'category': getattr(prod.category, 'slug', 'hardware') if prod.category else 'hardware',
+                    'category_name': cat_name,
+                    'title': prod.title,
+                    'price': sale_val,
+                    'mrp': mrp_val,
+                    'discount': f"{disc_pct}% off",
+                    'duration': 'Delivered in 45 Mins',
+                    'rating': float(prod.rating or 4.8),
+                    'reviews_count': f"{prod.reviews_count or 180:,}",
+                    'image': img,
+                    'gallery': [img],
+                    'short_desc': prod.description[:140] if prod.description else prod.title,
+                    'full_desc': prod.description or f"High quality {prod.title} verified for home durability and performance.",
+                    'highlights': [
+                        f"Brand: {prod.brand or 'Sindhiga Verified'}",
+                        f"Packaging: {prod.unit or '1 Unit'}",
+                        "Cash on Delivery & Instant UPI Available",
+                        "Same-day doorstep delivery within 45 mins",
+                        "7-Day Free Replacement Guarantee"
+                    ],
+                    'inclusions': [f"1x {prod.title}", "Manufacturer warranty & GST invoice"],
+                    'exclusions': ["Installation labor (book separately under Services)"],
+                    'specifications': prod.specifications or {'Unit': prod.unit or '1 Unit', 'Brand': prod.brand or 'Sindhiga Verified'},
+                    'similar_ids': ['sealant', 'toolkit', 'led-bulb', 'drain-gel']
+                }
+
+        if item_type == 'service' or not item_type:
+            svc = QuickService.objects.filter(id=int_id).first()
+            if svc:
+                img = svc.image.url if svc.image else (svc.image_url or 'images/cat-plumber.jpg')
+                cat_name = svc.category.name if svc.category else "Home Services"
+                base_val = float(svc.base_price)
+                mrp_val = float(svc.base_price * Decimal('1.35'))
+                return {
+                    'id': str(svc.id),
+                    'type': 'service',
+                    'category': getattr(svc.category, 'slug', 'services') if svc.category else 'services',
+                    'category_name': cat_name,
+                    'title': svc.title,
+                    'price': base_val,
+                    'mrp': mrp_val,
+                    'discount': '30% off',
+                    'duration': svc.duration or '45 mins',
+                    'rating': 4.88,
+                    'reviews_count': '1,420',
+                    'image': img,
+                    'gallery': [img],
+                    'short_desc': svc.description[:140] if svc.description else svc.title,
+                    'full_desc': svc.description or f"Professional doorstep service for {svc.title} by certified technicians.",
+                    'highlights': [
+                        "Certified & background-checked service professional",
+                        "Safety compliant with sanitized toolkits",
+                        "Transparent fixed pricing with no hidden charges",
+                        "30-day Sindhiga rework guarantee"
+                    ],
+                    'inclusions': svc.inclusions or ["Inspection, diagnosis, and standard service execution"],
+                    'exclusions': svc.exclusions or ["Cost of major replacement spare parts"],
+                    'specifications': {'Duration': svc.duration or '45 mins', 'Warranty': '30 Days Protection'},
+                    'similar_ids': ['ac-service', 'switchboard', 'tap-pipe', 'deep-clean']
+                }
+
+    # 3. Fallback default item
+    return dict(CATALOG_ITEMS['ac-service'])
+
+
+def get_similar_items(target_item):
+    sim_ids = target_item.get('similar_ids', [])
+    result = []
+    seen = {target_item['id']}
+
+    # Add explicitly specified similar items first
+    for sid in sim_ids:
+        if sid in CATALOG_ITEMS and sid not in seen:
+            result.append(CATALOG_ITEMS[sid])
+            seen.add(sid)
+
+    # Fill up to 4 items with other catalog entries
+    for k, v in CATALOG_ITEMS.items():
+        if len(result) >= 4:
+            break
+        if k not in seen:
+            result.append(v)
+            seen.add(k)
+
+    return result
+
+
+def item_detail_view(request, item_type='service', item_id='ac-service'):
+    item = get_catalog_item(item_type, item_id)
+    similar_items = get_similar_items(item)
+
+    context = {
+        'item': item,
+        'similar_items': similar_items,
+        'item_type': item.get('type', item_type),
+        'user': request.user,
+    }
+    return render(request, 'item_detail.html', context)
+
+
+def service_detail_view(request, item_id):
+    return item_detail_view(request, item_type='service', item_id=item_id)
+
+
+def product_detail_view(request, item_id):
+    return item_detail_view(request, item_type='product', item_id=item_id)
+
+
+
