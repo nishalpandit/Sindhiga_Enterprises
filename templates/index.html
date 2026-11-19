@@ -25,14 +25,15 @@
             sans: ['"Inter"', 'sans-serif'],
           },
           colors: {
-            navDark: '#131921',
-            navSub: '#232f3e',
-            shopYellow: '#ffd814',
-            shopYellowHover: '#f7ca00',
-            shopOrange: '#ff9900',
-            shopGreen: '#388e3c',
-            shopBlue: '#2874f0',
-            pageBg: '#f1f3f6',
+            brandBlue: '#0284c7',
+            brandBlueDark: '#0369a1',
+            brandGreen: '#10b981',
+            brandGreenDark: '#059669',
+            navDark: '#0b192c',
+            navSub: '#0f2744',
+            shopGreen: '#059669',
+            shopBlue: '#0284c7',
+            pageBg: '#f8fafc',
           }
         }
       }
@@ -46,7 +47,7 @@
   <style>
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: #f1f3f6;
+      background-color: #f8fafc;
       -webkit-font-smoothing: antialiased;
     }
     .custom-scrollbar::-webkit-scrollbar {
@@ -61,45 +62,45 @@
       background: #f1f5f9;
     }
     .card-active {
-      border-color: #2874f0 !important;
-      box-shadow: 0 0 0 2px rgba(40, 116, 240, 0.4), 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+      border-color: #0284c7 !important;
+      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.4), 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
     }
   </style>
 </head>
-<body class="min-h-screen text-slate-800 flex flex-col selection:bg-amber-400 selection:text-slate-900">
+<body class="min-h-screen text-slate-800 flex flex-col selection:bg-emerald-400 selection:text-slate-900">
 
   <!-- ===================================================================== -->
-  <!-- 1. AMAZON/FLIPKART STYLE TOP HEADER BAR                               -->
+  <!-- 1. SINDHIGA TOP HEADER BAR (BRAND MATCHED WITH CLIENT LOGO)            -->
   <!-- ===================================================================== -->
-  <header class="sticky top-0 z-40 bg-[#131921] text-white shadow-md">
+  <header class="sticky top-0 z-40 bg-[#0b192c] text-white shadow-md border-b border-sky-950">
     <!-- Main Header Row -->
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-3 py-2.5 sm:px-6 lg:gap-6">
       
       <!-- Brand Logo -->
-      <a href="{% url 'home' %}" class="flex items-center gap-2 shrink-0 group">
-        <span class="flex size-9 items-center justify-center rounded-lg bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 font-black shadow-xs">
-          <i class="fa-solid fa-boxes-packing text-lg"></i>
-        </span>
+      <a href="{% url 'home' %}" class="flex items-center gap-2.5 shrink-0 group">
+        <div class="flex size-10 items-center justify-center rounded-xl bg-white p-1 shadow-sm border border-slate-200/50 group-hover:scale-105 transition-transform">
+          <img src="{% static 'images/logo.png' %}" alt="Sindhiga Enterprises Logo" class="size-full object-contain">
+        </div>
         <div class="leading-tight">
-          <span class="block text-base font-extrabold tracking-tight text-white group-hover:text-yellow-400 transition-colors">
-            Sindhiga<span class="text-yellow-400 font-normal">.in</span>
+          <span class="block text-base font-extrabold tracking-tight text-white group-hover:text-sky-300 transition-colors">
+            Sindhiga<span class="text-emerald-400 font-bold">.in</span>
           </span>
-          <span class="block text-[10px] text-slate-400 font-medium">Services &amp; Store</span>
+          <span class="block text-[10px] text-sky-200/80 font-medium">Services &amp; Store</span>
         </div>
       </a>
 
-      <!-- Delivering To Location Pill (Amazon Style) -->
-      <button type="button" onclick="showToast('Delivery service available in Bengaluru & surrounding pin codes.')" class="hidden lg:flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-left text-xs hover:border hover:border-white/30 transition-all">
-        <i class="fa-solid fa-location-dot text-amber-400 text-base mt-0.5"></i>
+      <!-- Delivering To Location Pill -->
+      <button type="button" onclick="showToast('Delivery service active in Bengaluru & surrounding pin codes.')" class="hidden lg:flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-left text-xs hover:border hover:border-white/30 transition-all">
+        <i class="fa-solid fa-location-dot text-emerald-400 text-base mt-0.5"></i>
         <div class="leading-tight">
           <span class="block text-[11px] text-slate-400">Deliver to</span>
           <span class="block font-bold text-white">Bengaluru 560034</span>
         </div>
       </button>
 
-      <!-- Center Prominent Search Bar (Amazon / Flipkart Wide Search) -->
+      <!-- Center Prominent Search Bar -->
       <div class="relative flex-1 max-w-2xl mx-1 sm:mx-2">
-        <div class="flex h-10 w-full overflow-hidden rounded-md bg-white shadow-inner focus-within:ring-2 focus-within:ring-amber-400">
+        <div class="flex h-10 w-full overflow-hidden rounded-md bg-white shadow-inner focus-within:ring-2 focus-within:ring-sky-400">
           <!-- Dropdown Filter -->
           <div class="hidden sm:flex items-center bg-slate-100 border-r border-slate-300 px-3 text-xs text-slate-700 font-medium shrink-0 cursor-pointer">
             <select id="searchCategorySelect" onchange="handleCategorySelect(this.value)" class="bg-transparent outline-none cursor-pointer text-slate-700 font-semibold pr-1">
@@ -124,8 +125,8 @@
             class="h-full flex-1 bg-transparent px-3.5 text-sm text-slate-900 outline-none placeholder:text-slate-400"
           />
 
-          <!-- Big Amber Search Button -->
-          <button type="button" onclick="scrollToCatalog()" class="flex w-12 items-center justify-center bg-[#febd69] hover:bg-[#f3a847] text-slate-900 transition-colors shrink-0" title="Search">
+          <!-- Big Search Button (Sindhiga Ocean-Emerald Gradient) -->
+          <button type="button" onclick="scrollToCatalog()" class="flex w-12 items-center justify-center bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white transition-all shrink-0" title="Search">
             <i class="fa-solid fa-magnifying-glass text-base"></i>
           </button>
         </div>
@@ -135,8 +136,8 @@
       <div class="flex items-center gap-2 sm:gap-4 shrink-0 text-xs">
         
         <!-- Mode Switcher Pill (Home Services vs E-Commerce) -->
-        <div class="hidden sm:inline-flex rounded-full bg-[#232f3e] p-0.5 border border-slate-700">
-          <button type="button" id="btnModeServices" onclick="setMode('services')" class="rounded-full px-3 py-1 font-bold text-slate-900 bg-[#febd69] shadow-xs transition-all">
+        <div class="hidden sm:inline-flex rounded-full bg-[#112338] p-0.5 border border-sky-900/80">
+          <button type="button" id="btnModeServices" onclick="setMode('services')" class="rounded-full px-3 py-1 font-bold text-white bg-gradient-to-r from-sky-500 to-emerald-500 shadow-xs transition-all">
             <i class="fa-solid fa-screwdriver-wrench mr-1"></i>Services
           </button>
           <button type="button" id="btnModeProducts" onclick="setMode('products')" class="rounded-full px-3 py-1 font-bold text-slate-300 hover:text-white transition-all">
@@ -150,7 +151,7 @@
             <a href="{% url 'super_admin_dashboard' %}" class="flex flex-col px-2 py-1 hover:border hover:border-white/30 rounded-md transition-all text-left">
               <span class="text-[10px] text-slate-400">Welcome, Admin</span>
               <span class="font-extrabold text-white flex items-center gap-1">
-                Dashboard <i class="fa-solid fa-angle-right text-[10px] text-amber-400"></i>
+                Dashboard <i class="fa-solid fa-angle-right text-[10px] text-emerald-400"></i>
               </span>
             </a>
           {% else %}
@@ -162,15 +163,15 @@
         {% else %}
           <a href="{% url 'login' %}" class="flex flex-col px-2 py-1 hover:border hover:border-white/30 rounded-md transition-all text-left">
             <span class="text-[10px] text-slate-400">Hello, Sign in</span>
-            <span class="font-extrabold text-white">Account &amp; Lists</span>
+            <span class="font-extrabold text-white">Account &amp; Orders</span>
           </a>
         {% endif %}
 
-        <!-- Shopping Cart with Badge (Amazon / Flipkart Style) -->
+        <!-- Shopping Cart with Badge -->
         <button type="button" onclick="toggleCartDrawer(true)" class="relative flex items-center gap-1.5 px-2 py-1.5 hover:border hover:border-white/30 rounded-md transition-all">
           <div class="relative">
-            <i class="fa-solid fa-cart-shopping text-xl text-amber-400"></i>
-            <span id="navCartBadge" class="hidden absolute -top-2 -right-2 flex size-4 items-center justify-center rounded-full bg-orange-600 text-[10px] font-black text-white">
+            <i class="fa-solid fa-cart-shopping text-xl text-emerald-400"></i>
+            <span id="navCartBadge" class="hidden absolute -top-2 -right-2 flex size-4 items-center justify-center rounded-full bg-gradient-to-r from-sky-500 to-emerald-500 text-[10px] font-black text-white shadow-xs">
               0
             </span>
           </div>
@@ -180,37 +181,37 @@
       </div>
     </div>
 
-    <!-- 2. FLIPKART/AMAZON STYLE SUB-NAV CATEGORY STRIP -->
-    <div class="bg-[#232f3e] border-t border-slate-700/80 px-3 py-1.5 text-xs text-slate-200">
+    <!-- 2. SUB-NAV CATEGORY STRIP -->
+    <div class="bg-[#0f2744] border-t border-sky-900/60 px-3 py-1.5 text-xs text-slate-200">
       <div class="mx-auto flex max-w-7xl items-center gap-4 overflow-x-auto custom-scrollbar whitespace-nowrap">
-        <button type="button" onclick="filterByCategory('all')" class="flex items-center gap-1.5 font-bold hover:text-amber-400 transition-colors">
+        <button type="button" onclick="filterByCategory('all')" class="flex items-center gap-1.5 font-bold hover:text-emerald-400 transition-colors">
           <i class="fa-solid fa-bars text-sm"></i>
           <span>All Categories</span>
         </button>
-        <span class="text-slate-600">|</span>
-        <button type="button" onclick="filterByCategory('ac', 'services')" class="hover:text-amber-400 transition-colors">
+        <span class="text-sky-800">|</span>
+        <button type="button" onclick="filterByCategory('ac', 'services')" class="hover:text-emerald-400 transition-colors">
           <i class="fa-solid fa-snowflake text-sky-400 mr-1"></i>AC Repair &amp; Service
         </button>
-        <button type="button" onclick="filterByCategory('electrician', 'services')" class="hover:text-amber-400 transition-colors">
-          <i class="fa-solid fa-bolt text-yellow-400 mr-1"></i>Electricians
+        <button type="button" onclick="filterByCategory('electrician', 'services')" class="hover:text-emerald-400 transition-colors">
+          <i class="fa-solid fa-bolt text-amber-400 mr-1"></i>Electricians
         </button>
-        <button type="button" onclick="filterByCategory('plumber', 'services')" class="hover:text-amber-400 transition-colors">
+        <button type="button" onclick="filterByCategory('plumber', 'services')" class="hover:text-emerald-400 transition-colors">
           <i class="fa-solid fa-faucet-drip text-cyan-400 mr-1"></i>Plumbers
         </button>
-        <button type="button" onclick="filterByCategory('cleaning', 'services')" class="hover:text-amber-400 transition-colors">
+        <button type="button" onclick="filterByCategory('cleaning', 'services')" class="hover:text-emerald-400 transition-colors">
           <i class="fa-solid fa-broom text-teal-400 mr-1"></i>Deep Cleaning
         </button>
-        <button type="button" onclick="filterByCategory('salon', 'services')" class="hover:text-amber-400 transition-colors">
+        <button type="button" onclick="filterByCategory('salon', 'services')" class="hover:text-emerald-400 transition-colors">
           <i class="fa-solid fa-spa text-pink-400 mr-1"></i>Salon at Home
         </button>
-        <span class="text-slate-600">|</span>
-        <button type="button" onclick="filterByCategory('hardware', 'products')" class="hover:text-amber-400 transition-colors">
-          <i class="fa-solid fa-wrench text-orange-400 mr-1"></i>Hardware &amp; Tools
+        <span class="text-sky-800">|</span>
+        <button type="button" onclick="filterByCategory('hardware', 'products')" class="hover:text-emerald-400 transition-colors">
+          <i class="fa-solid fa-wrench text-sky-400 mr-1"></i>Hardware &amp; Tools
         </button>
-        <button type="button" onclick="filterByCategory('bath-kitchen', 'products')" class="hover:text-amber-400 transition-colors">
-          <i class="fa-solid fa-droplet text-blue-400 mr-1"></i>Kitchen &amp; Bath Sealants
+        <button type="button" onclick="filterByCategory('bath-kitchen', 'products')" class="hover:text-emerald-400 transition-colors">
+          <i class="fa-solid fa-droplet text-emerald-400 mr-1"></i>Kitchen &amp; Bath Sealants
         </button>
-        <a href="{% url 'register_vendor' %}" class="ml-auto text-amber-300 font-bold hover:underline flex items-center gap-1">
+        <a href="{% url 'register_vendor' %}" class="ml-auto text-emerald-300 font-bold hover:underline flex items-center gap-1">
           <i class="fa-solid fa-handshake"></i> Partner With Us
         </a>
       </div>
@@ -220,9 +221,9 @@
   <!-- ===================================================================== -->
   <!-- PROMOTIONAL OFFER STRIP                                               -->
   <!-- ===================================================================== -->
-  <div class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 py-1.5 px-3 text-center text-xs font-bold text-slate-950 shadow-inner">
+  <div class="bg-gradient-to-r from-sky-700 via-teal-700 to-emerald-700 py-1.5 px-3 text-center text-xs font-bold text-white shadow-inner">
     <div class="mx-auto flex max-w-7xl items-center justify-center gap-2 flex-wrap">
-      <span>🎉 Welcome Offer: Flat ₹50 OFF on first service or order! Use code <span class="bg-slate-950 text-yellow-300 px-2 py-0.5 rounded font-black tracking-wider">WELCOME50</span></span>
+      <span>🎉 Welcome to Sindhiga: Flat ₹50 OFF on your first booking or order! Use code <span class="bg-white text-emerald-800 px-2 py-0.5 rounded font-black tracking-wider shadow-2xs">WELCOME50</span></span>
       <span class="hidden sm:inline">&bull; 100% Verified Technicians &bull; Secure 6-Digit OTP Handover</span>
     </div>
   </div>
@@ -232,86 +233,86 @@
   <!-- ===================================================================== -->
   <main class="mx-auto w-full max-w-7xl flex-1 px-3 sm:px-6 py-5 space-y-8">
 
-    <!-- 3. TOP FLIPKART/AMAZON STYLE CATEGORY TILES BAR -->
+    <!-- 3. TOP CATEGORY TILES BAR -->
     <section class="bg-white rounded-xl p-4 border border-slate-200/90 shadow-xs">
       <div class="grid grid-cols-4 sm:grid-cols-7 gap-3 text-center">
         <!-- 1. AC Service -->
         <button type="button" onclick="filterByCategory('ac', 'services')" class="group flex flex-col items-center gap-2 cursor-pointer">
-          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-blue-500 group-hover:shadow-md">
+          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-sky-500 group-hover:shadow-md">
             <img src="{% static 'images/cat-ac.jpg' %}" alt="AC Repair" class="size-full rounded-full object-cover">
           </div>
-          <span class="text-xs font-bold text-slate-800 group-hover:text-blue-600">AC Repair</span>
+          <span class="text-xs font-bold text-slate-800 group-hover:text-sky-600">AC Repair</span>
         </button>
 
         <!-- 2. Electrician -->
         <button type="button" onclick="filterByCategory('electrician', 'services')" class="group flex flex-col items-center gap-2 cursor-pointer">
-          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-blue-500 group-hover:shadow-md">
+          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-sky-500 group-hover:shadow-md">
             <img src="{% static 'images/cat-electrician.jpg' %}" alt="Electricians" class="size-full rounded-full object-cover">
           </div>
-          <span class="text-xs font-bold text-slate-800 group-hover:text-blue-600">Electricians</span>
+          <span class="text-xs font-bold text-slate-800 group-hover:text-sky-600">Electricians</span>
         </button>
 
         <!-- 3. Plumbers -->
         <button type="button" onclick="filterByCategory('plumber', 'services')" class="group flex flex-col items-center gap-2 cursor-pointer">
-          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-blue-500 group-hover:shadow-md">
+          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-sky-500 group-hover:shadow-md">
             <img src="{% static 'images/cat-plumber.jpg' %}" alt="Plumbers" class="size-full rounded-full object-cover">
           </div>
-          <span class="text-xs font-bold text-slate-800 group-hover:text-blue-600">Plumbers</span>
+          <span class="text-xs font-bold text-slate-800 group-hover:text-sky-600">Plumbers</span>
         </button>
 
         <!-- 4. Deep Cleaning -->
         <button type="button" onclick="filterByCategory('cleaning', 'services')" class="group flex flex-col items-center gap-2 cursor-pointer">
-          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-blue-500 group-hover:shadow-md">
+          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-sky-500 group-hover:shadow-md">
             <img src="{% static 'images/cat-cleaning.jpg' %}" alt="Deep Cleaning" class="size-full rounded-full object-cover">
           </div>
-          <span class="text-xs font-bold text-slate-800 group-hover:text-blue-600">Deep Cleaning</span>
+          <span class="text-xs font-bold text-slate-800 group-hover:text-sky-600">Deep Cleaning</span>
         </button>
 
         <!-- 5. Salon at Home -->
         <button type="button" onclick="filterByCategory('salon', 'services')" class="group flex flex-col items-center gap-2 cursor-pointer">
-          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-blue-500 group-hover:shadow-md">
+          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-sky-500 group-hover:shadow-md">
             <img src="{% static 'images/cat-salon.jpg' %}" alt="Salon at Home" class="size-full rounded-full object-cover">
           </div>
-          <span class="text-xs font-bold text-slate-800 group-hover:text-blue-600">Salon at Home</span>
+          <span class="text-xs font-bold text-slate-800 group-hover:text-sky-600">Salon at Home</span>
         </button>
 
         <!-- 6. Hardware & Tools -->
         <button type="button" onclick="filterByCategory('hardware', 'products')" class="group flex flex-col items-center gap-2 cursor-pointer">
-          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-blue-500 group-hover:shadow-md">
+          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-sky-500 group-hover:shadow-md">
             <img src="{% static 'images/prod-toolkit.jpg' %}" alt="Hardware & Tools" class="size-full rounded-full object-cover">
           </div>
-          <span class="text-xs font-bold text-slate-800 group-hover:text-blue-600">Hardware &amp; Tools</span>
+          <span class="text-xs font-bold text-slate-800 group-hover:text-sky-600">Hardware &amp; Tools</span>
         </button>
 
         <!-- 7. Kitchen & Bath Care -->
         <button type="button" onclick="filterByCategory('bath-kitchen', 'products')" class="group flex flex-col items-center gap-2 cursor-pointer">
-          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-blue-500 group-hover:shadow-md">
+          <div class="size-16 sm:size-18 rounded-full overflow-hidden border border-slate-200 p-0.5 bg-slate-50 transition-all duration-200 group-hover:scale-105 group-hover:border-sky-500 group-hover:shadow-md">
             <img src="{% static 'images/cat-sealant.jpg' %}" alt="Sealants & Kitchen Care" class="size-full rounded-full object-cover">
           </div>
-          <span class="text-xs font-bold text-slate-800 group-hover:text-blue-600">Sealants &amp; Care</span>
+          <span class="text-xs font-bold text-slate-800 group-hover:text-sky-600">Sealants &amp; Care</span>
         </button>
       </div>
     </section>
 
-    <!-- 4. AMAZON-STYLE HIGH-IMPACT HERO BANNER -->
+    <!-- 4. HIGH-IMPACT HERO BANNER (SINDHIGA BLUE & GREEN THEME) -->
     <section class="grid gap-6 rounded-2xl bg-white p-5 sm:p-7 border border-slate-200/90 shadow-sm md:grid-cols-12 items-center">
       <div class="md:col-span-7 space-y-4">
-        <div class="inline-flex items-center gap-2 rounded-md bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 border border-blue-200">
-          <i class="fa-solid fa-shield-halved"></i> Sindhiga Assured Doorstep Guarantee
+        <div class="inline-flex items-center gap-2 rounded-md bg-sky-50 px-2.5 py-1 text-xs font-bold text-sky-700 border border-sky-200">
+          <i class="fa-solid fa-shield-halved text-emerald-600"></i> Sindhiga Assured Doorstep Guarantee
         </div>
         <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight">
-          Everything Your Home Needs, <span class="text-[#2874f0]">Delivered &amp; Fixed.</span>
+          Everything Your Home Needs, <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-emerald-600">Delivered &amp; Fixed.</span>
         </h1>
         <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
           Book verified local technicians or order genuine repair materials with express local delivery and secure 6-digit OTP verification.
         </p>
 
         <div class="flex flex-wrap items-center gap-3 pt-1">
-          <button type="button" onclick="setMode('services'); scrollToCatalog();" class="rounded-lg bg-[#2874f0] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 transition-colors flex items-center gap-1.5">
+          <button type="button" onclick="setMode('services'); scrollToCatalog();" class="rounded-xl bg-gradient-to-r from-sky-600 to-blue-700 px-5 py-2.5 text-xs font-extrabold text-white shadow-md hover:from-sky-700 hover:to-blue-800 transition-all flex items-center gap-1.5 hover:-translate-y-0.5">
             <i class="fa-solid fa-calendar-check"></i>
             <span>Book a Service</span>
           </button>
-          <button type="button" onclick="setMode('products'); scrollToCatalog();" class="rounded-lg bg-[#ffd814] px-5 py-2.5 text-xs font-bold text-slate-900 shadow-sm hover:bg-[#f7ca00] transition-colors flex items-center gap-1.5">
+          <button type="button" onclick="setMode('products'); scrollToCatalog();" class="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-2.5 text-xs font-extrabold text-white shadow-md hover:from-emerald-600 hover:to-teal-700 transition-all flex items-center gap-1.5 hover:-translate-y-0.5">
             <i class="fa-solid fa-cart-shopping"></i>
             <span>Shop Store Products</span>
           </button>
@@ -326,7 +327,7 @@
 
       <div class="md:col-span-5 relative rounded-xl overflow-hidden shadow-md border border-slate-200">
         <img src="{% static 'images/hero-banner.jpg' %}" alt="Technician ready with kit" class="size-full object-cover aspect-[4/3]">
-        <div class="absolute bottom-2.5 left-2.5 right-2.5 rounded-lg bg-black/75 backdrop-blur-xs p-2 text-center text-white text-xs font-semibold">
+        <div class="absolute bottom-2.5 left-2.5 right-2.5 rounded-lg bg-slate-950/80 backdrop-blur-xs p-2 text-center text-white text-xs font-semibold border border-white/10">
           ⚡ Technicians &amp; Riders reaching your door in 30–45 mins
         </div>
       </div>
@@ -377,14 +378,14 @@
               <span class="text-[10px] text-slate-400 block font-medium">Standard Fixed Price</span>
               <span class="text-lg font-black text-slate-900">₹499</span>
             </div>
-            <button type="button" onclick="event.stopPropagation(); openBookingModal('Split AC Complete Servicing', 499, '45 mins')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3.5 py-1.5 text-xs font-bold shadow-xs transition-colors">
+            <button type="button" onclick="event.stopPropagation(); openBookingModal('Split AC Complete Servicing', 499, '45 mins')" class="rounded-xl bg-gradient-to-r from-sky-600 to-emerald-600 hover:from-sky-700 hover:to-emerald-700 text-white px-3.5 py-1.5 text-xs font-extrabold shadow-sm transition-all hover:scale-105">
               Book Slot
             </button>
           </div>
         </div>
 
         <!-- Service 2: Switchboard, Socket & MCB -->
-        <div onclick="window.location.href='/item/service/switchboard/'" class="catalog-card cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition-all duration-200 hover:border-blue-400 hover:shadow-lg bg-white" data-category="electrician" data-id="switchboard">
+        <div onclick="window.location.href='/item/service/switchboard/'" class="catalog-card cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition-all duration-200 hover:border-sky-400 hover:shadow-lg bg-white" data-category="electrician" data-id="switchboard">
           <div>
             <div class="relative aspect-[16/10] overflow-hidden rounded-lg bg-slate-100 mb-3">
               <img src="{% static 'images/cat-electrician.jpg' %}" alt="Electrician Repair" class="size-full object-cover transition-transform duration-300 group-hover:scale-105">
@@ -393,13 +394,13 @@
               </span>
             </div>
             <div class="flex items-center gap-2 mb-1.5">
-              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+              <span class="bg-[#059669] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
                 4.85 <i class="fa-solid fa-star text-[9px]"></i>
               </span>
               <span class="text-[11px] text-slate-400 font-semibold">(3,100 reviews)</span>
-              <span class="ml-auto text-[10px] font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">ASSURED</span>
+              <span class="ml-auto text-[10px] font-extrabold text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-100">ASSURED</span>
             </div>
-            <h3 class="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+            <h3 class="text-base font-bold text-slate-900 group-hover:text-sky-600 transition-colors line-clamp-1">
               Switchboard, Socket &amp; MCB Repair
             </h3>
             <p class="text-xs text-slate-500 mt-1 line-clamp-2">
@@ -411,14 +412,14 @@
               <span class="text-[10px] text-slate-400 block font-medium">Standard Fixed Price</span>
               <span class="text-lg font-black text-slate-900">₹149</span>
             </div>
-            <button type="button" onclick="event.stopPropagation(); openBookingModal('Switchboard, Socket & MCB Repair', 149, '30 mins')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3.5 py-1.5 text-xs font-bold shadow-xs transition-colors">
+            <button type="button" onclick="event.stopPropagation(); openBookingModal('Switchboard, Socket & MCB Repair', 149, '30 mins')" class="rounded-xl bg-gradient-to-r from-sky-600 to-emerald-600 hover:from-sky-700 hover:to-emerald-700 text-white px-3.5 py-1.5 text-xs font-extrabold shadow-sm transition-all hover:scale-105">
               Book Slot
             </button>
           </div>
         </div>
 
         <!-- Service 3: Tap, Pipe & Flush Tank Repair -->
-        <div onclick="window.location.href='/item/service/tap-pipe/'" class="catalog-card cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition-all duration-200 hover:border-blue-400 hover:shadow-lg bg-white" data-category="plumber" data-id="tap-pipe">
+        <div onclick="window.location.href='/item/service/tap-pipe/'" class="catalog-card cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition-all duration-200 hover:border-sky-400 hover:shadow-lg bg-white" data-category="plumber" data-id="tap-pipe">
           <div>
             <div class="relative aspect-[16/10] overflow-hidden rounded-lg bg-slate-100 mb-3">
               <img src="{% static 'images/cat-plumber.jpg' %}" alt="Plumber Fixing Tap" class="size-full object-cover transition-transform duration-300 group-hover:scale-105">
@@ -427,13 +428,13 @@
               </span>
             </div>
             <div class="flex items-center gap-2 mb-1.5">
-              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+              <span class="bg-[#059669] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
                 4.91 <i class="fa-solid fa-star text-[9px]"></i>
               </span>
               <span class="text-[11px] text-slate-400 font-semibold">(5,800 reviews)</span>
-              <span class="ml-auto text-[10px] font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">ASSURED</span>
+              <span class="ml-auto text-[10px] font-extrabold text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-100">ASSURED</span>
             </div>
-            <h3 class="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+            <h3 class="text-base font-bold text-slate-900 group-hover:text-sky-600 transition-colors line-clamp-1">
               Tap, Pipe &amp; Flush Tank Repair
             </h3>
             <p class="text-xs text-slate-500 mt-1 line-clamp-2">
@@ -445,14 +446,14 @@
               <span class="text-[10px] text-slate-400 block font-medium">Standard Fixed Price</span>
               <span class="text-lg font-black text-slate-900">₹199</span>
             </div>
-            <button type="button" onclick="event.stopPropagation(); openBookingModal('Tap, Pipe & Flush Tank Repair', 199, '45 mins')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3.5 py-1.5 text-xs font-bold shadow-xs transition-colors">
+            <button type="button" onclick="event.stopPropagation(); openBookingModal('Tap, Pipe & Flush Tank Repair', 199, '45 mins')" class="rounded-xl bg-gradient-to-r from-sky-600 to-emerald-600 hover:from-sky-700 hover:to-emerald-700 text-white px-3.5 py-1.5 text-xs font-extrabold shadow-sm transition-all hover:scale-105">
               Book Slot
             </button>
           </div>
         </div>
 
         <!-- Service 4: Kitchen & Bathroom Deep Steam Clean -->
-        <div onclick="window.location.href='/item/service/deep-clean/'" class="catalog-card cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition-all duration-200 hover:border-blue-400 hover:shadow-lg bg-white" data-category="cleaning" data-id="deep-clean">
+        <div onclick="window.location.href='/item/service/deep-clean/'" class="catalog-card cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition-all duration-200 hover:border-sky-400 hover:shadow-lg bg-white" data-category="cleaning" data-id="deep-clean">
           <div>
             <div class="relative aspect-[16/10] overflow-hidden rounded-lg bg-slate-100 mb-3">
               <img src="{% static 'images/cat-cleaning.jpg' %}" alt="Deep Steam Cleaning" class="size-full object-cover transition-transform duration-300 group-hover:scale-105">
@@ -461,13 +462,13 @@
               </span>
             </div>
             <div class="flex items-center gap-2 mb-1.5">
-              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+              <span class="bg-[#059669] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
                 4.86 <i class="fa-solid fa-star text-[9px]"></i>
               </span>
               <span class="text-[11px] text-slate-400 font-semibold">(2,400 reviews)</span>
-              <span class="ml-auto text-[10px] font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">ASSURED</span>
+              <span class="ml-auto text-[10px] font-extrabold text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-100">ASSURED</span>
             </div>
-            <h3 class="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+            <h3 class="text-base font-bold text-slate-900 group-hover:text-sky-600 transition-colors line-clamp-1">
               Kitchen &amp; Bathroom Deep Steam Clean
             </h3>
             <p class="text-xs text-slate-500 mt-1 line-clamp-2">
@@ -479,14 +480,14 @@
               <span class="text-[10px] text-slate-400 block font-medium">Standard Fixed Price</span>
               <span class="text-lg font-black text-slate-900">₹899</span>
             </div>
-            <button type="button" onclick="event.stopPropagation(); openBookingModal('Kitchen & Bathroom Deep Clean', 899, '2 hours')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3.5 py-1.5 text-xs font-bold shadow-xs transition-colors">
+            <button type="button" onclick="event.stopPropagation(); openBookingModal('Kitchen & Bathroom Deep Clean', 899, '2 hours')" class="rounded-xl bg-gradient-to-r from-sky-600 to-emerald-600 hover:from-sky-700 hover:to-emerald-700 text-white px-3.5 py-1.5 text-xs font-extrabold shadow-sm transition-all hover:scale-105">
               Book Slot
             </button>
           </div>
         </div>
 
         <!-- Service 5: Men's / Women's At-Home Grooming -->
-        <div onclick="window.location.href='/item/service/grooming/'" class="catalog-card cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition-all duration-200 hover:border-blue-400 hover:shadow-lg bg-white" data-category="salon" data-id="grooming">
+        <div onclick="window.location.href='/item/service/grooming/'" class="catalog-card cursor-pointer group flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition-all duration-200 hover:border-sky-400 hover:shadow-lg bg-white" data-category="salon" data-id="grooming">
           <div>
             <div class="relative aspect-[16/10] overflow-hidden rounded-lg bg-slate-100 mb-3">
               <img src="{% static 'images/cat-salon.jpg' %}" alt="Salon and Grooming" class="size-full object-cover transition-transform duration-300 group-hover:scale-105">
@@ -495,13 +496,13 @@
               </span>
             </div>
             <div class="flex items-center gap-2 mb-1.5">
-              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+              <span class="bg-[#059669] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
                 4.93 <i class="fa-solid fa-star text-[9px]"></i>
               </span>
               <span class="text-[11px] text-slate-400 font-semibold">(3,800 reviews)</span>
-              <span class="ml-auto text-[10px] font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">ASSURED</span>
+              <span class="ml-auto text-[10px] font-extrabold text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-100">ASSURED</span>
             </div>
-            <h3 class="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+            <h3 class="text-base font-bold text-slate-900 group-hover:text-sky-600 transition-colors line-clamp-1">
               Men's &amp; Women's At-Home Grooming
             </h3>
             <p class="text-xs text-slate-500 mt-1 line-clamp-2">
@@ -513,14 +514,11 @@
               <span class="text-[10px] text-slate-400 block font-medium">Standard Fixed Price</span>
               <span class="text-lg font-black text-slate-900">₹349</span>
             </div>
-            <button type="button" onclick="event.stopPropagation(); openBookingModal('At-Home Grooming & Salon', 349, '40 mins')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3.5 py-1.5 text-xs font-bold shadow-xs transition-colors">
+            <button type="button" onclick="event.stopPropagation(); openBookingModal('At-Home Grooming & Salon', 349, '40 mins')" class="rounded-xl bg-gradient-to-r from-sky-600 to-emerald-600 hover:from-sky-700 hover:to-emerald-700 text-white px-3.5 py-1.5 text-xs font-extrabold shadow-sm transition-all hover:scale-105">
               Book Slot
             </button>
           </div>
         </div>
-
-      </div>
-    </section>
 
       </div>
     </section>
@@ -552,13 +550,13 @@
               </span>
             </div>
             <div class="flex items-center gap-1.5 mb-1">
-              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+              <span class="bg-[#059669] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
                 4.8 <i class="fa-solid fa-star text-[9px]"></i>
               </span>
               <span class="text-[11px] text-slate-400 font-medium">(1,920)</span>
-              <span class="ml-auto text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">IN STOCK</span>
+              <span class="ml-auto text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">IN STOCK</span>
             </div>
-            <h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors line-clamp-2">
               Silicone Waterproof Gap Sealant (280ml)
             </h3>
             <p class="text-[11px] text-slate-500 mt-1 line-clamp-1">Kitchen sink &amp; bathroom tile joint sealant</p>
@@ -571,7 +569,7 @@
               </div>
               <span class="text-[10px] text-emerald-600 font-bold block">Save ₹105</span>
             </div>
-            <button type="button" onclick="event.stopPropagation(); addToCart('sealant', 'Silicone Waterproof Gap Sealant (280ml)', 215, '{% static 'images/cat-sealant.jpg' %}')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3 py-1.5 text-xs font-bold shadow-xs transition-colors flex items-center gap-1">
+            <button type="button" onclick="event.stopPropagation(); addToCart('sealant', 'Silicone Waterproof Gap Sealant (280ml)', 215, '{% static 'images/cat-sealant.jpg' %}')" class="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-3.5 py-1.5 text-xs font-extrabold shadow-sm transition-all flex items-center gap-1 hover:scale-105">
               <i class="fa-solid fa-plus text-[10px]"></i> Add
             </button>
           </div>
@@ -587,13 +585,13 @@
               </span>
             </div>
             <div class="flex items-center gap-1.5 mb-1">
-              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+              <span class="bg-[#059669] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
                 4.9 <i class="fa-solid fa-star text-[9px]"></i>
               </span>
               <span class="text-[11px] text-slate-400 font-medium">(3,450)</span>
-              <span class="ml-auto text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">IN STOCK</span>
+              <span class="ml-auto text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">IN STOCK</span>
             </div>
-            <h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors line-clamp-2">
               8-Piece Plumber &amp; Handyman Tool Kit
             </h3>
             <p class="text-[11px] text-slate-500 mt-1 line-clamp-1">Adjustable wrench, pliers, hammer &amp; drivers</p>
@@ -606,7 +604,7 @@
               </div>
               <span class="text-[10px] text-emerald-600 font-bold block">Save ₹400</span>
             </div>
-            <button type="button" onclick="event.stopPropagation(); addToCart('toolkit', '8-Piece Master Handyman Tool Kit', 899, '{% static 'images/prod-toolkit.jpg' %}')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3 py-1.5 text-xs font-bold shadow-xs transition-colors flex items-center gap-1">
+            <button type="button" onclick="event.stopPropagation(); addToCart('toolkit', '8-Piece Master Handyman Tool Kit', 899, '{% static 'images/prod-toolkit.jpg' %}')" class="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-3.5 py-1.5 text-xs font-extrabold shadow-sm transition-all flex items-center gap-1 hover:scale-105">
               <i class="fa-solid fa-plus text-[10px]"></i> Add
             </button>
           </div>
@@ -622,13 +620,13 @@
               </span>
             </div>
             <div class="flex items-center gap-1.5 mb-1">
-              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+              <span class="bg-[#059669] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
                 4.7 <i class="fa-solid fa-star text-[9px]"></i>
               </span>
               <span class="text-[11px] text-slate-400 font-medium">(840)</span>
-              <span class="ml-auto text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">IN STOCK</span>
+              <span class="ml-auto text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">IN STOCK</span>
             </div>
-            <h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors line-clamp-2">
               12W Inverter Rechargeable Emergency LED Bulb
             </h3>
             <p class="text-[11px] text-slate-500 mt-1 line-clamp-1">Turns on automatically during power cuts</p>
@@ -641,7 +639,7 @@
               </div>
               <span class="text-[10px] text-emerald-600 font-bold block">Save ₹150</span>
             </div>
-            <button type="button" onclick="event.stopPropagation(); addToCart('led-bulb', '12W Inverter Emergency LED Bulb', 349, '')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3 py-1.5 text-xs font-bold shadow-xs transition-colors flex items-center gap-1">
+            <button type="button" onclick="event.stopPropagation(); addToCart('led-bulb', '12W Inverter Emergency LED Bulb', 349, '')" class="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-3.5 py-1.5 text-xs font-extrabold shadow-sm transition-all flex items-center gap-1 hover:scale-105">
               <i class="fa-solid fa-plus text-[10px]"></i> Add
             </button>
           </div>
@@ -657,23 +655,13 @@
               </span>
             </div>
             <div class="flex items-center gap-1.5 mb-1">
-              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+              <span class="bg-[#059669] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
                 4.8 <i class="fa-solid fa-star text-[9px]"></i>
               </span>
               <span class="text-[11px] text-slate-400 font-medium">(2,110)</span>
-              <span class="ml-auto text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">IN STOCK</span>
+              <span class="ml-auto text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">IN STOCK</span>
             </div>
-                24% off
-              </span>
-            </div>
-            <div class="flex items-center gap-1.5 mb-1">
-              <span class="bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
-                4.8 <i class="fa-solid fa-star text-[9px]"></i>
-              </span>
-              <span class="text-[11px] text-slate-400 font-medium">(2,110)</span>
-              <span class="ml-auto text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">IN STOCK</span>
-            </div>
-            <h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors line-clamp-2">
               Heavy-Duty Eco Drain Opener Gel (1L)
             </h3>
             <p class="text-[11px] text-slate-500 mt-1 line-clamp-1">Dissolves hair and kitchen grease blockages</p>
@@ -686,7 +674,7 @@
               </div>
               <span class="text-[10px] text-emerald-600 font-bold block">Save ₹61</span>
             </div>
-            <button type="button" onclick="event.stopPropagation(); addToCart('drain-gel', 'Heavy-Duty Eco Drain Opener Gel (1L)', 189, '')" class="rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 px-3 py-1.5 text-xs font-bold shadow-xs transition-colors flex items-center gap-1">
+            <button type="button" onclick="event.stopPropagation(); addToCart('drain-gel', 'Heavy-Duty Eco Drain Opener Gel (1L)', 189, '')" class="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-3.5 py-1.5 text-xs font-extrabold shadow-sm transition-all flex items-center gap-1 hover:scale-105">
               <i class="fa-solid fa-plus text-[10px]"></i> Add
             </button>
           </div>
@@ -720,25 +708,25 @@
     </section>
 
     <!-- 9. STATS COUNTER SECTION (GSAP SCROLLTRIGGER) -->
-    <section class="rounded-2xl bg-[#131921] p-6 sm:p-10 text-white shadow-md">
-      <div class="grid gap-6 text-center md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-700">
+    <section class="rounded-2xl bg-gradient-to-br from-[#0b192c] via-[#0d223a] to-[#0b192c] border border-sky-950 p-6 sm:p-10 text-white shadow-md">
+      <div class="grid gap-6 text-center md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-800">
         <div class="pt-3 md:pt-0">
-          <p class="text-3xl sm:text-4xl font-black text-amber-400">
+          <p class="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-emerald-300">
             <span data-count="12400">0</span>+
           </p>
-          <p class="mt-1 text-xs text-slate-300 font-semibold uppercase tracking-wider">Home Bookings Finished</p>
+          <p class="mt-1 text-xs text-sky-200/80 font-semibold uppercase tracking-wider">Home Bookings Finished</p>
         </div>
         <div class="pt-5 md:pt-0">
-          <p class="text-3xl sm:text-4xl font-black text-amber-400">
+          <p class="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-emerald-300">
             <span data-count="850">0</span>+
           </p>
-          <p class="mt-1 text-xs text-slate-300 font-semibold uppercase tracking-wider">Certified Technicians &amp; Riders</p>
+          <p class="mt-1 text-xs text-sky-200/80 font-semibold uppercase tracking-wider">Certified Technicians &amp; Riders</p>
         </div>
         <div class="pt-5 md:pt-0">
-          <p class="text-3xl sm:text-4xl font-black text-amber-400">
+          <p class="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-emerald-300">
             <span data-count="30000">0</span>+
           </p>
-          <p class="mt-1 text-xs text-slate-300 font-semibold uppercase tracking-wider">Orders Delivered Securely</p>
+          <p class="mt-1 text-xs text-sky-200/80 font-semibold uppercase tracking-wider">Orders Delivered Securely</p>
         </div>
       </div>
     </section>
@@ -810,22 +798,22 @@
   </main>
 
   <!-- ===================================================================== -->
-  <!-- 11. AMAZON/FLIPKART STYLE FOOTER                                      -->
+  <!-- 11. SINDHIGA FOOTER (BRAND MATCHED)                                   -->
   <!-- ===================================================================== -->
-  <footer class="mt-12 bg-[#131921] text-slate-300 text-xs">
+  <footer class="mt-12 bg-[#0b192c] text-slate-300 text-xs border-t border-sky-950">
     <!-- Back to Top Bar -->
-    <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" class="block bg-[#232f3e] py-3 text-center text-xs font-semibold text-white hover:bg-slate-700 transition-colors">
+    <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" class="block bg-[#0f2744] py-3 text-center text-xs font-semibold text-white hover:bg-sky-950 transition-colors">
       Back to top <i class="fa-solid fa-arrow-up text-[10px] ml-1"></i>
     </a>
 
     <div class="mx-auto max-w-7xl px-4 sm:px-6 py-12">
       <div class="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
         <div>
-          <div class="flex items-center gap-2 mb-3">
-            <span class="flex size-7 items-center justify-center rounded bg-yellow-400 text-slate-900 font-black">
-              <i class="fa-solid fa-boxes-packing text-xs"></i>
-            </span>
-            <span class="text-base font-bold text-white">Sindhiga Enterprises</span>
+          <div class="flex items-center gap-2.5 mb-3">
+            <div class="size-8 rounded-lg bg-white p-1 flex items-center justify-center shrink-0 border border-slate-200/40">
+              <img src="{% static 'images/logo.png' %}" alt="Sindhiga" class="size-full object-contain">
+            </div>
+            <span class="text-base font-extrabold text-white">Sindhiga<span class="text-emerald-400 font-bold">.in</span></span>
           </div>
           <p class="text-slate-400 leading-relaxed mb-3">
             India's dedicated dual platform for certified home services and genuine hardware repair essentials.
@@ -881,11 +869,11 @@
   <div id="cartBackdrop" onclick="toggleCartDrawer(false)" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity"></div>
   <aside id="cartDrawer" class="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between">
     <div>
-      <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4 bg-[#131921] text-white">
+      <div class="flex items-center justify-between border-b border-sky-950 px-5 py-4 bg-[#0b192c] text-white">
         <div class="flex items-center gap-2">
-          <i class="fa-solid fa-cart-shopping text-amber-400 text-base"></i>
+          <i class="fa-solid fa-cart-shopping text-emerald-400 text-base"></i>
           <h3 class="text-base font-bold">Shopping Cart</h3>
-          <span id="drawerCartCountPill" class="rounded-full bg-orange-600 px-2 py-0.5 text-xs font-bold text-white">0</span>
+          <span id="drawerCartCountPill" class="rounded-full bg-gradient-to-r from-sky-500 to-emerald-500 px-2 py-0.5 text-xs font-bold text-white">0</span>
         </div>
         <button type="button" onclick="toggleCartDrawer(false)" class="rounded-lg p-1.5 text-slate-300 hover:text-white transition-colors">
           <i class="fa-solid fa-xmark text-lg"></i>
@@ -908,7 +896,7 @@
         <span>Subtotal</span>
         <span id="cartSubtotal" class="text-xl text-slate-950 font-black">₹0</span>
       </div>
-      <button type="button" onclick="proceedToCheckout()" class="w-full rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] py-3 text-sm font-extrabold text-slate-950 shadow-md transition-colors">
+      <button type="button" onclick="proceedToCheckout()" class="w-full rounded-xl bg-gradient-to-r from-sky-600 to-emerald-600 hover:from-sky-700 hover:to-emerald-700 py-3 text-sm font-extrabold text-white shadow-md transition-all">
         Proceed to Checkout
       </button>
       <p class="text-center text-[11px] text-slate-500">
@@ -924,7 +912,7 @@
     <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <div>
-          <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider">Doorstep Service Booking</span>
+          <span class="text-[10px] font-bold text-sky-700 uppercase tracking-wider">Doorstep Service Booking</span>
           <h3 id="modalServiceTitle" class="text-lg font-bold text-slate-900">Service Title</h3>
         </div>
         <button type="button" onclick="closeBookingModal()" class="rounded-lg p-1 text-slate-400 hover:bg-slate-100">
@@ -935,13 +923,13 @@
       <div class="space-y-3.5">
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">Select Service Date</label>
-          <input type="date" id="serviceBookingDate" class="w-full rounded-lg border border-slate-300 p-2 text-sm text-slate-800 outline-none focus:border-blue-500" />
+          <input type="date" id="serviceBookingDate" class="w-full rounded-lg border border-slate-300 p-2 text-sm text-slate-800 outline-none focus:border-sky-500" />
         </div>
 
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">Select Preferred Arrival Slot</label>
           <div class="grid grid-cols-2 gap-2 text-xs font-semibold">
-            <button type="button" onclick="selectSlot(this, '09:00 AM - 11:00 AM (Morning)')" class="slot-pill rounded-lg border border-blue-600 bg-blue-50 text-blue-800 p-2.5 text-center">
+            <button type="button" onclick="selectSlot(this, '09:00 AM - 11:00 AM (Morning)')" class="slot-pill rounded-lg border border-sky-600 bg-sky-50 text-sky-800 p-2.5 text-center">
               09:00 AM - 11:00 AM<br><span class="text-[10px] text-slate-500 font-normal">Morning Slot</span>
             </button>
             <button type="button" onclick="selectSlot(this, '11:00 AM - 01:00 PM (Midday)')" class="slot-pill rounded-lg border border-slate-200 bg-white text-slate-700 p-2.5 text-center hover:border-slate-300">
@@ -968,7 +956,7 @@
       </div>
 
       <div class="flex items-center gap-2 pt-2">
-        <button type="button" onclick="confirmServiceBooking()" class="flex-1 rounded-lg bg-[#ffd814] hover:bg-[#f7ca00] py-2.5 text-xs font-bold text-slate-950 shadow-sm transition-colors">
+        <button type="button" onclick="confirmServiceBooking()" class="flex-1 rounded-xl bg-gradient-to-r from-sky-600 to-emerald-600 hover:from-sky-700 hover:to-emerald-700 py-2.5 text-xs font-extrabold text-white shadow-md transition-all">
           Confirm Service Booking
         </button>
         <button type="button" onclick="closeBookingModal()" class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">
@@ -1158,10 +1146,10 @@
       const btnProd = document.getElementById('btnModeProducts');
 
       if (mode === 'services') {
-        btnServ.className = "rounded-full px-3 py-1 font-bold text-slate-900 bg-[#febd69] shadow-xs transition-all";
+        btnServ.className = "rounded-full px-3 py-1 font-bold text-white bg-gradient-to-r from-sky-500 to-emerald-500 shadow-xs transition-all";
         btnProd.className = "rounded-full px-3 py-1 font-bold text-slate-300 hover:text-white transition-all";
       } else {
-        btnProd.className = "rounded-full px-3 py-1 font-bold text-slate-900 bg-[#febd69] shadow-xs transition-all";
+        btnProd.className = "rounded-full px-3 py-1 font-bold text-white bg-gradient-to-r from-sky-500 to-emerald-500 shadow-xs transition-all";
         btnServ.className = "rounded-full px-3 py-1 font-bold text-slate-300 hover:text-white transition-all";
       }
     }
